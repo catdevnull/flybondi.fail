@@ -30,17 +30,7 @@ export const scrapAerolineasTask = schemaTask({
   id: "scrap-aerolineas",
   maxDuration: 6000,
   schema: z.object({
-    date: z.preprocess(
-      (str) =>
-        typeof str === "string"
-          ? parse(str, "yyyy-MM-dd", new Date(), {
-              in: tz("America/Argentina/Buenos_Aires"),
-            })
-          : () => {
-              throw new Error("bleeh");
-            },
-      z.date()
-    ),
+    date: z.coerce.date(),
   }),
   run: async (payload, { ctx }) => {
     const queue = new PQueue({ concurrency: 5 });
