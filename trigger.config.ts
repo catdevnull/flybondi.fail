@@ -18,4 +18,7 @@ export default defineConfig({
     },
   },
   dirs: ["./trigger"],
+  build: {
+    external: ["@duckdb/node-bindings-linux-x64", "@duckdb/node-api"],
+  },
 });

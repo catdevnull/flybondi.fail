@@ -126,6 +126,17 @@ export const scrapAerolineasTask = schemaTask({
   },
 });
 
+export const scrapAerolineasCronTask = schedules.task({
+  id: "scrap-aerolineas-cron",
+  cron: "0 * * * *",
+  maxDuration: 300,
+  run: async (payload, { ctx }) => {
+    await scrapAerolineasTask.trigger({
+      date: new Date(),
+    });
+  },
+});
+
 // export const scrapFlightstatsTask = schedules.task({
 //   id: "scrap-flightstats",
 //   cron: "0 * * * *",
