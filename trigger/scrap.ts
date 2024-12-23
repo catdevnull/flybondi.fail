@@ -88,27 +88,27 @@ export const scrapAerolineasTask = schemaTask({
             entries: datas,
           };
 
-          const columns = sql.identifier([
-            "url",
-            "fetched_at",
-            "b2_raw_path",
-            "airport_iata",
-            "flights_relative_to_airport",
-            "date",
-            "entries",
-          ]);
-          const values = sql.values([
-            [
-              snapshot.url,
-              snapshot.fetched_at,
-              snapshot.b2_raw_path,
-              snapshot.airport_iata,
-              snapshot.flights_relative_to_airport,
-              snapshot.date,
-              JSON.stringify(snapshot.entries),
-            ],
-          ]);
-          await sql`insert into aerolineas_snapshots (${columns}) values ${values}`;
+          // const columns = sql.identifier([
+          //   "url",
+          //   "fetched_at",
+          //   "b2_raw_path",
+          //   "airport_iata",
+          //   "flights_relative_to_airport",
+          //   "date",
+          //   "entries",
+          // ]);
+          // const values = sql.values([
+          //   [
+          //     snapshot.url,
+          //     snapshot.fetched_at,
+          //     snapshot.b2_raw_path,
+          //     snapshot.airport_iata,
+          //     snapshot.flights_relative_to_airport,
+          //     snapshot.date,
+          //     JSON.stringify(snapshot.entries),
+          //   ],
+          // ]);
+          // await sql`insert into aerolineas_snapshots (${columns}) values ${values}`;
         }
       });
     }
