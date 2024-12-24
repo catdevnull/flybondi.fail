@@ -73,7 +73,7 @@ export const scrapAerolineasTask = schemaTask({
           const b2_raw_path = await saveRawIntoB2({
             url,
             body: JSON.stringify(json),
-            fetched_at: new Date(),
+            fetched_at,
           });
           const datas = z.array(AerolineasFlightData).parse(json);
 
