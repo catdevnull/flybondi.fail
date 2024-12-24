@@ -34,6 +34,7 @@ export const scrapAerolineasTask = schemaTask({
   }),
   run: async (payload, { ctx }) => {
     const queue = new PQueue({ concurrency: 5 });
+    const fetched_at = new Date();
 
     for (const airport_iata of AEROLINEAS_AIRPORTS) {
       queue.add(async () => {
@@ -48,7 +49,6 @@ export const scrapAerolineasTask = schemaTask({
             "dd-MM-yyyy",
             { in: tz("America/Argentina/Buenos_Aires") }
           )}`;
-          const fetched_at = new Date();
           const res = await fetch(url, {
             headers: {
               Origin: "https://www.aeropuertosargentina.com",
