@@ -9,9 +9,10 @@ export const sql = waddler({
   url: `md:flight-statii${PROD ? "" : "-dev"}`,
 });
 
+export const B2_REGION = "us-west-004";
 export const b2 = new S3Client({
-  endpoint: "https://s3.us-west-004.backblazeb2.com",
-  region: "us-west-004",
+  endpoint: `https://s3.${B2_REGION}.backblazeb2.com`,
+  region: B2_REGION,
   credentials: {
     accessKeyId: process.env.B2_KEY_ID || "",
     secretAccessKey: process.env.B2_APP_KEY || "",
