@@ -9,6 +9,7 @@ export const processLatestFlightDataTask = schedules.task({
   id: "process-latest-flight-data",
   cron: "2 * * * *",
   maxDuration: 6000,
+  machine: { preset: "medium-1x" },
   run: async (payload, { ctx }) => {
     async function processJson(path: string) {
       const response = await b2.send(
