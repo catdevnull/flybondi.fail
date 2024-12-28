@@ -118,7 +118,7 @@ export const scrapAerolineasTask = schemaTask({
 
 export const scrapAerolineasCronTask = schedules.task({
   id: "scrap-aerolineas-cron",
-  cron: "0 2,5,10,15,20,22 * * *",
+  cron: "59 2,5,10,15,20,23 * * *",
   maxDuration: 300,
   run: async (payload, { ctx }) => {
     await scrapAerolineasTask.trigger({
