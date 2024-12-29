@@ -93,6 +93,7 @@ export const processLatestFlightDataTask = schedules.task({
       FROM json_array_elements(${allEntries}) as value
       ON CONFLICT (aerolineas_flight_id) 
       DO UPDATE SET last_updated = EXCLUDED.last_updated, json = EXCLUDED.json
+      WHERE EXCLUDED.last_updated > aerolineas_latest_flight_status.last_updated
       `;
       // await sql.begin(async (sql) => {
       //   for (const entry of allEntries) {
