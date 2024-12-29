@@ -1,17 +1,14 @@
-import { waddler } from "waddler/neo";
 import { S3Client } from "@aws-sdk/client-s3";
+import { Database } from "duckdb-async";
 
 const { NODE_ENV } = process.env;
 
 export const PROD = NODE_ENV === "production";
 export const NOT_PROD = !PROD;
-export const sql = waddler({
-  url: `md:flight-statii${PROD ? "" : "-dev"}`,
-  min: 5,
-  max: 100,
-  maxMemory: "1GB",
-  threads: "10",
-});
+
+export const db = await Database.create(
+  `md:flight-statii${PROD ? "" : "-dev"}`
+);
 
 export const B2_REGION = "us-west-004";
 export const b2 = new S3Client({
