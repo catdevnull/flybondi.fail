@@ -14,6 +14,7 @@ export const processLatestFlightDataTask = schedules.task({
   maxDuration: 6000,
   machine: { preset: "medium-1x" },
   run: async (payload, { ctx }) => {
+    // const { db, conn } = await sqlBuilder();
     const sql = sqlBuilder();
 
     const list = await getAllObjectsFromS3Bucket(B2_BUCKET, B2_PATH);
@@ -48,8 +49,18 @@ export const processLatestFlightDataTask = schedules.task({
       const allJsonAlreadyExists = list.find(
         (item) => item.Key === `${path}all.json`
       );
-      if (!allJsonAlreadyExists) {
-        const allEntries = (
+      let allEntries;
+      if (allJsonAlreadyExists) {
+        const { Body } = await b2.send(
+          new GetObjectCommand({
+            Bucket: B2_BUCKET,
+            Key: `${path}all.json`,
+          })
+        );
+        if (!Body) throw new Error("No body");
+        allEntries = JSON.parse(await Body.transformToString());
+      } else {
+        allEntries = (
           await Promise.all(
             keys.map(async (key) => {
               const { Body } = await b2.send(
@@ -76,15 +87,23 @@ export const processLatestFlightDataTask = schedules.task({
         });
       }
 
-      const q = sql`
-        INSERT INTO aerolineas_latest_flight_status (aerolineas_flight_id, last_updated, json)
-        SELECT DISTINCT ON(aerolineas_flight_id) json->>'$.id' as aerolineas_flight_id, ${key.fetchedAt.toISOString()} as last_updated, json
-        FROM read_json_auto(${`${getB2Uri(path)}all.json`})
-        ON CONFLICT (aerolineas_flight_id) 
-        DO UPDATE SET last_updated = EXCLUDED.last_updated, json = EXCLUDED.json
-        `;
-      logger.info("Executing", { sql: q });
-      await q;
+      await sql`
+      INSERT INTO aerolineas_latest_flight_status (aerolineas_flight_id, last_updated, json)
+      SELECT DISTINCT ON(aerolineas_flight_id) value->>'id' as aerolineas_flight_id, ${key.fetchedAt}, value as json
+      FROM json_array_elements(${allEntries}) as value
+      ON CONFLICT (aerolineas_flight_id) 
+      DO UPDATE SET last_updated = EXCLUDED.last_updated, json = EXCLUDED.json
+      `;
+      // await sql.begin(async (sql) => {
+      //   for (const entry of allEntries) {
+      //     await sql`
+      //     INSERT INTO aerolineas_latest_flight_status (aerolineas_flight_id, last_updated, json)
+      //     VALUES (${entry.id}, ${key.fetchedAt}, ${entry})
+      //     ON CONFLICT (aerolineas_flight_id)
+      //     DO UPDATE SET last_updated = EXCLUDED.last_updated, json = EXCLUDED.json
+      //     `;
+      //   }
+      // });
     });
 
     logger.info(`Processing ${tasks.length} collections`);

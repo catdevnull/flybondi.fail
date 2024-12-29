@@ -1,14 +1,10 @@
-import { waddler } from "waddler/neo";
 import { S3Client } from "@aws-sdk/client-s3";
 
 const { NODE_ENV } = process.env;
 
 export const PROD = NODE_ENV === "production";
 export const NOT_PROD = !PROD;
-export const sqlBuilder = () =>
-  waddler({
-    url: `md:flight-statii${PROD ? "" : "-dev"}`,
-  });
+export const sqlBuilder = () => postgres(process.env.PG_URL!, {});
 
 export const B2_REGION = "us-west-004";
 export const b2 = new S3Client({
@@ -67,6 +63,7 @@ import path from "path";
 import tls from "tls";
 import { z } from "zod";
 import { AerolineasFlightData } from "./misc/aerolineas";
+import postgres from "postgres";
 
 const rootCAs: string[] = [];
 
