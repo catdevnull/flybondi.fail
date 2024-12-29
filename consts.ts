@@ -7,10 +7,6 @@ export const PROD = NODE_ENV === "production";
 export const NOT_PROD = !PROD;
 export const sql = waddler({
   url: `md:flight-statii${PROD ? "" : "-dev"}`,
-  min: 5,
-  max: 100,
-  maxMemory: "1GB",
-  threads: "10",
 });
 
 export const B2_REGION = "us-west-004";
