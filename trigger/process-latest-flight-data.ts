@@ -1,5 +1,5 @@
 import { logger, schedules } from "@trigger.dev/sdk/v3";
-import { b2, B2_BUCKET, B2_PATH, B2_REGION, db } from "../consts";
+import { b2, B2_BUCKET, B2_PATH, B2_REGION, sql } from "../consts";
 import { _Object, ListObjectsV2Command } from "@aws-sdk/client-s3";
 import PQueue from "p-queue";
 
@@ -9,21 +9,16 @@ export const processLatestFlightDataTask = schedules.task({
   maxDuration: 6000,
   machine: { preset: "medium-1x" },
   run: async (payload, { ctx }) => {
-    const conn = await db.connect();
     async function processJson(path: string) {
       const { airport, direction, flightDate, fetchedAt } = parsePath(path);
       const publicUrl = getPublicB2Url(path);
-      const q = conn.exec(
-        `
+      const q = sql`
         INSERT INTO aerolineas_latest_flight_status (aerolineas_flight_id, last_updated, json)
         SELECT DISTINCT ON(aerolineas_flight_id) json->>'$.id' as aerolineas_flight_id, ${fetchedAt.toISOString()} as last_updated, json
         FROM read_json_auto(${publicUrl})
         ON CONFLICT (aerolineas_flight_id) 
         DO UPDATE SET last_updated = EXCLUDED.last_updated, json = EXCLUDED.json
-        `,
-        fetchedAt.toISOString(),
-        publicUrl
-      );
+        `;
       await q;
     }
 

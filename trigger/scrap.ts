@@ -8,7 +8,7 @@ import {
   FlightstatsSnapshotEntries,
   FlightstatsSnapshotEntry,
   PROD,
-  db,
+  sql,
 } from "../consts";
 import { PutObjectCommand } from "@aws-sdk/client-s3";
 import * as cheerio from "cheerio";
