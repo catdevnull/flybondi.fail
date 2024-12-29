@@ -14,7 +14,6 @@ export const processLatestFlightDataTask = schedules.task({
   maxDuration: 6000,
   machine: { preset: "medium-1x" },
   run: async (payload, { ctx }) => {
-    // const { db, conn } = await sqlBuilder();
     const sql = sqlBuilder();
 
     const list = await getAllObjectsFromS3Bucket(B2_BUCKET, B2_PATH);
@@ -95,16 +94,6 @@ export const processLatestFlightDataTask = schedules.task({
       DO UPDATE SET last_updated = EXCLUDED.last_updated, json = EXCLUDED.json
       WHERE EXCLUDED.last_updated > aerolineas_latest_flight_status.last_updated
       `;
-      // await sql.begin(async (sql) => {
-      //   for (const entry of allEntries) {
-      //     await sql`
-      //     INSERT INTO aerolineas_latest_flight_status (aerolineas_flight_id, last_updated, json)
-      //     VALUES (${entry.id}, ${key.fetchedAt}, ${entry})
-      //     ON CONFLICT (aerolineas_flight_id)
-      //     DO UPDATE SET last_updated = EXCLUDED.last_updated, json = EXCLUDED.json
-      //     `;
-      //   }
-      // });
     });
 
     logger.info(`Processing ${tasks.length} collections`);
@@ -137,9 +126,6 @@ function getPublicB2Url(path: string) {
   return `https://${B2_BUCKET}.s3.${B2_REGION}.backblazeb2.com/${split[0]}${
     split[1] ? encodeURIComponent(`?${split[1]}`) : ""
   }`;
-}
-function getB2Uri(path: string) {
-  return `s3://${B2_BUCKET}/${path}`;
 }
 
 async function getAllObjectsFromS3Bucket(bucket: string, prefix: string) {
