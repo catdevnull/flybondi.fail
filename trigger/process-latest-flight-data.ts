@@ -1,5 +1,5 @@
 import { logger, schedules } from "@trigger.dev/sdk/v3";
-import { b2, B2_BUCKET, B2_PATH, B2_REGION, sql } from "../consts";
+import { b2, B2_BUCKET, B2_PATH, B2_REGION, sqlBuilder } from "../consts";
 import {
   _Object,
   GetObjectCommand,
@@ -14,7 +14,7 @@ export const processLatestFlightDataTask = schedules.task({
   maxDuration: 6000,
   machine: { preset: "medium-1x" },
   run: async (payload, { ctx }) => {
-    async function processJsonDir(path: string, fetchedAt: Date) {}
+    const sql = sqlBuilder();
 
     const list = await getAllObjectsFromS3Bucket(B2_BUCKET, B2_PATH);
     const queue = new PQueue({ concurrency: 1 });
