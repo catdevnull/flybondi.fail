@@ -17,7 +17,7 @@ export const processLatestFlightDataTask = schedules.task({
     const sql = sqlBuilder();
 
     const list = await getAllObjectsFromS3Bucket(B2_BUCKET, B2_PATH);
-    const queue = new PQueue({ concurrency: 1 });
+    const queue = new PQueue({ concurrency: 4 });
     const tasks = Array.from(
       list
         .filter((item) => item.Size && item.Size > 2) // filter out empty JSON arrays
