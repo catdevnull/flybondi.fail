@@ -19,6 +19,7 @@ import { z } from "zod";
 import { AerolineasFlightData } from "../misc/aerolineas";
 import fetchBuilder from "fetch-retry";
 import PQueue from "p-queue";
+import { saveRawIntoB2 } from "../trigger-utils";
 
 const FLIGHTSTATS_AIRPORTS = ["FTE", "REL", "USH"];
 const AEROLINEAS_AIRPORTS = AEROLINEAS_AIRPORTS_JSON.data.map((a) => a.iata);
@@ -142,34 +143,6 @@ export const scrapAerolineasCronTask = schedules.task({
 //     logger.log(JSON.stringify(await sql`select 1`));
 //   },
 // });
-
-async function saveRawIntoB2({
-  url,
-  body,
-  fetched_at,
-}: {
-  url: string;
-  body: string;
-  fetched_at: Date;
-}) {
-  const datetime = fetched_at.toISOString();
-  const path = urlToPath(url);
-  const key = `${B2_PATH}/${datetime}/raw/${path}`;
-  await b2.send(
-    new PutObjectCommand({
-      Bucket: B2_BUCKET,
-      Key: key,
-      Body: body,
-    })
-  );
-  logger.debug(`Stored raw response into B2`, { url, key });
-  return key;
-}
-
-function urlToPath(url: string) {
-  return url.replace(/https?:\/\//, "").replace(/\//g, "__");
-}
-
 function parseFlightstatsHtml({
   html,
   url,
