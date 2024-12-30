@@ -12,7 +12,6 @@ export const processLatestFlightDataTask = schedules.task({
   id: "process-latest-flight-data",
   cron: "2 * * * *",
   maxDuration: 6000,
-  machine: { preset: "medium-1x" },
   run: async (payload, { ctx }) => {
     const sql = sqlBuilder();
 
