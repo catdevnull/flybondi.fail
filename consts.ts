@@ -4,7 +4,8 @@ const { NODE_ENV } = process.env;
 
 export const PROD = NODE_ENV === "production";
 export const NOT_PROD = !PROD;
-export const sqlBuilder = () => postgres(process.env.PG_URL!, {});
+export const sqlBuilder = () =>
+  postgres(process.env.PG_URL!, { prepare: false });
 
 export const B2_REGION = "us-west-004";
 export const b2 = new S3Client({
