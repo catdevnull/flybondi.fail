@@ -1,30 +1,17 @@
-CREATE TYPE flights_relative_to_airport AS ENUM ('arrivals', 'departures');
+create table aerolineas_latest_flight_status(
+  aerolineas_flight_id TEXT not null primary key,
+  last_updated TIMESTAMP not null,
+  json JSONB not null
+)
 
-create table flightstats_snapshots(
-  url TEXT not null,
-  fetched_at TIMESTAMP not null,
-  b2_raw_path TEXT not null,
-  
-  airport_iata TEXT not null,
-  flights_relative_to_airport flights_relative_to_airport not null,
-  last_updated_at TIMESTAMP,
-  date DATE not null,
-
-  -- JSON
-  entries TEXT not null, -- FlightstatsSnapshotEntries
-  PRIMARY KEY (b2_raw_path)
-);
-
-create table aerolineas_snapshots(
-  url TEXT not null,
-  fetched_at TIMESTAMP not null,
-  b2_raw_path TEXT not null,
-  
-  airport_iata TEXT not null,
-  flights_relative_to_airport flights_relative_to_airport not null,
-  date DATE not null,
-
-  -- JSON
-  entries TEXT not null, -- array<AerolineasFlightData>
-  PRIMARY KEY (b2_raw_path)
-);
+create table airfleets_matriculas(
+  fetched_at timestamp not null,
+  matricula text not null,
+  aeronave text not null,
+  msn text not null,
+  compania_aerea text not null,
+  situacion text not null,
+  detail_url text not null,
+  edad_del_avion real not null,
+  config_de_asientos text not null
+)
