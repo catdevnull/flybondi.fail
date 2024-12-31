@@ -157,7 +157,10 @@ async function fetchAirfleets(url: string | URL, captchaAttempts = 0) {
   }
   if (res.status !== 200) {
     if (res.status === 429) {
-      logger.debug("Got ratelimited, changing proxy...");
+      logger.debug("Got ratelimited, changing proxy...", {
+        url,
+        headers: Object.entries(res.headers.entries()),
+      });
       dispatcher = genDispatcher();
       return await fetchAirfleets(url);
     }
