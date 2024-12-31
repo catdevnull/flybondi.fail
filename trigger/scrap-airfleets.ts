@@ -29,7 +29,6 @@ export const scrapMatriculasTask = schemaTask({
     where json->>'matricula' not in (select matricula from airfleets_matriculas);
     `;
 
-    const b2Queue: Array<Promise<any>> = [];
     const fetched_at = new Date();
 
     logger.info(`Trying to fetch ${matriculas.length} matriculas`);
@@ -161,6 +160,7 @@ async function fetchAirfleets(url: string | URL, captchaAttempts = 0) {
         url,
         headers: Object.entries(res.headers.entries()),
       });
+      await dispatcher?.destroy();
       dispatcher = genDispatcher();
       return await fetchAirfleets(url);
     }
