@@ -20,7 +20,7 @@ function genDispatcher() {
 
 export const scrapMatriculasTask = schemaTask({
   id: "scrap-matriculas",
-  maxDuration: 600,
+  maxDuration: 6000,
   run: async (payload, { ctx }) => {
     const sql = sqlBuilder();
     const matriculas = await sql<{ matricula: string }[]>`
