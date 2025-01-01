@@ -72,6 +72,10 @@
 		if (delay < 120 * 60) return 'text-orange-600 dark:text-orange-400';
 		return 'text-red-600 dark:text-red-400';
 	}
+
+	function flightradar24(vuelo: Vuelo) {
+		return `https://www.flightradar24.com/data/flights/${vuelo.json.nro.replace(' ', '').toLowerCase()}`;
+	}
 </script>
 
 <h1>flybondi.fail</h1>
@@ -94,7 +98,14 @@
 			{#each vuelos as vuelo}
 				<tr class="border-b border-neutral-200 dark:border-neutral-700">
 					<td class="px-4 py-2 text-neutral-900 dark:text-neutral-100">
-						{vuelo.json.nro}
+						<a
+							href={flightradar24(vuelo)}
+							rel="noreferrer noopener"
+							target="_blank"
+							class="underline"
+						>
+							{vuelo.json.nro}
+						</a>
 					</td>
 					<td class="px-4 py-2 text-neutral-900 dark:text-neutral-100">
 						{getAirport(vuelo.json.arpt)} → {getAirport(vuelo.json.IATAdestorig)}
@@ -134,9 +145,14 @@
 		{#each vuelos as vuelo}
 			<div class="rounded-lg bg-neutral-50 px-4 py-3 shadow dark:bg-neutral-800">
 				<div class="mb-2 flex items-center justify-between">
-					<span class="text-lg font-bold text-neutral-900 dark:text-neutral-100">
+					<a
+						href={flightradar24(vuelo)}
+						target="_blank"
+						rel="noreferrer noopener"
+						class="text-lg font-bold text-neutral-900 underline dark:text-neutral-100"
+					>
 						{vuelo.json.nro}
-					</span>
+					</a>
 					<span class={`font-bold ${getDelayColor(vuelo.delta)} flex items-center`}>
 						<svg
 							xmlns="http://www.w3.org/2000/svg"
