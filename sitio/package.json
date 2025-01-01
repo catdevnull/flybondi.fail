@@ -5,8 +5,10 @@
   "scripts": {
     "dev": "astro dev",
     "build": "astro build",
-    "preview": "astro preview",
-    "astro": "astro"
+    "astro": "astro",
+    "preview": "astro build && wrangler pages dev",
+    "deploy": "astro build && wrangler pages deploy",
+    "cf-typegen": "wrangler types"
   },
   "dependencies": {
     "@astrojs/cloudflare": "^12.1.0",
@@ -20,6 +22,8 @@
   },
   "packageManager": "pnpm@9.13.1+sha512.5ac37545851c55ec58521b6c285db6f848f93ca70889beb4145f5b40fe234e4ea4faee4dad12ac5c139e494374c65d9c3a6ec9a25954378fa286a250e68d2f20",
   "devDependencies": {
-    "@tailwindcss/typography": "^0.5.15"
+    "@cloudflare/workers-types": "^4.20241230.0",
+    "@tailwindcss/typography": "^0.5.15",
+    "wrangler": "^3.99.0"
   }
 }

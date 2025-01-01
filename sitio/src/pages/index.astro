@@ -1,19 +1,17 @@
 ---
 export const prerender = false;
 
-import { sql } from "../consts";
 import Layout from "../layouts/Layout.astro";
-import {
-  formatDuration,
-  intervalToDuration,
-  startOfDay,
-  endOfDay,
-  isSameDay,
-} from "date-fns";
+import { formatDuration, intervalToDuration } from "date-fns";
 import { es } from "date-fns/locale/es";
 import airports from "../../../misc/aerolineas-airports.json";
-import { tz, TZDate } from "@date-fns/tz";
+import { tz } from "@date-fns/tz";
 import dayjs from "dayjs";
+import postgres from "postgres";
+
+const { env } = Astro.locals.runtime;
+export const sql = postgres(env.HYPERDRIVE.connectionString);
+
 interface Flight {
   aerolineas_flight_id: string;
   last_updated: string;
