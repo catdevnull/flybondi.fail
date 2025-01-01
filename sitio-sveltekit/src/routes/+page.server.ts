@@ -35,7 +35,7 @@ interface Flight {
 export type Vuelo = Flight & { delta: number; atda: string; stda: string };
 
 export const load: PageServerLoad = async ({ url, platform }) => {
-	const sql = postgres(platform?.env.HYPERDRIVE.connectionString);
+	const sql = postgres(platform?.env.HYPERDRIVE.connectionString!);
 
 	const tsz = 'America/Argentina/Buenos_Aires';
 	const dateQ = url.searchParams.get('date');

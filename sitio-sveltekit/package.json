@@ -33,6 +33,9 @@
     "wrangler": "^3.99.0"
   },
   "dependencies": {
-    "@tailwindcss/typography": "^0.5.15"
+    "@tailwindcss/typography": "^0.5.15",
+    "date-fns": "^4.1.0",
+    "dayjs": "^1.11.13",
+    "postgres": "^3.4.5"
   }
 }
