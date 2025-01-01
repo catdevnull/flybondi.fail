@@ -55,7 +55,7 @@ export const load: PageServerLoad = async ({ url, platform }) => {
       FROM aerolineas_latest_flight_status
       left join airfleets_matriculas
       on matricula = json->>'matricula'
-      WHERE json->>'idaerolinea' = 'FO' AND json->>'atda' != ''
+      WHERE json->>'idaerolinea' = 'FO' AND json->>'atda' != '' AND json->>'mov' = 'D'
     )
     SELECT
       *, CAST(EXTRACT(EPOCH FROM (atda - stda)) AS real) as delta
