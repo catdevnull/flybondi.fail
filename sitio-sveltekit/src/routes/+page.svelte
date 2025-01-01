@@ -2,7 +2,7 @@
 	import { formatDuration, intervalToDuration } from 'date-fns';
 	import { es } from 'date-fns/locale/es';
 	import dayjs from 'dayjs';
-	import airports from '../../../misc/aerolineas-airports.json';
+	import airports from '$lib/aerolineas-airports.json';
 	import type { Vuelo } from './+page.server';
 
 	export let data;
@@ -39,7 +39,8 @@
 	const timeFormatter = Intl.DateTimeFormat('es-AR', {
 		hour: '2-digit',
 		minute: '2-digit',
-		hour12: false
+		hour12: false,
+		timeZone: 'America/Argentina/Buenos_Aires'
 	});
 
 	const dateFormatter = Intl.DateTimeFormat('es-AR', {
@@ -47,7 +48,8 @@
 		month: '2-digit',
 		hour: '2-digit',
 		minute: '2-digit',
-		hour12: false
+		hour12: false,
+		timeZone: 'America/Argentina/Buenos_Aires'
 	});
 
 	function formatDateTime(timestamp: string) {

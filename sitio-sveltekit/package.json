@@ -12,7 +12,9 @@
 		"lint": "prettier --check ."
 	},
 	"devDependencies": {
+		"@flydotio/dockerfile": "^0.5.9",
 		"@sveltejs/adapter-auto": "^3.0.0",
+		"@sveltejs/adapter-node": "^5.2.11",
 		"@sveltejs/kit": "^2.9.0",
 		"@sveltejs/vite-plugin-svelte": "^5.0.0",
 		"autoprefixer": "^10.4.20",
