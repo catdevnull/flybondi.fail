@@ -1,4 +1,7 @@
 import { S3Client } from "@aws-sdk/client-s3";
+import { z } from "zod";
+import { AerolineasFlightData } from "./misc/aerolineas";
+import postgres from "postgres";
 
 const { NODE_ENV } = process.env;
 
@@ -62,9 +65,6 @@ export type AerolineasSnapshot = z.infer<typeof AerolineasSnapshot>;
 import fs from "fs";
 import path from "path";
 import tls from "tls";
-import { z } from "zod";
-import { AerolineasFlightData } from "./misc/aerolineas";
-import postgres from "postgres";
 
 const rootCAs: string[] = [];
 

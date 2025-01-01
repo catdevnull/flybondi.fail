@@ -9,7 +9,16 @@
     "astro": "astro"
   },
   "dependencies": {
-    "astro": "^5.1.1"
+    "@astrojs/tailwind": "^5.1.4",
+    "@date-fns/tz": "^1.2.0",
+    "astro": "^5.1.1",
+    "date-fns": "^4.1.0",
+    "dayjs": "^1.11.13",
+    "postgres": "^3.4.5",
+    "tailwindcss": "^3.4.17"
   },
-  "packageManager": "pnpm@9.13.1+sha512.5ac37545851c55ec58521b6c285db6f848f93ca70889beb4145f5b40fe234e4ea4faee4dad12ac5c139e494374c65d9c3a6ec9a25954378fa286a250e68d2f20"
+  "packageManager": "pnpm@9.13.1+sha512.5ac37545851c55ec58521b6c285db6f848f93ca70889beb4145f5b40fe234e4ea4faee4dad12ac5c139e494374c65d9c3a6ec9a25954378fa286a250e68d2f20",
+  "devDependencies": {
+    "@tailwindcss/typography": "^0.5.15"
+  }
 }
