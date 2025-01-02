@@ -11,7 +11,11 @@
 	function delayString(vuelo: Vuelo) {
 		const delayed = vuelo.delta > 0;
 		const shorter = (s: string) =>
-			s.replace(' horas', 'hs').replace(' hora', 'h').replace(' minutos', 'min');
+			s
+				.replace(' horas', 'hs')
+				.replace(' hora', 'h')
+				.replace(' minutos', 'min')
+				.replace(' minuto', 'min');
 		if (delayed) {
 			return shorter(
 				'atrasado ' +
