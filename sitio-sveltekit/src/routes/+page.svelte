@@ -15,6 +15,10 @@
 	$: aerolineasVuelos = todosLosVuelos.filter((vuelo) => vuelo.json.idaerolinea === 'AR');
 	$: vuelosAtrasados = vuelos.filter((vuelo) => vuelo.delta > 60 * 30);
 
+	$: promedioDelta = vuelos.reduce((acc, v) => acc + v.delta, 0) / vuelos.length;
+	$: promedioDeltaAerolineas =
+		aerolineasVuelos.reduce((acc, v) => acc + v.delta, 0) / aerolineasVuelos.length;
+
 	function getTotalSeats(vuelo: Vuelo) {
 		const asientos = vuelo.config_de_asientos?.match(/\w(\d+)/);
 		return (
@@ -111,11 +115,11 @@
 		return formatDuration({ ...duration, seconds: 0 }, { locale: es });
 	}
 
-	function getDelayColor(delay: number) {
+	function getDelayColor(delay: number, multiplier: number = 1) {
 		if (delay <= 0) return 'text-green-600 dark:text-green-400';
-		if (delay < 10 * 60) return 'text-green-500 dark:text-green-400';
-		if (delay < 60 * 60) return 'text-yellow-600 dark:text-yellow-400';
-		if (delay < 120 * 60) return 'text-orange-600 dark:text-orange-400';
+		if (delay < 18 * 60 * multiplier) return 'text-green-500 dark:text-green-400';
+		if (delay < 60 * 60 * multiplier) return 'text-yellow-600 dark:text-yellow-400';
+		if (delay < 120 * 60 * multiplier) return 'text-orange-600 dark:text-orange-400';
 		return 'text-red-600 dark:text-red-400';
 	}
 
@@ -159,36 +163,26 @@
 	</nav>
 
 	{#if vuelos.length > 0}
-		<div class="mb-4 grid grid-rows-3 gap-4 md:grid-cols-2">
+		<div class="mb-4 grid grid-rows-3 gap-4 text-balance md:grid-cols-2">
 			<div
 				class="row-span-3 flex flex-col items-center justify-center rounded-lg border bg-neutral-50 p-4 text-xl dark:bg-neutral-800"
 			>
-				<span class="text-brand text-[10rem] font-bold leading-none">
+				<span class="text-brand text-[5rem] font-bold leading-none md:text-[10rem]">
 					{Math.round((vuelosAtrasados.length / vuelos.length) * 100)}%
 				</span>
 				<span>vuelos con más de 30 minutos de atraso.</span>
 			</div>
 			<div class=" rounded-lg border bg-neutral-50 p-4 text-xl dark:bg-neutral-800">
 				En promedio, los vuelos de Flybondi de hoy se atrasaron por
-				<span class="font-bold">
-					{formatDurationWithoutSeconds(
-						getDurationFromSeconds(
-							Math.round(vuelos.reduce((acc, v) => acc + v.delta, 0) / vuelos.length)
-						)
-					)}
+				<span class={`font-bold ${getDelayColor(promedioDelta, 1)}`}>
+					{formatDurationWithoutSeconds(getDurationFromSeconds(promedioDelta))}
 				</span>.
 			</div>
 
 			<div class="rounded-lg border bg-neutral-50 p-4 text-xl dark:bg-neutral-800">
-				En comparacion, los vuelos de Aerolineas se atrasaron en promedio
-				<span class="font-bold">
-					{formatDurationWithoutSeconds(
-						getDurationFromSeconds(
-							Math.round(
-								aerolineasVuelos.reduce((acc, v) => acc + v.delta, 0) / aerolineasVuelos.length
-							)
-						)
-					)}
+				En comparacion, los vuelos de Aerolineas Argentinas se atrasaron en promedio
+				<span class={`font-bold ${getDelayColor(promedioDeltaAerolineas, 1)}`}>
+					{formatDurationWithoutSeconds(getDurationFromSeconds(promedioDeltaAerolineas))}
 				</span>.
 			</div>
 			<div class="rounded-lg border bg-neutral-50 p-4 text-xl dark:bg-neutral-800">
