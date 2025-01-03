@@ -258,7 +258,7 @@
 	<div class="w-full max-w-[1000px]">
 		<!-- Desktop Table View -->
 		<table
-			class="hidden w-full overflow-hidden rounded-lg border border-neutral-200 bg-white md:table dark:border-neutral-700 dark:bg-neutral-800"
+			class="hidden w-full overflow-hidden rounded-lg bg-white shadow-md md:table dark:bg-neutral-800"
 		>
 			<thead class="bg-neutral-200 dark:bg-neutral-700">
 				<tr>
