@@ -5,7 +5,7 @@
 	import airports from '$lib/aerolineas-airports.json';
 	import { Button } from '@/components/ui/button';
 	import type { Vuelo } from '$lib';
-	import { ArrowLeftIcon, ArrowRightIcon, ClockIcon } from 'lucide-svelte';
+	import { ArrowLeftIcon, ArrowRightIcon, ClockIcon, PlaneIcon } from 'lucide-svelte';
 	import NuloScienceSvg from '$lib/assets/Nulo_Science_Inc.svg';
 	import FlybondiSvg from '$lib/assets/flybondi.svg';
 
@@ -18,6 +18,8 @@
 	$: promedioDelta = vuelos.reduce((acc, v) => acc + v.delta, 0) / vuelos.length;
 	$: promedioDeltaAerolineas =
 		aerolineasVuelos.reduce((acc, v) => acc + v.delta, 0) / aerolineasVuelos.length;
+
+	$: vueloMasAtrasado = vuelos.reduce((acc, v) => (v.delta > acc.delta ? v : acc), vuelos[0]);
 
 	function getTotalSeats(vuelo: Vuelo) {
 		const asientos = vuelo.config_de_asientos?.match(/\w(\d+)/);
@@ -33,7 +35,7 @@
 		.map((vuelo) => vuelo.delta * getTotalSeats(vuelo) * 0.75)
 		.reduce((prev, acc) => prev + acc, 0);
 
-	function delayString(vuelo: Vuelo) {
+	function delayString(vuelo: Vuelo, showPrefix: boolean = true) {
 		const delayed = vuelo.delta > 0;
 		const shorter = (s: string) =>
 			s
@@ -43,7 +45,7 @@
 				.replace(' minuto', 'min');
 		if (delayed) {
 			return shorter(
-				'atrasado ' +
+				(showPrefix ? 'atrasado ' : '') +
 					formatDuration(
 						intervalToDuration({
 							start: new Date(vuelo.stda),
@@ -54,7 +56,7 @@
 			);
 		} else
 			return shorter(
-				'adelantado ' +
+				(showPrefix ? 'adelantado ' : '') +
 					formatDuration(
 						intervalToDuration({
 							start: new Date(vuelo.atda),
@@ -168,26 +170,40 @@
 	{#if vuelos.length > 0}
 		<div class="mb-4 grid grid-rows-3 gap-4 text-balance md:grid-cols-2">
 			<div
-				class="row-span-3 flex flex-col items-center justify-center rounded-lg border bg-neutral-50 p-4 text-xl dark:bg-neutral-800"
+				class="row-span-3 flex flex-col items-center justify-center gap-2 rounded-lg border bg-neutral-50 p-4 text-xl dark:bg-neutral-800"
 			>
-				<span class="text-[5rem] font-bold leading-none md:text-[10rem]">
-					{Math.round((vuelosAtrasados.length / vuelos.length) * 100)}%
-				</span>
-				<span>vuelos con más de 30 minutos de atraso.</span>
+				<div class="grid grid-cols-7 gap-2">
+					{#each vuelos as vuelo}
+						<PlaneIcon
+							strokeWidth={1.5}
+							class="h-10 w-10 {vuelo.delta > 30 * 60 ? 'text-brand' : 'text-green-500'}"
+						/>
+					{/each}
+				</div>
+				<p class="text-center">
+					<span class="font-bold"
+						>De {vuelos.length} vuelos, {vuelosAtrasados.length} se atrasaron</span
+					>
+					por mas de 30 minutos.
+				</p>
 			</div>
-			<div class=" rounded-lg border bg-neutral-50 p-4 text-xl dark:bg-neutral-800">
-				En promedio, los vuelos de Flybondi de hoy se atrasaron por
-				<span class={`font-bold ${getDelayColor(promedioDelta, 1)}`}>
-					{formatDurationWithoutSeconds(getDurationFromSeconds(promedioDelta))}
-				</span>.
+			<div
+				class="flex flex-col gap-2 rounded-lg border bg-neutral-50 p-4 text-xl dark:bg-neutral-800"
+			>
+				<p>
+					En promedio, los vuelos de Flybondi de hoy se atrasaron por
+					<span class={`font-bold ${getDelayColor(promedioDelta, 1)}`}>
+						{formatDurationWithoutSeconds(getDurationFromSeconds(promedioDelta))}
+					</span>.
+				</p>
+				<p>
+					En comparacion, los vuelos de Aerolineas Argentinas se atrasaron en promedio
+					<span class={`font-bold ${getDelayColor(promedioDeltaAerolineas, 1)}`}>
+						{formatDurationWithoutSeconds(getDurationFromSeconds(promedioDeltaAerolineas))}
+					</span>.
+				</p>
 			</div>
 
-			<div class="rounded-lg border bg-neutral-50 p-4 text-xl dark:bg-neutral-800">
-				En comparacion, los vuelos de Aerolineas Argentinas se atrasaron en promedio
-				<span class={`font-bold ${getDelayColor(promedioDeltaAerolineas, 1)}`}>
-					{formatDurationWithoutSeconds(getDurationFromSeconds(promedioDeltaAerolineas))}
-				</span>.
-			</div>
 			<div class="rounded-lg border bg-neutral-50 p-4 text-xl dark:bg-neutral-800">
 				En total, Flybondi desperdició aproximadamente
 				<span class="font-bold">
@@ -198,6 +214,21 @@
 					})}
 				</span>
 				de vida entre todos sus pasajeros.
+			</div>
+
+			<div class="rounded-lg border bg-neutral-50 p-4 text-xl dark:bg-neutral-800">
+				<p>
+					El vuelo más atrasado fue el
+					<a href={flightradar24(vueloMasAtrasado)} class="underline">
+						{vueloMasAtrasado.json.nro}
+					</a>
+					de {getAirport(vueloMasAtrasado.json.arpt)} a {getAirport(
+						vueloMasAtrasado.json.IATAdestorig
+					)}, que se atrasó por
+					<span class={`font-bold ${getDelayColor(vueloMasAtrasado.delta)}`}>
+						{delayString(vueloMasAtrasado, false)}
+					</span>. ¡Que bodrio!
+				</p>
 			</div>
 		</div>
 	{:else}
