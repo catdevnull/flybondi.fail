@@ -4,9 +4,20 @@
 	import dayjs from 'dayjs';
 	import airports from '$lib/aerolineas-airports.json';
 	import type { Vuelo } from './+page.server';
+	import { Button } from '@/components/ui/button';
 
 	export let data;
-	const { vuelos } = data;
+	const { vuelos, date, hasTomorrowData, hasYesterdayData } = data;
+
+	function getTotalSeats(vuelo: Vuelo) {
+		const asientos = vuelo.config_de_asientos.match(/\w(\d+)/g);
+		console.log(asientos?.slice(1));
+		return 189; // XXX
+	}
+
+	$: totalSegundosDesperdiciados = vuelos
+		.map((vuelo) => vuelo.delta * getTotalSeats(vuelo) * 0.75)
+		.reduce((prev, acc) => prev + acc, 0);
 
 	function delayString(vuelo: Vuelo) {
 		const delayed = vuelo.delta > 0;
@@ -47,7 +58,7 @@
 		timeZone: 'America/Argentina/Buenos_Aires'
 	});
 
-	const dateFormatter = Intl.DateTimeFormat('es-AR', {
+	const dateTimeFormatter = Intl.DateTimeFormat('es-AR', {
 		day: '2-digit',
 		month: '2-digit',
 		hour: '2-digit',
@@ -56,12 +67,18 @@
 		timeZone: 'America/Argentina/Buenos_Aires'
 	});
 
-	function formatDateTime(timestamp: string) {
+	const dateFormatter = Intl.DateTimeFormat('es-AR', {
+		// weekday: 'long',
+		day: '2-digit',
+		month: '2-digit',
+		timeZone: 'America/Argentina/Buenos_Aires'
+	});
+
+	function formatDateTime(timestamp: Date) {
 		const date = dayjs();
-		const dateObj = new Date(timestamp);
-		return date.isSame(dateObj, 'day')
-			? timeFormatter.format(dateObj)
-			: dateFormatter.format(dateObj);
+		return date.isSame(timestamp, 'day')
+			? timeFormatter.format(timestamp)
+			: dateTimeFormatter.format(timestamp);
 	}
 
 	const getAirport = (iata: string) => {
@@ -82,8 +99,52 @@
 	}
 </script>
 
-<h1>flybondi.fail</h1>
-<p>se vieneee</p>
+<div class="mb-4 flex flex-wrap gap-2">
+	{#if hasYesterdayData}
+		<Button
+			href="/?date={dayjs(date).subtract(1, 'day').format('YYYY-MM-DD')}"
+			data-sveltekit-reload
+		>
+			Ver vuelos del día anterior ({dateFormatter.format(dayjs(date).subtract(1, 'day').toDate())})
+		</Button>
+	{/if}
+	{#if hasTomorrowData}
+		<Button href="/?date={dayjs(date).add(1, 'day').format('YYYY-MM-DD')}" data-sveltekit-reload>
+			Ver vuelos del día siguiente ({dateFormatter.format(dayjs(date).add(1, 'day').toDate())})
+		</Button>
+	{/if}
+</div>
+
+{#if vuelos.length > 0}
+	<p class="mb-4 text-lg">
+		En promedio, los vuelos de Flybondi de hoy se atrasaron por
+		<span class="font-bold">
+			{formatDuration(
+				intervalToDuration({
+					start: 0,
+					end: Math.round(vuelos.reduce((acc, v) => acc + v.delta, 0) / vuelos.length) * 1000
+				}),
+				{ locale: es }
+			)}
+		</span>
+	</p>
+	<p class="mb-4 text-lg">
+		En total, Flybondi desperdició
+		<span class="font-bold">
+			{formatDuration(
+				intervalToDuration({
+					start: 0,
+					end: totalSegundosDesperdiciados * 1000
+				}),
+				{ locale: es }
+			)}
+		</span>
+		entre todos sus pasajeros
+	</p>
+{:else}
+	<p class="mb-4 text-lg">No hay datos de vuelos para mostrar</p>
+{/if}
+
 <div class="w-full max-w-[1000px]">
 	<!-- Desktop Table View -->
 	<table
@@ -147,7 +208,7 @@
 	<!-- Mobile Card View -->
 	<div class="grid grid-cols-1 gap-4 p-4 sm:grid-cols-2 md:hidden">
 		{#each vuelos as vuelo}
-			<div class="rounded-lg bg-neutral-50 px-4 py-3 shadow dark:bg-neutral-800">
+			<div class="rounded-lg border bg-neutral-50 px-4 py-3 dark:bg-neutral-800">
 				<div class="mb-2 flex items-center justify-between">
 					<a
 						href={flightradar24(vuelo)}

@@ -33,18 +33,23 @@ interface Flight {
 	config_de_asientos: string;
 }
 
-export type Vuelo = Flight & { delta: number; atda: string; stda: string };
+export type Vuelo = Flight & { delta: number; atda: Date; stda: Date };
+const sql = postgres(env.PG_URL);
 
 export const load: PageServerLoad = async ({ url, platform }) => {
-	const sql = postgres(env.PG_URL);
-
 	const tsz = 'America/Argentina/Buenos_Aires';
 	const dateQ = url.searchParams.get('date');
 	const date = dateQ ? dayjs(dateQ).tz(tsz, true) : dayjs().tz(tsz);
 
-	const start = dayjs(date).startOf('day');
-	const end = dayjs(date).endOf('day');
+	const start = date.startOf('day');
+	const end = date.endOf('day');
 
+	const yesterdayStart = start.subtract(1, 'day');
+	const yesterdayEnd = end.subtract(1, 'day');
+	const tomorrowStart = start.add(1, 'day');
+	const tomorrowEnd = end.add(1, 'day');
+
+	const condition = sql`json->>'idaerolinea' = 'FO' AND json->>'atda' != '' AND json->>'mov' = 'D'`;
 	const vuelos = await sql<Vuelo[]>`
     WITH flight_data AS (
       SELECT *,
@@ -55,15 +60,22 @@ export const load: PageServerLoad = async ({ url, platform }) => {
       FROM aerolineas_latest_flight_status
       left join airfleets_matriculas
       on matricula = json->>'matricula'
-      WHERE json->>'idaerolinea' = 'FO' AND json->>'atda' != '' AND json->>'mov' = 'D'
+      WHERE ${condition}
     )
     SELECT
       *, CAST(EXTRACT(EPOCH FROM (atda - stda)) AS real) as delta
     FROM flight_data
-    WHERE stda > ${start.toDate()} AND stda < ${end.toDate()};
-  `;
+    WHERE stda > ${yesterdayStart.toDate()} AND stda < ${tomorrowEnd.toDate()};
+    `;
 
 	return {
-		vuelos
+		vuelos: vuelos.filter((vuelo) => vuelo.stda >= start.toDate() && vuelo.stda <= end.toDate()),
+		date: date.toDate(),
+		hasYesterdayData: vuelos.some(
+			(vuelo) => vuelo.stda >= yesterdayStart.toDate() && vuelo.stda <= yesterdayEnd.toDate()
+		),
+		hasTomorrowData: vuelos.some(
+			(vuelo) => vuelo.stda >= tomorrowStart.toDate() && vuelo.stda <= tomorrowEnd.toDate()
+		)
 	};
 };
