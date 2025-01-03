@@ -8,10 +8,13 @@
 	import { ArrowLeftIcon, ArrowRightIcon, ClockIcon, PlaneIcon } from 'lucide-svelte';
 	import NuloScienceSvg from '$lib/assets/Nulo_Science_Inc.svg';
 	import FlybondiSvg from '$lib/assets/flybondi.svg';
+	import Icon from '@iconify/svelte';
 
 	export let data;
 	$: ({ vuelos: todosLosVuelos, date, hasTomorrowData, hasYesterdayData } = data);
-	$: vuelos = todosLosVuelos.filter((vuelo) => vuelo.json.idaerolinea === 'FO');
+	$: vuelos = todosLosVuelos
+		.filter((vuelo) => vuelo.json.idaerolinea === 'FO')
+		.sort((a, b) => b.delta - a.delta);
 	$: aerolineasVuelos = todosLosVuelos.filter((vuelo) => vuelo.json.idaerolinea === 'AR');
 	$: vuelosAtrasados = vuelos.filter((vuelo) => vuelo.delta > 60 * 30);
 
@@ -45,16 +48,19 @@
 				.replace(' minuto', 'min');
 		if (delayed) {
 			return shorter(
-				(showPrefix ? 'atrasado ' : '') +
+				(showPrefix ? 'salió ' : '') +
 					formatDuration(
 						intervalToDuration({
 							start: new Date(vuelo.stda),
 							end: new Date(vuelo.atda)
 						}),
 						{ locale: es }
-					)
+					) +
+					' tarde'
 			);
-		} else
+		} else if (vuelo.delta < 60 && vuelo.delta > -60) {
+			return 'a tiempo';
+		} else {
 			return shorter(
 				(showPrefix ? 'adelantado ' : '') +
 					formatDuration(
@@ -65,6 +71,7 @@
 						{ locale: es }
 					)
 			);
+		}
 	}
 
 	const timeFormatter = Intl.DateTimeFormat('es-AR', {
@@ -117,11 +124,11 @@
 		return formatDuration({ ...duration, seconds: 0 }, { locale: es });
 	}
 
-	function getDelayColor(delay: number, multiplier: number = 1) {
-		if (delay <= 0) return 'text-green-600 dark:text-green-400';
-		if (delay < 18 * 60 * multiplier) return 'text-green-500 dark:text-green-400';
-		if (delay < 60 * 60 * multiplier) return 'text-yellow-600 dark:text-yellow-400';
-		if (delay < 120 * 60 * multiplier) return 'text-orange-600 dark:text-orange-400';
+	function getDelayColor(delay: number) {
+		if (delay <= 15 * 60) return 'text-green-500 dark:text-green-600';
+		// if (delay < 30 * 60) return 'text-green-500 dark:text-green-700';
+		if (delay < 30 * 60) return 'text-yellow-500 dark:text-yellow-400';
+		if (delay < 45 * 60) return 'text-orange-400 dark:text-orange-400';
 		return 'text-red-600 dark:text-red-400';
 	}
 
@@ -170,53 +177,66 @@
 	{#if vuelos.length > 0}
 		<div class="mb-4 grid grid-rows-3 gap-4 text-balance md:grid-cols-2">
 			<div
-				class="row-span-3 flex flex-col items-center justify-center gap-2 rounded-lg border bg-neutral-50 p-4 text-xl dark:bg-neutral-800"
+				class="row-span-3 flex flex-col items-center justify-center gap-4 rounded-lg border bg-neutral-50 p-4 text-xl dark:border-neutral-700 dark:bg-neutral-800"
 			>
-				<div class="grid grid-cols-7 gap-2">
+				<div class="grid grid-cols-9 gap-2">
 					{#each vuelos as vuelo}
-						<PlaneIcon
-							strokeWidth={1.5}
-							class="h-10 w-10 {vuelo.delta > 30 * 60 ? 'text-brand' : 'text-green-500'}"
-						/>
+						<button
+							on:click={() => {
+								const els = Array.from<HTMLElement>(
+									document.querySelectorAll(`[data-id="${vuelo.aerolineas_flight_id}"]`)
+								);
+								const el = els.find((el) => window.getComputedStyle(el).display !== 'none');
+								el?.scrollIntoView({ behavior: 'smooth' });
+								el?.focus();
+							}}
+						>
+							<Icon class="h-8 w-8 {getDelayColor(vuelo.delta)}" icon="fa-solid:plane" />
+						</button>
 					{/each}
 				</div>
 				<p class="text-center">
 					<span class="font-bold"
-						>De {vuelos.length} vuelos, {vuelosAtrasados.length} se atrasaron</span
+						>De {vuelos.length} vuelos, {vuelosAtrasados.length} tardaron mas de 30 minutos en despegar.</span
 					>
-					por mas de 30 minutos.
 				</p>
 			</div>
 			<div
-				class="flex flex-col gap-2 rounded-lg border bg-neutral-50 p-4 text-xl dark:bg-neutral-800"
+				class="flex flex-col gap-2 rounded-lg border bg-neutral-50 p-4 text-xl dark:border-neutral-700 dark:bg-neutral-800"
 			>
 				<p>
 					En promedio, los vuelos de Flybondi de hoy se atrasaron por
-					<span class={`font-bold ${getDelayColor(promedioDelta, 1)}`}>
+					<span class={`font-bold ${getDelayColor(promedioDelta)}`}>
 						{formatDurationWithoutSeconds(getDurationFromSeconds(promedioDelta))}
 					</span>.
 				</p>
 				<p>
-					En comparacion, los vuelos de Aerolineas Argentinas se atrasaron en promedio
-					<span class={`font-bold ${getDelayColor(promedioDeltaAerolineas, 1)}`}>
+					Para comparar, los vuelos de Aerolineas Argentinas se atrasaron en promedio
+					<span class={`font-bold ${getDelayColor(promedioDeltaAerolineas)}`}>
 						{formatDurationWithoutSeconds(getDurationFromSeconds(promedioDeltaAerolineas))}
 					</span>.
 				</p>
 			</div>
 
-			<div class="rounded-lg border bg-neutral-50 p-4 text-xl dark:bg-neutral-800">
-				En total, Flybondi desperdició aproximadamente
-				<span class="font-bold">
-					{formatDurationWithoutSeconds({
-						...getDurationFromSeconds(totalSegundosDesperdiciados),
-						minutes: 0,
-						hours: 0
-					})}
-				</span>
-				de vida entre todos sus pasajeros.
+			<div
+				class="flex flex-col justify-center rounded-lg border bg-neutral-50 p-4 text-xl dark:border-neutral-700 dark:bg-neutral-800"
+			>
+				<p>
+					En total, Flybondi desperdició aproximadamente
+					<span class="font-bold">
+						{formatDurationWithoutSeconds({
+							...getDurationFromSeconds(totalSegundosDesperdiciados),
+							minutes: 0,
+							hours: 0
+						})}
+					</span>
+					de vida entre todos sus pasajeros.
+				</p>
 			</div>
 
-			<div class="rounded-lg border bg-neutral-50 p-4 text-xl dark:bg-neutral-800">
+			<div
+				class="flex flex-col justify-center rounded-lg border bg-neutral-50 p-4 text-xl dark:border-neutral-700 dark:bg-neutral-800"
+			>
 				<p>
 					El vuelo más atrasado fue el
 					<a href={flightradar24(vueloMasAtrasado)} class="underline">
@@ -224,7 +244,7 @@
 					</a>
 					de {getAirport(vueloMasAtrasado.json.arpt)} a {getAirport(
 						vueloMasAtrasado.json.IATAdestorig
-					)}, que se atrasó por
+					)}, que salió
 					<span class={`font-bold ${getDelayColor(vueloMasAtrasado.delta)}`}>
 						{delayString(vueloMasAtrasado, false)}
 					</span>. ¡Que bodrio!
@@ -238,7 +258,7 @@
 	<div class="w-full max-w-[1000px]">
 		<!-- Desktop Table View -->
 		<table
-			class="hidden w-full overflow-hidden rounded-lg bg-white shadow-md md:table dark:bg-neutral-800"
+			class="hidden w-full overflow-hidden rounded-lg border border-neutral-200 bg-white md:table dark:border-neutral-700 dark:bg-neutral-800"
 		>
 			<thead class="bg-neutral-200 dark:bg-neutral-700">
 				<tr>
@@ -252,7 +272,10 @@
 			</thead>
 			<tbody>
 				{#each vuelos as vuelo}
-					<tr class="border-b border-neutral-200 dark:border-neutral-700">
+					<tr
+						class="hidden border-b border-neutral-200 md:table-row dark:border-neutral-700"
+						data-id={vuelo.aerolineas_flight_id}
+					>
 						<td class="px-4 py-2 text-neutral-900 dark:text-neutral-100">
 							<a
 								href={flightradar24(vuelo)}
@@ -286,7 +309,10 @@
 		<!-- Mobile Card View -->
 		<div class="grid grid-cols-1 gap-4 p-4 sm:grid-cols-2 md:hidden">
 			{#each vuelos as vuelo}
-				<div class="rounded-lg border bg-neutral-50 px-4 py-3 dark:bg-neutral-800">
+				<div
+					class="rounded-lg border bg-neutral-50 px-4 py-3 focus:bg-neutral-100 dark:border-neutral-700 dark:bg-neutral-800"
+					data-id={vuelo.aerolineas_flight_id}
+				>
 					<div class="mb-2 flex items-center justify-between">
 						<a
 							href={flightradar24(vuelo)}
@@ -326,14 +352,18 @@
 		No nos hacemos responsables de los errores que puedan haber en la información presentada.
 	</p>
 
-	<div class="flex flex-col flex-wrap items-center justify-center gap-4 text-xl sm:flex-row">
-		<span>Un experimento de</span>
+	<div class="mb-4 flex flex-col flex-wrap items-center justify-center gap-4 text-xl sm:flex-row">
+		<span>Flybondi.fail es un experimento de</span>
 		<a href="https://nulo.lol">
-			<img src={NuloScienceSvg} alt="Nulo Science Inc" class="w-30 h-16" />
+			<img src={NuloScienceSvg} alt="Nulo Science Inc" class="w-30 h-16 dark:invert" />
 		</a>
 		<span>&</span>
 		<a href="https://visualizando.ar" class="bg-[#FF666C] px-4 py-2 font-bold text-[#28FFD7]"
 			>visualizando.ar</a
 		>
 	</div>
+
+	<p class="text-brand text-lg underline">
+		<a href="mailto:hola@nulo.lol">hola@nulo.lol</a>
+	</p>
 </footer>
