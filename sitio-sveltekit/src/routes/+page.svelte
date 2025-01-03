@@ -134,7 +134,7 @@
 </h1>
 
 <main class="mx-auto max-w-[1000px]">
-	<nav class="mb-4 flex items-center justify-between gap-4 text-center text-4xl font-bold">
+	<nav class="mb-4 flex items-center justify-between gap-4 text-center">
 		{#if hasYesterdayData}
 			<Button
 				variant="outline"
@@ -146,8 +146,11 @@
 		{:else}
 			<div></div>
 		{/if}
-		<h3 class="text-brand">
-			{longDateFormatter.format(dayjs(date).toDate())}
+		<h3 class="text-brand flex flex-col items-center justify-center">
+			<span class="leading-tight">viendo datos de</span>
+			<span class="text-2xl font-bold leading-tight"
+				>{longDateFormatter.format(dayjs(date).toDate())}</span
+			>
 		</h3>
 		{#if hasTomorrowData}
 			<Button
@@ -167,7 +170,7 @@
 			<div
 				class="row-span-3 flex flex-col items-center justify-center rounded-lg border bg-neutral-50 p-4 text-xl dark:bg-neutral-800"
 			>
-				<span class="text-brand text-[5rem] font-bold leading-none md:text-[10rem]">
+				<span class="text-[5rem] font-bold leading-none md:text-[10rem]">
 					{Math.round((vuelosAtrasados.length / vuelos.length) * 100)}%
 				</span>
 				<span>vuelos con más de 30 minutos de atraso.</span>
@@ -188,7 +191,11 @@
 			<div class="rounded-lg border bg-neutral-50 p-4 text-xl dark:bg-neutral-800">
 				En total, Flybondi desperdició aproximadamente
 				<span class="font-bold">
-					{formatDurationWithoutSeconds(getDurationFromSeconds(totalSegundosDesperdiciados))}
+					{formatDurationWithoutSeconds({
+						...getDurationFromSeconds(totalSegundosDesperdiciados),
+						minutes: 0,
+						hours: 0
+					})}
 				</span>
 				de vida entre todos sus pasajeros.
 			</div>
