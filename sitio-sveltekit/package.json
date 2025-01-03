@@ -35,6 +35,7 @@
 		"vite": "^6.0.0"
 	},
 	"dependencies": {
+		"@sentry/sveltekit": "^8",
 		"@tailwindcss/typography": "^0.5.15",
 		"date-fns": "^4.1.0",
 		"dayjs": "^1.11.13",

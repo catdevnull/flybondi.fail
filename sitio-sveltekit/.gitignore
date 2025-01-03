@@ -23,3 +23,6 @@ vite.config.js.timestamp-*
 vite.config.ts.timestamp-*
 
 .dev.vars
+
+# Sentry Config File
+.env.sentry-build-plugin
