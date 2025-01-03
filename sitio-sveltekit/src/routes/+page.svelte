@@ -5,9 +5,12 @@
 	import airports from '$lib/aerolineas-airports.json';
 	import { Button } from '@/components/ui/button';
 	import type { Vuelo } from '$lib';
+	import { ClockIcon } from 'lucide-svelte';
 
 	export let data;
-	$: ({ vuelos, date, hasTomorrowData, hasYesterdayData } = data);
+	$: ({ vuelos: todosLosVuelos, date, hasTomorrowData, hasYesterdayData } = data);
+	$: vuelos = todosLosVuelos.filter((vuelo) => vuelo.json.idaerolinea === 'FO');
+	$: aerolineasVuelos = todosLosVuelos.filter((vuelo) => vuelo.json.idaerolinea === 'AR');
 
 	function getTotalSeats(vuelo: Vuelo) {
 		const asientos = vuelo.config_de_asientos?.match(/\w(\d+)/);
@@ -78,6 +81,14 @@
 		timeZone: 'America/Argentina/Buenos_Aires'
 	});
 
+	const longDateFormatter = Intl.DateTimeFormat('es-AR', {
+		weekday: 'long',
+		day: '2-digit',
+		month: 'long',
+		year: 'numeric',
+		timeZone: 'America/Argentina/Buenos_Aires'
+	});
+
 	function formatDateTime(timestamp: Date) {
 		const date = dayjs();
 		return date.isSame(timestamp, 'day')
@@ -105,43 +116,65 @@
 
 <div class="mb-4 flex flex-wrap gap-2">
 	{#if hasYesterdayData}
-		<Button href="/?date={dayjs(date).subtract(1, 'day').format('YYYY-MM-DD')}">
+		<Button variant="brand" href="/?date={dayjs(date).subtract(1, 'day').format('YYYY-MM-DD')}">
 			Ver vuelos del día anterior ({dateFormatter.format(dayjs(date).subtract(1, 'day').toDate())})
 		</Button>
 	{/if}
 	{#if hasTomorrowData}
-		<Button href="/?date={dayjs(date).add(1, 'day').format('YYYY-MM-DD')}">
+		<Button variant="brand" href="/?date={dayjs(date).add(1, 'day').format('YYYY-MM-DD')}">
 			Ver vuelos del día siguiente ({dateFormatter.format(dayjs(date).add(1, 'day').toDate())})
 		</Button>
 	{/if}
 </div>
 
+<h2 class="text-brand mb-4 text-3xl font-bold">
+	{longDateFormatter.format(dayjs(date).toDate())}
+</h2>
+
 {#if vuelos.length > 0}
-	<p class="mb-4 text-lg">
-		En promedio, los vuelos de Flybondi de hoy se atrasaron por
-		<span class="font-bold">
-			{formatDuration(
-				intervalToDuration({
-					start: 0,
-					end: Math.round(vuelos.reduce((acc, v) => acc + v.delta, 0) / vuelos.length) * 1000
-				}),
-				{ locale: es }
-			)}
-		</span>
-	</p>
-	<p class="mb-4 text-lg">
-		En total, Flybondi desperdició
-		<span class="font-bold">
-			{formatDuration(
-				intervalToDuration({
-					start: 0,
-					end: totalSegundosDesperdiciados * 1000
-				}),
-				{ locale: es }
-			)}
-		</span>
-		entre todos sus pasajeros
-	</p>
+	<div class="mb-4 grid grid-rows-3 gap-4 md:grid-cols-2">
+		<div class="row-span-3 rounded-lg border bg-neutral-50 p-4 text-xl dark:bg-neutral-800">
+			En promedio, los vuelos de Flybondi de hoy se atrasaron por
+			<span class="font-bold">
+				{formatDuration(
+					intervalToDuration({
+						start: 0,
+						end: Math.round(vuelos.reduce((acc, v) => acc + v.delta, 0) / vuelos.length) * 1000
+					}),
+					{ locale: es }
+				)}
+			</span>.
+		</div>
+
+		<div class="rounded-lg border bg-neutral-50 p-4 dark:bg-neutral-800">
+			En comparacion, los vuelos de Aerolineas se atrasaron en promedio
+			<span class="font-bold">
+				{formatDuration(
+					intervalToDuration({
+						start: 0,
+						end:
+							Math.round(
+								aerolineasVuelos.reduce((acc, v) => acc + v.delta, 0) / aerolineasVuelos.length
+							) * 1000
+					}),
+					{ locale: es }
+				)}
+			</span>.
+		</div>
+		<div class="rounded-lg border bg-neutral-50 p-4 dark:bg-neutral-800">
+			En total, Flybondi desperdició
+			<span class="font-bold">
+				{formatDuration(
+					intervalToDuration({
+						start: 0,
+						end: totalSegundosDesperdiciados * 1000
+					}),
+					{ locale: es }
+				)}
+			</span>
+			entre todos sus pasajeros
+		</div>
+	</div>
 {:else}
 	<p class="mb-4 text-lg">No hay datos de vuelos para mostrar</p>
 {/if}
@@ -184,20 +217,7 @@
 					</td>
 					<td class={`px-4 py-2 font-bold ${getDelayColor(vuelo.delta)}`}>
 						<span class="flex items-center">
-							<svg
-								xmlns="http://www.w3.org/2000/svg"
-								class="mr-1 h-4 w-4"
-								fill="none"
-								viewBox="0 0 24 24"
-								stroke="currentColor"
-							>
-								<path
-									stroke-linecap="round"
-									stroke-linejoin="round"
-									stroke-width="2"
-									d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"
-								/>
-							</svg>
+							<ClockIcon class="mr-1 h-4 w-4" />
 							{delayString(vuelo)}
 						</span>
 					</td>
@@ -220,20 +240,7 @@
 						{vuelo.json.nro}
 					</a>
 					<span class={`font-bold ${getDelayColor(vuelo.delta)} flex items-center`}>
-						<svg
-							xmlns="http://www.w3.org/2000/svg"
-							class="mr-1 h-4 w-4"
-							fill="none"
-							viewBox="0 0 24 24"
-							stroke="currentColor"
-						>
-							<path
-								stroke-linecap="round"
-								stroke-linejoin="round"
-								stroke-width="2"
-								d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"
-							/>
-						</svg>
+						<ClockIcon class="mr-1 h-4 w-4" />
 						{delayString(vuelo)}
 					</span>
 				</div>
