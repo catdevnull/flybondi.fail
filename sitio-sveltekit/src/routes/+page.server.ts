@@ -1,40 +1,11 @@
 import type { PageServerLoad } from './$types';
-import postgres from 'postgres';
 import dayjs from 'dayjs';
 import utc from 'dayjs/plugin/utc';
 import timezone from 'dayjs/plugin/timezone';
-import { env } from '$env/dynamic/private';
+import { sql, type Vuelo } from '$lib';
 
 dayjs.extend(utc);
 dayjs.extend(timezone);
-
-interface Flight {
-	aerolineas_flight_id: string;
-	last_updated: string;
-	json: {
-		id: string;
-		mov: string;
-		nro: string;
-		arpt: string;
-		stda: string;
-		atda: string;
-		matricula: string;
-		aerolinea: string;
-		idaerolinea: string;
-		IATAdestorig: string;
-	};
-	matricula: string;
-	aeronave: string;
-	msn: string;
-	compania_aerea: string;
-	situacion: string;
-	detail_url: string;
-	edad_del_avion: number;
-	config_de_asientos: string;
-}
-
-export type Vuelo = Flight & { delta: number; atda: Date; stda: Date };
-const sql = postgres(env.PG_URL);
 
 export const load: PageServerLoad = async ({ url, platform }) => {
 	const tsz = 'America/Argentina/Buenos_Aires';

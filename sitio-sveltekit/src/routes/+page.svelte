@@ -3,16 +3,20 @@
 	import { es } from 'date-fns/locale/es';
 	import dayjs from 'dayjs';
 	import airports from '$lib/aerolineas-airports.json';
-	import type { Vuelo } from './+page.server';
 	import { Button } from '@/components/ui/button';
+	import type { Vuelo } from '$lib';
 
 	export let data;
 	const { vuelos, date, hasTomorrowData, hasYesterdayData } = data;
 
 	function getTotalSeats(vuelo: Vuelo) {
-		const asientos = vuelo.config_de_asientos.match(/\w(\d+)/g);
-		console.log(asientos?.slice(1));
-		return 189; // XXX
+		const asientos = vuelo.config_de_asientos?.match(/\w(\d+)/);
+		return (
+			asientos
+				?.slice(1)
+				.map((a) => parseInt(a))
+				.reduce((a, b) => a + b, 0) ?? 180
+		);
 	}
 
 	$: totalSegundosDesperdiciados = vuelos
