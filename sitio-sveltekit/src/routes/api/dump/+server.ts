@@ -18,5 +18,10 @@ export const GET: RequestHandler = async ({ url }) => {
     FROM flight_data;
     `;
 
-	return new Response(JSON.stringify(vuelos));
+	return new Response(JSON.stringify(vuelos), {
+		headers: {
+			'Access-Control-Allow-Origin': '*',
+			'Content-Type': 'application/json'
+		}
+	});
 };

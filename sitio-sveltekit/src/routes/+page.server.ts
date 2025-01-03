@@ -15,10 +15,8 @@ export const load: PageServerLoad = async ({ url, platform }) => {
 	const start = date.startOf('day');
 	const end = date.endOf('day');
 
-	const yesterdayStart = start.subtract(1, 'day');
-	const yesterdayEnd = end.subtract(1, 'day');
 	const tomorrowStart = start.add(1, 'day');
-	const tomorrowEnd = end.add(1, 'day');
+	const tomorrowEnd = end.add(3, 'day');
 
 	const condition = sql`json->>'idaerolinea' = 'FO' AND json->>'atda' != '' AND json->>'mov' = 'D'`;
 	const vuelos = await sql<Vuelo[]>`
@@ -36,15 +34,13 @@ export const load: PageServerLoad = async ({ url, platform }) => {
     SELECT
       *, CAST(EXTRACT(EPOCH FROM (atda - stda)) AS real) as delta
     FROM flight_data
-    WHERE stda > ${yesterdayStart.toDate()} AND stda < ${tomorrowEnd.toDate()};
+    WHERE stda >= ${start.toDate()} AND stda < ${tomorrowEnd.toDate()};
     `;
 
 	return {
 		vuelos: vuelos.filter((vuelo) => vuelo.stda >= start.toDate() && vuelo.stda <= end.toDate()),
 		date: date.toDate(),
-		hasYesterdayData: vuelos.some(
-			(vuelo) => vuelo.stda >= yesterdayStart.toDate() && vuelo.stda <= yesterdayEnd.toDate()
-		),
+		hasYesterdayData: start.subtract(1, 'day').isAfter('2024-12-21', 'day'),
 		hasTomorrowData: vuelos.some(
 			(vuelo) => vuelo.stda >= tomorrowStart.toDate() && vuelo.stda <= tomorrowEnd.toDate()
 		)
