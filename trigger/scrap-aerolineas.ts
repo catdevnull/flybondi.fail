@@ -12,7 +12,7 @@ import {
 import { PutObjectCommand } from "@aws-sdk/client-s3";
 import * as cheerio from "cheerio";
 import dayjs from "dayjs";
-import { format, parse } from "date-fns";
+import { format, parse, sub } from "date-fns";
 import { tz, TZDate } from "@date-fns/tz";
 import AEROLINEAS_AIRPORTS_JSON from "../misc/aerolineas-airports.json";
 import { z } from "zod";
@@ -123,6 +123,9 @@ export const scrapAerolineasCronTask = schedules.task({
   run: async (payload, { ctx }) => {
     await scrapAerolineasTask.trigger({
       date: new Date(),
+    });
+    await scrapAerolineasTask.trigger({
+      date: sub(new Date(), { days: 1 }),
     });
   },
 });
