@@ -253,27 +253,27 @@
 				</p>
 				<div class="flex flex-wrap items-center justify-center gap-x-4 gap-y-2 text-xs">
 					<div class="flex items-center gap-1">
-						<Icon class="size-4 {colors[15 * 60]}" icon="fa-solid:plane" />
-						<span>0-15min</span>
-					</div>
-					<div class="flex items-center gap-1">
-						<Icon class="size-4 {colors[30 * 60]}" icon="fa-solid:plane" />
-						<span>15-30min</span>
-					</div>
-					<div class="flex items-center gap-1">
-						<Icon class="size-4 {colors[45 * 60]}" icon="fa-solid:plane" />
-						<span>30-45min</span>
-					</div>
-					<div class="flex items-center gap-1">
-						<Icon class="size-4 text-[#b10000]" icon="fa-solid:plane" />
-						<span>>45min</span>
-					</div>
-					<div class="flex items-center gap-1">
 						<Icon
 							class="size-4 text-neutral-700 dark:text-neutral-300"
 							icon="fa-solid:plane-slash"
 						/>
 						<span>Cancelado</span>
+					</div>
+					<div class="flex items-center gap-1">
+						<Icon class="size-4 text-[#b10000]" icon="fa-solid:plane" />
+						<span>mas de 45min</span>
+					</div>
+					<div class="flex items-center gap-1">
+						<Icon class="size-4 {colors[45 * 60]}" icon="fa-solid:plane" />
+						<span>45-30min</span>
+					</div>
+					<div class="flex items-center gap-1">
+						<Icon class="size-4 {colors[30 * 60]}" icon="fa-solid:plane" />
+						<span>30-15min</span>
+					</div>
+					<div class="flex items-center gap-1">
+						<Icon class="size-4 {colors[15 * 60]}" icon="fa-solid:plane" />
+						<span>15-0min</span>
 					</div>
 				</div>
 			</div>
