@@ -43,6 +43,7 @@ export const load: PageServerLoad = async ({ url, platform }) => {
 		hasYesterdayData: start.subtract(1, 'day').isAfter('2024-12-21', 'day'),
 		hasTomorrowData: vuelos.some(
 			(vuelo) => vuelo.stda >= tomorrowStart.toDate() && vuelo.stda <= tomorrowEnd.toDate()
-		)
+		),
+		hasCustomDate: url.searchParams.has('date')
 	};
 };

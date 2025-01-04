@@ -137,6 +137,12 @@
 	}
 </script>
 
+<svelte:head>
+	{#if data.hasCustomDate}
+		<meta name="robots" content="noindex" />
+	{/if}
+</svelte:head>
+
 <h1 class="mb-4 flex items-end justify-center">
 	<img src={FlybondiSvg} alt="Flybondi" class="h-8" />
 	<span class="text-4xl font-medium leading-none text-red-600">.fail</span>
