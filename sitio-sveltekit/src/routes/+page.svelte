@@ -2,7 +2,7 @@
 	import { formatDuration, intervalToDuration, type Duration } from 'date-fns';
 	import { es } from 'date-fns/locale/es';
 	import dayjs from 'dayjs';
-	import airports from '$lib/aerolineas-airports.json';
+	import AIRPORTS from '$lib/aerolineas-airports.json';
 	import { Button } from '@/components/ui/button';
 	import type { Vuelo } from '$lib';
 	import { ArrowLeftIcon, ArrowRightIcon, ClockIcon, PlaneIcon } from 'lucide-svelte';
@@ -136,9 +136,23 @@
 			: dateTimeFormatter.format(timestamp);
 	}
 
+	const OTHER_AIRPORTS = {
+		CNQ: 'Corrientes',
+		GIG: 'Rio de Janeiro',
+		GRU: 'Sao Paulo',
+		USH: 'Ushuaia',
+		FLN: 'Florianopolis',
+		FTE: 'El Calafate',
+		NQN: 'Neuquen',
+		ASU: 'Asunción'
+	};
 	const getAirport = (iata: string) => {
-		const airport = airports.data.find((a) => a.iata === iata);
-		return airport ? airport.alias : iata;
+		const airport = AIRPORTS.data.find((a) => a.iata === iata);
+		if (airport) return airport.alias;
+		if (OTHER_AIRPORTS[iata as keyof typeof OTHER_AIRPORTS])
+			return OTHER_AIRPORTS[iata as keyof typeof OTHER_AIRPORTS];
+		console.warn(`Airport ${iata} not found`);
+		return iata;
 	};
 
 	function getDurationFromSeconds(seconds: number) {
