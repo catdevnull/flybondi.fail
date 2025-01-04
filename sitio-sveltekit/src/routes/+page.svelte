@@ -264,7 +264,7 @@
 	<div class="w-full max-w-[1000px]">
 		<!-- Desktop Table View -->
 		<table
-			class="hidden w-full overflow-hidden rounded-lg bg-white shadow-md md:table dark:bg-neutral-800"
+			class="hidden w-full overflow-hidden rounded-lg bg-white shadow-md sm:table dark:bg-neutral-800"
 		>
 			<thead class="bg-neutral-200 dark:bg-neutral-700">
 				<tr>
@@ -279,10 +279,10 @@
 			<tbody>
 				{#each vuelos as vuelo}
 					<tr
-						class="hidden border-b border-neutral-200 md:table-row dark:border-neutral-700"
+						class="hidden border-b border-neutral-200 sm:table-row dark:border-neutral-700"
 						data-id={vuelo.aerolineas_flight_id}
 					>
-						<td class="px-4 py-2 text-neutral-900 dark:text-neutral-100">
+						<td class="whitespace-nowrap px-4 py-2 text-neutral-900 dark:text-neutral-100">
 							<a
 								href={flightradar24(vuelo)}
 								rel="noreferrer noopener"
@@ -313,13 +313,13 @@
 		</table>
 
 		<!-- Mobile Card View -->
-		<div class="grid grid-cols-1 gap-4 p-4 sm:grid-cols-2 md:hidden">
+		<div class="grid grid-cols-2 gap-4 sm:hidden">
 			{#each vuelos as vuelo}
 				<div
-					class="rounded-lg border bg-neutral-50 px-4 py-3 focus:bg-neutral-100 dark:border-neutral-700 dark:bg-neutral-800"
+					class="rounded-lg border bg-neutral-50 px-2 py-1 focus:bg-neutral-100 dark:border-neutral-700 dark:bg-neutral-800"
 					data-id={vuelo.aerolineas_flight_id}
 				>
-					<div class="mb-2 flex items-center justify-between">
+					<div class="mb-2 flex flex-col items-center justify-between">
 						<a
 							href={flightradar24(vuelo)}
 							target="_blank"
@@ -328,17 +328,17 @@
 						>
 							{vuelo.json.nro}
 						</a>
-						<span class={`font-bold ${getDelayColor(vuelo.delta)} flex items-center`}>
+						<span
+							class={`font-bold ${getDelayColor(vuelo.delta)} flex items-center text-sm leading-none`}
+						>
 							<ClockIcon class="mr-1 h-4 w-4" />
 							{delayString(vuelo)}
 						</span>
 					</div>
-					<div class="grid grid-cols-[auto_1fr] gap-2 text-sm">
-						<div class="text-neutral-600 dark:text-neutral-400">Ruta:</div>
+					<div class="text-sm">
 						<div class="text-neutral-900 dark:text-neutral-100">
 							{getAirport(vuelo.json.arpt)} → {getAirport(vuelo.json.IATAdestorig)}
 						</div>
-						<div class="text-neutral-600 dark:text-neutral-400">Hora:</div>
 						<div class="text-neutral-900 dark:text-neutral-100">
 							<del>{formatDateTime(vuelo.stda)}</del>
 							{formatDateTime(vuelo.atda)}
