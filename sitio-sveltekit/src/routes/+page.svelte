@@ -147,10 +147,12 @@
 		return formatDuration({ ...duration, seconds: 0 }, { locale: es });
 	}
 
-	function getDelayColor(delay: number) {
-		if (delay <= 15 * 60) return 'text-[#8dd895] dark:text-green-600';
+	function getDelayColor(delay: number, text: boolean = false) {
+		if (delay <= 15 * 60)
+			return text ? 'text-green-600 dark:text-green-600' : 'text-[#8dd895] dark:text-green-600';
 		// if (delay < 30 * 60) return 'text-green-500 dark:text-green-700';
-		if (delay < 30 * 60) return 'text-[#f1e12d] dark:text-yellow-400';
+		if (delay < 30 * 60)
+			return text ? 'text-yellow-500 dark:text-yellow-400' : 'text-[#f1e12d] dark:text-yellow-400';
 		if (delay < 45 * 60) return 'text-[#eb6b00] dark:text-orange-400';
 		return 'text-[#b10000] dark:text-red-400';
 	}
@@ -224,7 +226,10 @@
 							{#if vuelo.atda}
 								<Icon class="h-8 w-8 {getDelayColor(vuelo.delta)}" icon="fa-solid:plane" />
 							{:else if vuelo.json.estes === 'Cancelado'}
-								<Icon class="h-8 w-8 text-black dark:text-white" icon="fa-solid:plane-slash" />
+								<Icon
+									class="h-8 w-8 text-neutral-700 dark:text-neutral-300"
+									icon="fa-solid:plane-slash"
+								/>
 							{/if}
 						</button>
 					{/each}
@@ -240,13 +245,13 @@
 			>
 				<p>
 					En promedio, los vuelos de Flybondi de hoy se atrasaron por
-					<span class={`font-bold ${getDelayColor(promedioDelta)}`}>
+					<span class={`font-bold ${getDelayColor(promedioDelta, true)}`}>
 						{formatDurationWithoutSeconds(getDurationFromSeconds(promedioDelta))}
 					</span>.
 				</p>
 				<p>
 					Para comparar, los vuelos de Aerolineas Argentinas se atrasaron en promedio
-					<span class={`font-bold ${getDelayColor(promedioDeltaAerolineas)}`}>
+					<span class={`font-bold ${getDelayColor(promedioDeltaAerolineas, true)}`}>
 						{formatDurationWithoutSeconds(getDurationFromSeconds(promedioDeltaAerolineas))}
 					</span>.
 				</p>
@@ -279,7 +284,7 @@
 					de {getAirport(vueloMasAtrasado.json.arpt)} a {getAirport(
 						vueloMasAtrasado.json.IATAdestorig
 					)}, que salió
-					<span class={`font-bold ${getDelayColor(vueloMasAtrasado.delta)}`}>
+					<span class={`font-bold ${getDelayColor(vueloMasAtrasado.delta, true)}`}>
 						{delayString(vueloMasAtrasado, false)}
 					</span>. ¡Que bodrio!
 				</p>
@@ -331,7 +336,7 @@
 								{formatDateTime(vuelo.atda)}
 							{/if}
 						</td>
-						<td class={`px-4 py-2 font-bold ${getDelayColor(vuelo.delta)}`}>
+						<td class={`px-4 py-2 font-bold ${getDelayColor(vuelo.delta, true)}`}>
 							{#if vuelo.atda}
 								{delayString(vuelo)}
 							{:else if vuelo.json.estes === 'Cancelado'}
@@ -360,7 +365,7 @@
 							{vuelo.json.nro}
 						</a>
 						<span
-							class={`font-bold ${vuelo.json.estes === 'Cancelado' ? 'text-red-500' : getDelayColor(vuelo.delta)} flex items-center text-sm leading-none`}
+							class={`font-bold ${vuelo.json.estes === 'Cancelado' ? 'text-red-500' : getDelayColor(vuelo.delta, true)} flex items-center text-sm leading-none`}
 						>
 							<ClockIcon class="mr-1 h-4 w-4" />
 							{#if vuelo.atda}
