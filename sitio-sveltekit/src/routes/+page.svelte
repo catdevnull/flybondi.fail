@@ -125,11 +125,11 @@
 	}
 
 	function getDelayColor(delay: number) {
-		if (delay <= 15 * 60) return 'text-green-500 dark:text-green-600';
+		if (delay <= 15 * 60) return 'text-[#8dd895] dark:text-green-600';
 		// if (delay < 30 * 60) return 'text-green-500 dark:text-green-700';
-		if (delay < 30 * 60) return 'text-yellow-500 dark:text-yellow-400';
-		if (delay < 45 * 60) return 'text-orange-400 dark:text-orange-400';
-		return 'text-red-600 dark:text-red-400';
+		if (delay < 30 * 60) return 'text-[#f1e12d] dark:text-yellow-400';
+		if (delay < 45 * 60) return 'text-[#eb6b00] dark:text-orange-400';
+		return 'text-[#b10000] dark:text-red-400';
 	}
 
 	function flightradar24(vuelo: Vuelo) {
