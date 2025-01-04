@@ -148,14 +148,19 @@
 		return formatDuration({ ...duration, seconds: 0 }, { locale: es });
 	}
 
+	const colors = {
+		[15 * 60]: 'text-[#8dd895] dark:text-green-600',
+		[30 * 60]: 'text-[#f1e12d] dark:text-yellow-400',
+		[45 * 60]: 'text-[#eb6b00] dark:text-orange-400',
+		[60 * 60]: 'text-[#b10000] dark:text-red-400'
+	};
+
 	function getDelayColor(delay: number, text: boolean = false) {
-		if (delay <= 15 * 60)
-			return text ? 'text-green-600 dark:text-green-600' : 'text-[#8dd895] dark:text-green-600';
+		if (delay <= 15 * 60) return text ? 'text-green-600 dark:text-green-600' : colors[15 * 60];
 		// if (delay < 30 * 60) return 'text-green-500 dark:text-green-700';
-		if (delay < 30 * 60)
-			return text ? 'text-yellow-500 dark:text-yellow-400' : 'text-[#f1e12d] dark:text-yellow-400';
-		if (delay < 45 * 60) return 'text-[#eb6b00] dark:text-orange-400';
-		return 'text-[#b10000] dark:text-red-400';
+		if (delay < 30 * 60) return text ? 'text-yellow-500 dark:text-yellow-400' : colors[30 * 60];
+		if (delay < 45 * 60) return colors[45 * 60];
+		return colors[60 * 60];
 	}
 
 	function flightradar24(vuelo: Vuelo) {
@@ -246,6 +251,31 @@
 						{/if}
 					</span>
 				</p>
+				<div class="flex flex-wrap items-center justify-center gap-x-4 gap-y-2 text-xs">
+					<div class="flex items-center gap-1">
+						<Icon class="size-4 {colors[15 * 60]}" icon="fa-solid:plane" />
+						<span>0-15min</span>
+					</div>
+					<div class="flex items-center gap-1">
+						<Icon class="size-4 {colors[30 * 60]}" icon="fa-solid:plane" />
+						<span>15-30min</span>
+					</div>
+					<div class="flex items-center gap-1">
+						<Icon class="size-4 {colors[45 * 60]}" icon="fa-solid:plane" />
+						<span>30-45min</span>
+					</div>
+					<div class="flex items-center gap-1">
+						<Icon class="size-4 text-[#b10000]" icon="fa-solid:plane" />
+						<span>>45min</span>
+					</div>
+					<div class="flex items-center gap-1">
+						<Icon
+							class="size-4 text-neutral-700 dark:text-neutral-300"
+							icon="fa-solid:plane-slash"
+						/>
+						<span>Cancelado</span>
+					</div>
+				</div>
 			</div>
 			<div
 				class="flex flex-col gap-2 rounded-lg border bg-neutral-50 p-4 text-xl dark:border-neutral-700 dark:bg-neutral-800"
