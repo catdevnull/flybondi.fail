@@ -35,6 +35,7 @@
 		aerolineasVuelosAterrizados.length;
 
 	$: vuelosAterrizados = vuelos.filter((v): v is Vuelo & { atda: Date } => v.atda !== undefined);
+	$: vuelosCancelados = vuelos.filter((v) => v.json.estes === 'Cancelado');
 
 	$: vueloMasAtrasado = vuelosAterrizados.reduce<Vuelo & { atda: Date }>(
 		(acc, v) => (v.delta > acc.delta ? v : acc),
@@ -236,8 +237,14 @@
 				</div>
 				<p class="text-center">
 					<span class="font-bold"
-						>De {vuelos.length} vuelos, {vuelosAtrasados.length} tardaron mas de 30 minutos en despegar.</span
-					>
+						>De {vuelos.length} vuelos, {vuelosAtrasados.length} tardaron mas de 30 minutos en despegar{#if vuelosCancelados.length > 0}
+							{' '}y
+							{vuelosCancelados.length} vuelo{vuelosCancelados.length > 1
+								? 's fueron cancelados'
+								: ' fue cancelado'}.
+						{:else}.
+						{/if}
+					</span>
 				</p>
 			</div>
 			<div
