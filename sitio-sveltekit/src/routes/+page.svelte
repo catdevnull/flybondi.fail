@@ -135,6 +135,16 @@
 	function flightradar24(vuelo: Vuelo) {
 		return `https://www.flightradar24.com/data/flights/${vuelo.json.nro.replace(' ', '').toLowerCase()}`;
 	}
+
+	function goToVuelo(e: MouseEvent) {
+		const target = e.currentTarget as HTMLElement;
+		const els = Array.from<HTMLElement>(
+			document.querySelectorAll(`[data-id="${target.dataset.id}"]`)
+		);
+		const el = els.find((el) => window.getComputedStyle(el).display !== 'none');
+		el?.scrollIntoView({ behavior: 'smooth' });
+		el?.focus();
+	}
 </script>
 
 <svelte:head>
@@ -187,16 +197,7 @@
 			>
 				<div class="grid grid-cols-9 gap-2">
 					{#each vuelos as vuelo}
-						<button
-							on:click={() => {
-								const els = Array.from<HTMLElement>(
-									document.querySelectorAll(`[data-id="${vuelo.aerolineas_flight_id}"]`)
-								);
-								const el = els.find((el) => window.getComputedStyle(el).display !== 'none');
-								el?.scrollIntoView({ behavior: 'smooth' });
-								el?.focus();
-							}}
-						>
+						<button on:click={goToVuelo} data-id={vuelo.aerolineas_flight_id}>
 							<Icon class="h-8 w-8 {getDelayColor(vuelo.delta)}" icon="fa-solid:plane" />
 						</button>
 					{/each}
