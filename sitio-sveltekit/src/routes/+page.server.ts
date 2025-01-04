@@ -10,7 +10,7 @@ dayjs.extend(timezone);
 export const load: PageServerLoad = async ({ url, platform }) => {
 	const tsz = 'America/Argentina/Buenos_Aires';
 	const dateQ = url.searchParams.get('date');
-	const date = dateQ ? dayjs(dateQ).tz(tsz, true) : dayjs().tz(tsz);
+	const date = dateQ ? dayjs(dateQ).tz(tsz, true) : dayjs().tz(tsz).subtract(1, 'day');
 
 	const start = date.startOf('day');
 	const end = date.endOf('day');
