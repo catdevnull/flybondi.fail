@@ -302,10 +302,7 @@
 							{formatDateTime(vuelo.atda)}
 						</td>
 						<td class={`px-4 py-2 font-bold ${getDelayColor(vuelo.delta)}`}>
-							<span class="flex items-center">
-								<ClockIcon class="mr-1 h-4 w-4" />
-								{delayString(vuelo)}
-							</span>
+							{delayString(vuelo)}
 						</td>
 					</tr>
 				{/each}
