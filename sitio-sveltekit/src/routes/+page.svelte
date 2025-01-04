@@ -13,16 +13,33 @@
 	export let data;
 	$: ({ vuelos: todosLosVuelos, date, hasTomorrowData, hasYesterdayData } = data);
 	$: vuelos = todosLosVuelos
-		.filter((vuelo) => vuelo.json.idaerolinea === 'FO')
-		.sort((a, b) => b.delta - a.delta);
-	$: aerolineasVuelos = todosLosVuelos.filter((vuelo) => vuelo.json.idaerolinea === 'AR');
+		.filter((v) => v.json.idaerolinea === 'FO')
+		.filter(
+			(v): v is Vuelo & ({ atda: Date } | { json: { estes: 'Cancelado' } }) =>
+				!!v.atda || v.json.estes === 'Cancelado'
+		)
+		.sort((a, b) => {
+			if (a.json.estes === 'Cancelado') return -1;
+			if (b.json.estes === 'Cancelado') return 1;
+			return b.delta - a.delta;
+		});
+	$: aerolineasVuelosAterrizados = todosLosVuelos.filter(
+		(vuelo) => vuelo.json.idaerolinea === 'AR' && vuelo.atda !== undefined
+	);
 	$: vuelosAtrasados = vuelos.filter((vuelo) => vuelo.delta > 60 * 30);
 
-	$: promedioDelta = vuelos.reduce((acc, v) => acc + v.delta, 0) / vuelos.length;
+	$: promedioDelta =
+		vuelosAterrizados.reduce((acc, v) => acc + v.delta, 0) / vuelosAterrizados.length;
 	$: promedioDeltaAerolineas =
-		aerolineasVuelos.reduce((acc, v) => acc + v.delta, 0) / aerolineasVuelos.length;
+		aerolineasVuelosAterrizados.reduce((acc, v) => acc + v.delta, 0) /
+		aerolineasVuelosAterrizados.length;
 
-	$: vueloMasAtrasado = vuelos.reduce((acc, v) => (v.delta > acc.delta ? v : acc), vuelos[0]);
+	$: vuelosAterrizados = vuelos.filter((v): v is Vuelo & { atda: Date } => v.atda !== undefined);
+
+	$: vueloMasAtrasado = vuelosAterrizados.reduce<Vuelo & { atda: Date }>(
+		(acc, v) => (v.delta > acc.delta ? v : acc),
+		vuelosAterrizados[0]
+	);
 
 	function getTotalSeats(vuelo: Vuelo) {
 		const asientos = vuelo.config_de_asientos?.match(/\w(\d+)/);
@@ -38,7 +55,13 @@
 		.map((vuelo) => vuelo.delta * getTotalSeats(vuelo) * 0.75)
 		.reduce((prev, acc) => prev + acc, 0);
 
-	function delayString(vuelo: Vuelo, showPrefix: boolean = true) {
+	function delayString(vuelo: (typeof vuelos)[number], showPrefix: boolean = true) {
+		if (vuelo.json.estes === 'Cancelado') {
+			return 'cancelado';
+		} else if (vuelo.atda === undefined) {
+			throw new Error('no atda');
+		}
+
 		const delayed = vuelo.delta > 0;
 		const shorter = (s: string) =>
 			s
@@ -198,7 +221,11 @@
 				<div class="grid grid-cols-9 gap-2">
 					{#each vuelos as vuelo}
 						<button on:click={goToVuelo} data-id={vuelo.aerolineas_flight_id}>
-							<Icon class="h-8 w-8 {getDelayColor(vuelo.delta)}" icon="fa-solid:plane" />
+							{#if vuelo.atda}
+								<Icon class="h-8 w-8 {getDelayColor(vuelo.delta)}" icon="fa-solid:plane" />
+							{:else if vuelo.json.estes === 'Cancelado'}
+								<Icon class="h-8 w-8 text-black dark:text-white" icon="fa-solid:plane-slash" />
+							{/if}
 						</button>
 					{/each}
 				</div>
@@ -300,10 +327,16 @@
 							{formatDateTime(vuelo.stda)}
 						</td>
 						<td class="px-4 py-2 text-neutral-900 dark:text-neutral-100">
-							{formatDateTime(vuelo.atda)}
+							{#if vuelo.atda}
+								{formatDateTime(vuelo.atda)}
+							{/if}
 						</td>
 						<td class={`px-4 py-2 font-bold ${getDelayColor(vuelo.delta)}`}>
-							{delayString(vuelo)}
+							{#if vuelo.atda}
+								{delayString(vuelo)}
+							{:else if vuelo.json.estes === 'Cancelado'}
+								<span class="text-red-500">Cancelado</span>
+							{/if}
 						</td>
 					</tr>
 				{/each}
@@ -327,10 +360,14 @@
 							{vuelo.json.nro}
 						</a>
 						<span
-							class={`font-bold ${getDelayColor(vuelo.delta)} flex items-center text-sm leading-none`}
+							class={`font-bold ${vuelo.json.estes === 'Cancelado' ? 'text-red-500' : getDelayColor(vuelo.delta)} flex items-center text-sm leading-none`}
 						>
 							<ClockIcon class="mr-1 h-4 w-4" />
-							{delayString(vuelo)}
+							{#if vuelo.atda}
+								{delayString(vuelo)}
+							{:else if vuelo.json.estes === 'Cancelado'}
+								Cancelado
+							{/if}
 						</span>
 					</div>
 					<div class="text-sm">
@@ -339,7 +376,11 @@
 						</div>
 						<div class="text-neutral-900 dark:text-neutral-100">
 							<del>{formatDateTime(vuelo.stda)}</del>
-							{formatDateTime(vuelo.atda)}
+							{#if vuelo.atda}
+								{formatDateTime(vuelo.atda)}
+							{:else if vuelo.json.estes === 'Cancelado'}
+								<span class="text-red-500">Cancelado</span>
+							{/if}
 						</div>
 					</div>
 				</div>

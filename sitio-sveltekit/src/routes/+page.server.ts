@@ -18,7 +18,7 @@ export const load: PageServerLoad = async ({ url, platform }) => {
 	const tomorrowStart = start.add(1, 'day');
 	const tomorrowEnd = end.add(3, 'day');
 
-	const condition = sql`json->>'atda' != '' AND json->>'mov' = 'D'`;
+	const condition = sql`json->>'mov' = 'D'`;
 	const vuelos = await sql<Vuelo[]>`
     WITH flight_data AS (
       SELECT *,

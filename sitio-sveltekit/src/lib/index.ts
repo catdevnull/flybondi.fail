@@ -14,11 +14,12 @@ export interface Flight {
 		nro: string;
 		arpt: string;
 		stda: string;
-		atda: string;
+		atda: (string & {}) | '';
 		matricula: string;
 		aerolinea: string;
 		idaerolinea: string;
 		IATAdestorig: string;
+		estes?: string;
 	};
 	matricula: string;
 	aeronave: string;
@@ -30,4 +31,4 @@ export interface Flight {
 	config_de_asientos: string;
 }
 
-export type Vuelo = Flight & { delta: number; atda: Date; stda: Date };
+export type Vuelo = Flight & { delta: number; atda?: Date; stda: Date };
