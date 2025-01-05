@@ -1,19 +1,13 @@
-import { logger, schedules, schemaTask, wait } from "@trigger.dev/sdk/v3";
+import { logger, schedules, schemaTask } from "@trigger.dev/sdk/v3";
 import {
   AerolineasSnapshot,
-  b2,
-  B2_BUCKET,
-  B2_PATH,
   FlightstatsSnapshot,
   FlightstatsSnapshotEntries,
   FlightstatsSnapshotEntry,
-  PROD,
 } from "../consts";
-import { PutObjectCommand } from "@aws-sdk/client-s3";
 import * as cheerio from "cheerio";
-import dayjs from "dayjs";
 import { format, parse, sub } from "date-fns";
-import { tz, TZDate } from "@date-fns/tz";
+import { tz } from "@date-fns/tz";
 import AEROLINEAS_AIRPORTS_JSON from "../misc/aerolineas-airports.json";
 import { z } from "zod";
 import { AerolineasFlightData } from "../misc/aerolineas";
@@ -21,7 +15,6 @@ import fetchBuilder from "fetch-retry";
 import PQueue from "p-queue";
 import { saveRawIntoB2 } from "../trigger-utils";
 
-const FLIGHTSTATS_AIRPORTS = ["FTE", "REL", "USH"];
 const AEROLINEAS_AIRPORTS = AEROLINEAS_AIRPORTS_JSON.data.map((a) => a.iata);
 
 const fetch = fetchBuilder(globalThis.fetch);
