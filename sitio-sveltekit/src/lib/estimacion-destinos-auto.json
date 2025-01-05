@@ -1,0 +1,434 @@
+[
+	{
+		"origin": "BRC",
+		"destination": "AEP",
+		"duration": "17 hours 40 mins",
+		"durationSeconds": 63600
+	},
+	{
+		"origin": "CNQ",
+		"destination": "AEP",
+		"duration": "10 hours 14 mins",
+		"durationSeconds": 36840
+	},
+	{
+		"origin": "COR",
+		"destination": "AEP",
+		"duration": "7 hours 12 mins",
+		"durationSeconds": 25920
+	},
+	{
+		"origin": "CRD",
+		"destination": "AEP",
+		"duration": "19 hours 34 mins",
+		"durationSeconds": 70440
+	},
+	{
+		"origin": "FLN",
+		"destination": "AEP",
+		"duration": "20 hours 35 mins",
+		"durationSeconds": 74100
+	},
+	{
+		"origin": "FTE",
+		"destination": "AEP",
+		"duration": "1 day 7 hours",
+		"durationSeconds": 111600
+	},
+	{
+		"origin": "GIG",
+		"destination": "AEP",
+		"duration": "1 day 9 hours",
+		"durationSeconds": 118800
+	},
+	{
+		"origin": "GRU",
+		"destination": "AEP",
+		"duration": "1 day 4 hours",
+		"durationSeconds": 100800
+	},
+	{
+		"origin": "IGR",
+		"destination": "AEP",
+		"duration": "14 hours 49 mins",
+		"durationSeconds": 53340
+	},
+	{
+		"origin": "JUJ",
+		"destination": "AEP",
+		"duration": "16 hours 40 mins",
+		"durationSeconds": 60000
+	},
+	{
+		"origin": "MDZ",
+		"destination": "AEP",
+		"duration": "12 hours 14 mins",
+		"durationSeconds": 44040
+	},
+	{
+		"origin": "NQN",
+		"destination": "AEP",
+		"duration": "13 hours 9 mins",
+		"durationSeconds": 47340
+	},
+	{
+		"origin": "PDP",
+		"destination": "AEP",
+		"duration": "6 hours 29 mins",
+		"durationSeconds": 23340
+	},
+	{
+		"origin": "PMY",
+		"destination": "AEP",
+		"duration": "14 hours 57 mins",
+		"durationSeconds": 53820
+	},
+	{
+		"origin": "PSS",
+		"destination": "AEP",
+		"duration": "11 hours 29 mins",
+		"durationSeconds": 41340
+	},
+	{
+		"origin": "SDE",
+		"destination": "AEP",
+		"duration": "11 hours 55 mins",
+		"durationSeconds": 42900
+	},
+	{
+		"origin": "SLA",
+		"destination": "AEP",
+		"duration": "16 hours 48 mins",
+		"durationSeconds": 60480
+	},
+	{
+		"origin": "TUC",
+		"destination": "AEP",
+		"duration": "13 hours 40 mins",
+		"durationSeconds": 49200
+	},
+	{
+		"origin": "UAQ",
+		"destination": "AEP",
+		"duration": "12 hours 36 mins",
+		"durationSeconds": 45360
+	},
+	{
+		"origin": "USH",
+		"destination": "AEP",
+		"duration": "1 day 12 hours",
+		"durationSeconds": 129600
+	},
+	{
+		"origin": "AEP",
+		"destination": "BRC",
+		"duration": "18 hours 0 mins",
+		"durationSeconds": 64800
+	},
+	{
+		"origin": "COR",
+		"destination": "BRC",
+		"duration": "17 hours 19 mins",
+		"durationSeconds": 62340
+	},
+	{
+		"origin": "EZE",
+		"destination": "BRC",
+		"duration": "17 hours 30 mins",
+		"durationSeconds": 63000
+	},
+	{
+		"origin": "AEP",
+		"destination": "COR",
+		"duration": "7 hours 11 mins",
+		"durationSeconds": 25860
+	},
+	{
+		"origin": "BRC",
+		"destination": "COR",
+		"duration": "17 hours 1 min",
+		"durationSeconds": 61260
+	},
+	{
+		"origin": "COR",
+		"destination": "COR",
+		"duration": "1 min",
+		"durationSeconds": 60
+	},
+	{
+		"origin": "EZE",
+		"destination": "COR",
+		"duration": "7 hours 33 mins",
+		"durationSeconds": 27180
+	},
+	{
+		"origin": "MDZ",
+		"destination": "COR",
+		"duration": "7 hours 33 mins",
+		"durationSeconds": 27180
+	},
+	{
+		"origin": "NQN",
+		"destination": "COR",
+		"duration": "12 hours 37 mins",
+		"durationSeconds": 45420
+	},
+	{
+		"origin": "SLA",
+		"destination": "COR",
+		"duration": "10 hours 28 mins",
+		"durationSeconds": 37680
+	},
+	{
+		"origin": "AEP",
+		"destination": "CRD",
+		"duration": "19 hours 56 mins",
+		"durationSeconds": 71760
+	},
+	{
+		"origin": "EZE",
+		"destination": "CRD",
+		"duration": "19 hours 23 mins",
+		"durationSeconds": 69780
+	},
+	{
+		"origin": "ASU",
+		"destination": "EZE",
+		"duration": "14 hours 54 mins",
+		"durationSeconds": 53640
+	},
+	{
+		"origin": "BRC",
+		"destination": "EZE",
+		"duration": "17 hours 10 mins",
+		"durationSeconds": 61800
+	},
+	{
+		"origin": "CNQ",
+		"destination": "EZE",
+		"duration": "10 hours 33 mins",
+		"durationSeconds": 37980
+	},
+	{
+		"origin": "COR",
+		"destination": "EZE",
+		"duration": "7 hours 30 mins",
+		"durationSeconds": 27000
+	},
+	{
+		"origin": "CRD",
+		"destination": "EZE",
+		"duration": "19 hours 0 mins",
+		"durationSeconds": 68400
+	},
+	{
+		"origin": "FLN",
+		"destination": "EZE",
+		"duration": "20 hours 53 mins",
+		"durationSeconds": 75180
+	},
+	{
+		"origin": "FTE",
+		"destination": "EZE",
+		"duration": "1 day 6 hours",
+		"durationSeconds": 108000
+	},
+	{
+		"origin": "GIG",
+		"destination": "EZE",
+		"duration": "1 day 9 hours",
+		"durationSeconds": 118800
+	},
+	{
+		"origin": "GRU",
+		"destination": "EZE",
+		"duration": "1 day 4 hours",
+		"durationSeconds": 100800
+	},
+	{
+		"origin": "IGR",
+		"destination": "EZE",
+		"duration": "15 hours 7 mins",
+		"durationSeconds": 54420
+	},
+	{
+		"origin": "JUJ",
+		"destination": "EZE",
+		"duration": "16 hours 59 mins",
+		"durationSeconds": 61140
+	},
+	{
+		"origin": "MDZ",
+		"destination": "EZE",
+		"duration": "12 hours 10 mins",
+		"durationSeconds": 43800
+	},
+	{
+		"origin": "NQN",
+		"destination": "EZE",
+		"duration": "12 hours 39 mins",
+		"durationSeconds": 45540
+	},
+	{
+		"origin": "PMY",
+		"destination": "EZE",
+		"duration": "14 hours 23 mins",
+		"durationSeconds": 51780
+	},
+	{
+		"origin": "PSS",
+		"destination": "EZE",
+		"duration": "11 hours 48 mins",
+		"durationSeconds": 42480
+	},
+	{
+		"origin": "SDE",
+		"destination": "EZE",
+		"duration": "12 hours 13 mins",
+		"durationSeconds": 43980
+	},
+	{
+		"origin": "SLA",
+		"destination": "EZE",
+		"duration": "17 hours 6 mins",
+		"durationSeconds": 61560
+	},
+	{
+		"origin": "TUC",
+		"destination": "EZE",
+		"duration": "13 hours 58 mins",
+		"durationSeconds": 50280
+	},
+	{
+		"origin": "UAQ",
+		"destination": "EZE",
+		"duration": "12 hours 32 mins",
+		"durationSeconds": 45120
+	},
+	{
+		"origin": "USH",
+		"destination": "EZE",
+		"duration": "1 day 11 hours",
+		"durationSeconds": 126000
+	},
+	{
+		"origin": "AEP",
+		"destination": "IGR",
+		"duration": "14 hours 45 mins",
+		"durationSeconds": 53100
+	},
+	{
+		"origin": "EZE",
+		"destination": "IGR",
+		"duration": "15 hours 7 mins",
+		"durationSeconds": 54420
+	},
+	{
+		"origin": "AEP",
+		"destination": "JUJ",
+		"duration": "16 hours 40 mins",
+		"durationSeconds": 60000
+	},
+	{
+		"origin": "EZE",
+		"destination": "JUJ",
+		"duration": "17 hours 2 mins",
+		"durationSeconds": 61320
+	},
+	{
+		"origin": "AEP",
+		"destination": "MDZ",
+		"duration": "12 hours 14 mins",
+		"durationSeconds": 44040
+	},
+	{
+		"origin": "COR",
+		"destination": "MDZ",
+		"duration": "7 hours 36 mins",
+		"durationSeconds": 27360
+	},
+	{
+		"origin": "EZE",
+		"destination": "MDZ",
+		"duration": "12 hours 16 mins",
+		"durationSeconds": 44160
+	},
+	{
+		"origin": "AEP",
+		"destination": "PMY",
+		"duration": "15 hours 12 mins",
+		"durationSeconds": 54720
+	},
+	{
+		"origin": "EZE",
+		"destination": "PMY",
+		"duration": "14 hours 39 mins",
+		"durationSeconds": 52740
+	},
+	{
+		"origin": "AEP",
+		"destination": "PSS",
+		"duration": "11 hours 24 mins",
+		"durationSeconds": 41040
+	},
+	{
+		"origin": "EZE",
+		"destination": "PSS",
+		"duration": "11 hours 46 mins",
+		"durationSeconds": 42360
+	},
+	{
+		"origin": "AEP",
+		"destination": "SDE",
+		"duration": "11 hours 47 mins",
+		"durationSeconds": 42420
+	},
+	{
+		"origin": "EZE",
+		"destination": "SDE",
+		"duration": "12 hours 9 mins",
+		"durationSeconds": 43740
+	},
+	{
+		"origin": "AEP",
+		"destination": "SLA",
+		"duration": "16 hours 46 mins",
+		"durationSeconds": 60360
+	},
+	{
+		"origin": "COR",
+		"destination": "SLA",
+		"duration": "10 hours 33 mins",
+		"durationSeconds": 37980
+	},
+	{
+		"origin": "EZE",
+		"destination": "SLA",
+		"duration": "17 hours 7 mins",
+		"durationSeconds": 61620
+	},
+	{
+		"origin": "AEP",
+		"destination": "TUC",
+		"duration": "13 hours 42 mins",
+		"durationSeconds": 49320
+	},
+	{
+		"origin": "EZE",
+		"destination": "TUC",
+		"duration": "14 hours 4 mins",
+		"durationSeconds": 50640
+	},
+	{
+		"origin": "AEP",
+		"destination": "UAQ",
+		"duration": "12 hours 36 mins",
+		"durationSeconds": 45360
+	},
+	{
+		"origin": "EZE",
+		"destination": "UAQ",
+		"duration": "12 hours 38 mins",
+		"durationSeconds": 45480
+	}
+]
