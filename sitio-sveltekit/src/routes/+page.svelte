@@ -3,7 +3,6 @@
 	import { es } from 'date-fns/locale/es';
 	import dayjs from 'dayjs';
 	import AIRPORTS from '$lib/aerolineas-airports.json';
-	import ESTIMACIONES_DESTINOS_AUTO from '$lib/estimacion-destinos-auto.json';
 	import { Button } from '@/components/ui/button';
 	import type { Vuelo } from '$lib';
 	import { ArrowLeftIcon, ArrowRightIcon, ClockIcon, PlaneIcon } from 'lucide-svelte';
@@ -190,27 +189,6 @@
 		const el = els.find((el) => window.getComputedStyle(el).display !== 'none');
 		el?.scrollIntoView({ behavior: 'smooth' });
 		el?.focus();
-	}
-
-	function isBetterOffByCar(vuelo: Vuelo) {
-		const estimacion = ESTIMACIONES_DESTINOS_AUTO.find(
-			(e) => e.origin === vuelo.json.arpt && e.destination === vuelo.json.IATAdestorig
-		);
-		if (!estimacion) return false;
-		if (!vuelo.atda) return false;
-
-		const total =
-			((vuelo.arrival_atda
-				? +vuelo.arrival_atda
-				: +vuelo.atda +
-					// TODO: conseguir tiempo promedio de llegada a destino
-					0) -
-				+vuelo.stda) /
-			1000;
-		if (estimacion.durationSeconds > total) return false;
-		return {
-			diff: estimacion.durationSeconds - total
-		};
 	}
 </script>
 
@@ -409,20 +387,11 @@
 								{formatDateTime(vuelo.atda)}
 							{/if}
 						</td>
-						<td class="px-4 py-2 font-bold {getDelayColor(vuelo.delta, true)} flex flex-col">
+						<td class={`px-4 py-2 font-bold ${getDelayColor(vuelo.delta, true)}`}>
 							{#if vuelo.atda}
 								{delayString(vuelo)}
 							{:else if vuelo.json.estes === 'Cancelado'}
 								<span class="text-red-500">Cancelado</span>
-							{/if}
-
-							{#if isBetterOffByCar(vuelo)}
-								<span class="text-purple-500">
-									en auto, hubieras tardado
-									{formatDurationWithoutSeconds(
-										getDurationFromSeconds(-(isBetterOffByCar(vuelo) as { diff: number }).diff)
-									)} menos
-								</span>
 							{/if}
 						</td>
 					</tr>
