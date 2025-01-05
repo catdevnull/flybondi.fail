@@ -21,14 +21,8 @@ export interface Flight {
 		IATAdestorig: string;
 		estes?: string;
 	};
-	matricula: string;
-	aeronave: string;
-	msn: string;
-	compania_aerea: string;
-	situacion: string;
-	detail_url: string;
-	edad_del_avion: number;
 	config_de_asientos: string;
+	arrival_atda?: Date;
 }
 
 export type Vuelo = Flight & { delta: number; atda?: Date; stda: Date };
