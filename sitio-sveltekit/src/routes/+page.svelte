@@ -8,6 +8,7 @@
 	import {
 		AlertCircleIcon,
 		AlertOctagonIcon,
+		ArrowDownIcon,
 		ArrowLeftIcon,
 		ArrowRightIcon,
 		ClockIcon,
@@ -356,9 +357,10 @@
 					<th class="px-4 py-2 text-left text-neutral-700 dark:text-neutral-300">Hora Programada</th
 					>
 					<th class="px-4 py-2 text-left text-neutral-700 dark:text-neutral-300">Hora Real</th>
-					<th class="px-4 py-2 text-left text-neutral-700 dark:text-neutral-300"
-						>Demora en despegar</th
-					>
+					<th class="flex items-center px-4 py-2 text-left text-neutral-700 dark:text-neutral-300">
+						Demora en despegar
+						<ArrowDownIcon class="size-4" />
+					</th>
 				</tr>
 			</thead>
 			<tbody>
