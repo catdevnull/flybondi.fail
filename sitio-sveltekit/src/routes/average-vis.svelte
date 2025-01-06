@@ -1,7 +1,7 @@
 <script lang="ts">
 	import * as d3 from 'd3';
 
-	import FlybondiSvg from '$lib/assets/flybondi.svg?raw';
+	import FlybondiDerpSvg from '$lib/assets/flybondi-derp.svg?raw';
 	import AerolineasArgentinasSvg from '$lib/assets/aerolineas-argentinas.svg?raw';
 	import { COLORS, getDelaySimplified } from '@/colors';
 
@@ -65,14 +65,14 @@
 			.attr('class', 'logo')
 			.attr('transform', (d) => `translate(${margin.left - 60}, ${y(d.name) - 5})`)
 			.html((d) => {
-				const svg = d.name === 'Flybondi' ? FlybondiSvg : AerolineasArgentinasSvg;
+				const svg = d.name === 'Flybondi' ? FlybondiDerpSvg : AerolineasArgentinasSvg;
 				// Extract the SVG content and viewBox between opening and closing tags
 				const svgMatch = svg.match(/<svg[^>]*viewBox="([^"]*)"[^>]*>([\s\S]*?)<\/svg>/i);
 				const viewBox = svgMatch?.[1] || '0 0 100 100';
 				const svgContent = svgMatch?.[2] || '';
 				// Create new SVG with original viewBox and styling
 				return `<svg width="50" height="${y.bandwidth() + 10}" viewBox="${viewBox}" fill="currentColor" preserveAspectRatio="xMidYMid meet">
-					${svgContent.replaceAll('"cls-1', '"asdfasdf')}
+					${svgContent.replaceAll('"cls-1', '"asdfasdf').replaceAll('"st0', '"asdfasdf')}
 				</svg>`;
 			});
 		// Add labels

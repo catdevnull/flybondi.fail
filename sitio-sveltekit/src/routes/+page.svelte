@@ -16,7 +16,7 @@
 		PlaneTakeoffIcon
 	} from 'lucide-svelte';
 	import NuloScienceSvg from '$lib/assets/Nulo_Science_Inc.svg';
-	import FlybondiSvg from '$lib/assets/flybondi.svg';
+	import FlybondiDerpSvg from '$lib/assets/flybondi-derp.svg';
 	import Icon from '@iconify/svelte';
 	import AverageVis from './average-vis.svelte';
 	import { getDelayColor, COLOR_CLASSES } from '$lib/colors';
@@ -195,7 +195,7 @@
 		class="sticky top-0 mb-4 flex flex-col border-b bg-white pb-1 text-center dark:border-neutral-700 dark:bg-neutral-900"
 	>
 		<h1 class="flex items-end justify-center">
-			<img src={FlybondiSvg} alt="Flybondi" class="h-8" />
+			<img src={FlybondiDerpSvg} alt="Flybondi" class="h-8" />
 			<span class="text-4xl font-medium leading-none text-red-600">.fail</span>
 		</h1>
 
