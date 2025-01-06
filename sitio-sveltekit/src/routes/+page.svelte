@@ -24,9 +24,11 @@
 	import Alert from '@/components/ui/alert/alert.svelte';
 	import AlertTitle from '@/components/ui/alert/alert-title.svelte';
 	import AlertDescription from '@/components/ui/alert/alert-description.svelte';
+	import DateTime from './date-time.svelte';
 
 	export let data;
 	$: ({ vuelos: todosLosVuelos, date, hasTomorrowData, hasYesterdayData } = data);
+
 	$: vuelos = todosLosVuelos
 		.filter((v) => v.json.idaerolinea === 'FO')
 		.filter(
@@ -116,29 +118,6 @@
 		}
 	}
 
-	const timeFormatter = Intl.DateTimeFormat('es-AR', {
-		hour: '2-digit',
-		minute: '2-digit',
-		hour12: false,
-		timeZone: 'America/Argentina/Buenos_Aires'
-	});
-
-	const dateTimeFormatter = Intl.DateTimeFormat('es-AR', {
-		day: '2-digit',
-		month: '2-digit',
-		hour: '2-digit',
-		minute: '2-digit',
-		hour12: false,
-		timeZone: 'America/Argentina/Buenos_Aires'
-	});
-
-	const dateFormatter = Intl.DateTimeFormat('es-AR', {
-		// weekday: 'long',
-		day: '2-digit',
-		month: '2-digit',
-		timeZone: 'America/Argentina/Buenos_Aires'
-	});
-
 	const longDateFormatter = Intl.DateTimeFormat('es-AR', {
 		weekday: 'long',
 		day: '2-digit',
@@ -146,13 +125,6 @@
 		year: 'numeric',
 		timeZone: 'America/Argentina/Buenos_Aires'
 	});
-
-	function formatDateTime(timestamp: Date) {
-		const curr = dayjs(date);
-		return curr.isSame(timestamp, 'day')
-			? timeFormatter.format(timestamp)
-			: dateTimeFormatter.format(timestamp);
-	}
 
 	const OTHER_AIRPORTS = {
 		CNQ: 'Corrientes',
@@ -409,11 +381,11 @@
 							{getAirport(vuelo.json.arpt)} → {getAirport(vuelo.json.IATAdestorig)}
 						</td>
 						<td class="px-4 py-2 text-neutral-900 dark:text-neutral-100">
-							{formatDateTime(vuelo.stda)}
+							<DateTime date={vuelo.stda} baseDate={date} />
 						</td>
 						<td class="px-4 py-2 text-neutral-900 dark:text-neutral-100">
 							{#if vuelo.atda}
-								{formatDateTime(vuelo.atda)}
+								<DateTime date={vuelo.atda} baseDate={date} />
 							{/if}
 						</td>
 						<td class={`px-4 py-2 font-bold ${getDelayColor(vuelo.delta, true)}`}>
@@ -457,9 +429,9 @@
 							{getAirport(vuelo.json.arpt)} → {getAirport(vuelo.json.IATAdestorig)}
 						</span>
 						<div class="flex flex-row gap-2 text-sm text-neutral-900 dark:text-neutral-100">
-							<del>{formatDateTime(vuelo.stda)}</del>
+							<del><DateTime date={vuelo.stda} baseDate={date} /></del>
 							{#if vuelo.atda}
-								{formatDateTime(vuelo.atda)}
+								<DateTime date={vuelo.atda} baseDate={date} />
 							{:else if vuelo.json.estes === 'Cancelado'}
 								<span class="font-black text-black">Cancelado</span>
 							{/if}
