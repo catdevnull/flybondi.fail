@@ -5,10 +5,18 @@
 	import AIRPORTS from '$lib/aerolineas-airports.json';
 	import { Button } from '@/components/ui/button';
 	import type { Vuelo } from '$lib';
-	import { ArrowLeftIcon, ArrowRightIcon, ClockIcon, PlaneIcon } from 'lucide-svelte';
+	import {
+		ArrowLeftIcon,
+		ArrowRightIcon,
+		ClockIcon,
+		PlaneIcon,
+		PlaneTakeoffIcon
+	} from 'lucide-svelte';
 	import NuloScienceSvg from '$lib/assets/Nulo_Science_Inc.svg';
 	import FlybondiSvg from '$lib/assets/flybondi.svg';
 	import Icon from '@iconify/svelte';
+	import AverageVis from './average-vis.svelte';
+	import { getDelayColor, COLOR_CLASSES } from '$lib/colors';
 
 	export let data;
 	$: ({ vuelos: todosLosVuelos, date, hasTomorrowData, hasYesterdayData } = data);
@@ -72,15 +80,14 @@
 				.replace(' minuto', 'min');
 		if (delayed) {
 			return shorter(
-				(showPrefix ? 'salió ' : '') +
-					formatDuration(
-						intervalToDuration({
-							start: new Date(vuelo.stda),
-							end: new Date(vuelo.atda)
-						}),
-						{ locale: es }
-					) +
-					' tarde'
+				// (showPrefix ? 'salió ' : '') +
+				formatDuration(
+					intervalToDuration({
+						start: new Date(vuelo.stda),
+						end: new Date(vuelo.atda)
+					}),
+					{ locale: es }
+				) + ' tarde'
 			);
 		} else if (vuelo.delta < 60 && vuelo.delta > -60) {
 			return 'a tiempo';
@@ -130,8 +137,8 @@
 	});
 
 	function formatDateTime(timestamp: Date) {
-		const date = dayjs();
-		return date.isSame(timestamp, 'day')
+		const curr = dayjs(date);
+		return curr.isSame(timestamp, 'day')
 			? timeFormatter.format(timestamp)
 			: dateTimeFormatter.format(timestamp);
 	}
@@ -160,21 +167,6 @@
 	}
 	function formatDurationWithoutSeconds(duration: Duration) {
 		return formatDuration({ ...duration, seconds: 0 }, { locale: es });
-	}
-
-	const colors = {
-		[15 * 60]: 'text-[#8dd895] dark:text-green-600',
-		[30 * 60]: 'text-[#f1e12d] dark:text-yellow-400',
-		[45 * 60]: 'text-[#eb6b00] dark:text-orange-400',
-		[60 * 60]: 'text-[#b10000] dark:text-red-400'
-	};
-
-	function getDelayColor(delay: number, text: boolean = false) {
-		if (delay <= 15 * 60) return text ? 'text-green-600 dark:text-green-600' : colors[15 * 60];
-		// if (delay < 30 * 60) return 'text-green-500 dark:text-green-700';
-		if (delay < 30 * 60) return text ? 'text-yellow-500 dark:text-yellow-400' : colors[30 * 60];
-		if (delay < 45 * 60) return colors[45 * 60];
-		return colors[60 * 60];
 	}
 
 	function flightradar24(vuelo: Vuelo) {
@@ -278,34 +270,28 @@
 						<span>mas de 45min</span>
 					</div>
 					<div class="flex items-center gap-1">
-						<Icon class="size-4 {colors[45 * 60]}" icon="fa-solid:plane" />
+						<Icon class="size-4 {COLOR_CLASSES[45 * 60]}" icon="fa-solid:plane" />
 						<span>45-30min</span>
 					</div>
 					<div class="flex items-center gap-1">
-						<Icon class="size-4 {colors[30 * 60]}" icon="fa-solid:plane" />
+						<Icon class="size-4 {COLOR_CLASSES[30 * 60]}" icon="fa-solid:plane" />
 						<span>30-15min</span>
 					</div>
 					<div class="flex items-center gap-1">
-						<Icon class="size-4 {colors[15 * 60]}" icon="fa-solid:plane" />
+						<Icon class="size-4 {COLOR_CLASSES[15 * 60]}" icon="fa-solid:plane" />
 						<span>15-0min</span>
 					</div>
 				</div>
 			</div>
 			<div
-				class="flex flex-col gap-2 rounded-lg border bg-neutral-50 p-4 text-xl dark:border-neutral-700 dark:bg-neutral-800"
+				class="flex flex-col items-center justify-center gap-2 rounded-lg border bg-neutral-50 text-xl dark:border-neutral-700 dark:bg-neutral-800"
 			>
-				<p>
-					En promedio, los vuelos de Flybondi de hoy se atrasaron por
-					<span class={`font-bold ${getDelayColor(promedioDelta, true)}`}>
-						{formatDurationWithoutSeconds(getDurationFromSeconds(promedioDelta))}
-					</span>.
-				</p>
-				<p>
-					Para comparar, los vuelos de Aerolineas Argentinas se atrasaron en promedio
-					<span class={`font-bold ${getDelayColor(promedioDeltaAerolineas, true)}`}>
-						{formatDurationWithoutSeconds(getDurationFromSeconds(promedioDeltaAerolineas))}
-					</span>.
-				</p>
+				<AverageVis
+					airlineData={[
+						{ name: 'Flybondi', avgDelay: promedioDelta / 60 },
+						{ name: 'Aerolineas Argentinas', avgDelay: promedioDeltaAerolineas / 60 }
+					]}
+				/>
 			</div>
 
 			<div
@@ -357,7 +343,9 @@
 					<th class="px-4 py-2 text-left text-neutral-700 dark:text-neutral-300">Hora Programada</th
 					>
 					<th class="px-4 py-2 text-left text-neutral-700 dark:text-neutral-300">Hora Real</th>
-					<th class="px-4 py-2 text-left text-neutral-700 dark:text-neutral-300">Diferencia</th>
+					<th class="px-4 py-2 text-left text-neutral-700 dark:text-neutral-300"
+						>Demora en despegar</th
+					>
 				</tr>
 			</thead>
 			<tbody>
@@ -391,7 +379,7 @@
 							{#if vuelo.atda}
 								{delayString(vuelo)}
 							{:else if vuelo.json.estes === 'Cancelado'}
-								<span class="text-red-500">Cancelado</span>
+								<span class="font-black text-black">Cancelado</span>
 							{/if}
 						</td>
 					</tr>
@@ -400,43 +388,43 @@
 		</table>
 
 		<!-- Mobile Card View -->
-		<div class="grid grid-cols-2 gap-4 sm:hidden">
+		<div class="grid grid-cols-1 gap-2 sm:hidden">
+			<div class="my-1 flex items-center gap-2">
+				<h2 class="text-xl font-bold leading-none text-neutral-900 dark:text-neutral-100">
+					Vuelos
+				</h2>
+				<hr class="flex-1 border-neutral-200 dark:border-neutral-700" />
+			</div>
 			{#each vuelos as vuelo}
 				<div
-					class="rounded-lg border bg-neutral-50 px-2 py-1 focus:bg-neutral-100 dark:border-neutral-700 dark:bg-neutral-800"
+					class="rounded-lg bg-neutral-100 px-2 py-1 dark:bg-neutral-800"
 					data-id={vuelo.aerolineas_flight_id}
 				>
-					<div class="mb-2 flex flex-col items-center justify-between">
+					<div class="flex flex-col justify-between">
 						<a
 							href={flightradar24(vuelo)}
 							target="_blank"
 							rel="noreferrer noopener"
-							class="text-lg font-bold text-neutral-900 underline dark:text-neutral-100"
+							class="text-sm text-neutral-900 underline dark:text-neutral-100"
 						>
-							{vuelo.json.nro}
-						</a>
-						<span
-							class={`font-bold ${vuelo.json.estes === 'Cancelado' ? 'text-red-500' : getDelayColor(vuelo.delta, true)} flex items-center text-sm leading-none`}
-						>
-							<ClockIcon class="mr-1 h-4 w-4" />
-							{#if vuelo.atda}
-								{delayString(vuelo)}
-							{:else if vuelo.json.estes === 'Cancelado'}
-								Cancelado
-							{/if}
-						</span>
-					</div>
-					<div class="text-sm">
-						<div class="text-neutral-900 dark:text-neutral-100">
+							{vuelo.json.nro} -
 							{getAirport(vuelo.json.arpt)} → {getAirport(vuelo.json.IATAdestorig)}
-						</div>
-						<div class="text-neutral-900 dark:text-neutral-100">
+						</a>
+						<div class="flex flex-row gap-2 text-sm text-neutral-900 dark:text-neutral-100">
 							<del>{formatDateTime(vuelo.stda)}</del>
 							{#if vuelo.atda}
 								{formatDateTime(vuelo.atda)}
 							{:else if vuelo.json.estes === 'Cancelado'}
-								<span class="text-red-500">Cancelado</span>
+								<span class="font-black text-black">Cancelado</span>
 							{/if}
+							<span
+								class={`font-bold ${vuelo.json.estes === 'Cancelado' ? 'font-black text-black' : getDelayColor(vuelo.delta, true)} flex items-center text-sm leading-none`}
+							>
+								{#if vuelo.atda}
+									<PlaneTakeoffIcon class="mr-1 h-4 w-4" />
+									{delayString(vuelo)}
+								{:else if vuelo.json.estes === 'Cancelado'}{/if}
+							</span>
 						</div>
 					</div>
 				</div>
