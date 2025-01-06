@@ -18,6 +18,7 @@
 	import AverageVis from './average-vis.svelte';
 	import { getDelayColor, COLOR_CLASSES } from '$lib/colors';
 	import { AEROPUERTOS_FLYBONDI } from '@/aeropuertos-flybondi';
+	import TimeBar from './time-bar.svelte';
 
 	export let data;
 	$: ({ vuelos: todosLosVuelos, date, hasTomorrowData, hasYesterdayData } = data);
@@ -339,7 +340,7 @@
 			>
 				<p>
 					El vuelo más atrasado fue el
-					<a href={flightradar24(vueloMasAtrasado)} class="underline">
+					<a href={flightradar24(vueloMasAtrasado)} class="hover:underline">
 						{vueloMasAtrasado.json.nro}
 					</a>
 					de {getAirport(vueloMasAtrasado.json.arpt)} a {getAirport(
@@ -383,7 +384,7 @@
 								href={flightradar24(vuelo)}
 								rel="noreferrer noopener"
 								target="_blank"
-								class="underline"
+								class="hover:underline"
 							>
 								{vuelo.json.nro}
 							</a>
@@ -402,6 +403,8 @@
 						<td class={`px-4 py-2 font-bold ${getDelayColor(vuelo.delta, true)}`}>
 							{#if vuelo.atda}
 								{delayString(vuelo)}
+
+								<TimeBar maxSeconds={vueloMasAtrasado.delta} seconds={vuelo.delta} />
 							{:else if vuelo.json.estes === 'Cancelado'}
 								<span class="font-black text-black">Cancelado</span>
 							{/if}
@@ -425,15 +428,18 @@
 					data-id={vuelo.aerolineas_flight_id}
 				>
 					<div class="flex flex-col justify-between">
-						<a
-							href={flightradar24(vuelo)}
-							target="_blank"
-							rel="noreferrer noopener"
-							class="text-sm text-neutral-900 underline dark:text-neutral-100"
-						>
-							{vuelo.json.nro} -
+						<span class="text-sm text-neutral-900 dark:text-neutral-100">
+							<a
+								class="hover:underline"
+								href={flightradar24(vuelo)}
+								target="_blank"
+								rel="noreferrer noopener"
+							>
+								{vuelo.json.nro}</a
+							>
+							-
 							{getAirport(vuelo.json.arpt)} → {getAirport(vuelo.json.IATAdestorig)}
-						</a>
+						</span>
 						<div class="flex flex-row gap-2 text-sm text-neutral-900 dark:text-neutral-100">
 							<del>{formatDateTime(vuelo.stda)}</del>
 							{#if vuelo.atda}
@@ -450,6 +456,10 @@
 								{:else if vuelo.json.estes === 'Cancelado'}{/if}
 							</span>
 						</div>
+
+						{#if vuelo.atda}
+							<TimeBar maxSeconds={vueloMasAtrasado.delta} seconds={vuelo.delta} />
+						{:else if vuelo.json.estes === 'Cancelado'}{/if}
 					</div>
 				</div>
 			{/each}
