@@ -17,6 +17,7 @@
 	import Icon from '@iconify/svelte';
 	import AverageVis from './average-vis.svelte';
 	import { getDelayColor, COLOR_CLASSES } from '$lib/colors';
+	import { AEROPUERTOS_FLYBONDI } from '@/aeropuertos-flybondi';
 
 	export let data;
 	$: ({ vuelos: todosLosVuelos, date, hasTomorrowData, hasYesterdayData } = data);
@@ -32,7 +33,11 @@
 			return b.delta - a.delta;
 		});
 	$: aerolineasVuelosAterrizados = todosLosVuelos.filter(
-		(vuelo) => vuelo.json.idaerolinea === 'AR' && vuelo.atda !== undefined
+		(vuelo) =>
+			vuelo.json.idaerolinea === 'AR' &&
+			vuelo.atda !== undefined &&
+			AEROPUERTOS_FLYBONDI.includes(vuelo.json.IATAdestorig) &&
+			AEROPUERTOS_FLYBONDI.includes(vuelo.json.arpt)
 	);
 	$: vuelosAtrasados = vuelos.filter((vuelo) => vuelo.delta > 60 * 30);
 
