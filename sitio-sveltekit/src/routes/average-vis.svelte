@@ -62,25 +62,20 @@
 			.selectAll('.logo')
 			.data(airlineData)
 			.enter()
-			.append('image')
+			.append('g')
 			.attr('class', 'logo')
-			.attr('x', margin.left - 60) // Moved further left
-			.attr('y', (d) => y(d.name) - 5) // Adjusted y position
-			.attr('width', 50) // Increased from 40
-			.attr('height', y.bandwidth() + 10) // Made slightly taller
-			.attr(
-				'href',
-				(d) =>
-					'data:image/svg+xml,' +
-					encodeURIComponent(
-						(d.name === 'Flybondi' ? FlybondiSvg : AerolineasArgentinasSvg).replace(
-							'</style>',
-							'</style><style>*{fill: #333 !important;} @media (prefers-color-scheme: dark) { *{fill: #ccc !important} }</style>'
-						)
-					)
-			)
-			.attr('preserveAspectRatio', 'xMidYMid meet');
-
+			.attr('transform', (d) => `translate(${margin.left - 60}, ${y(d.name) - 5})`)
+			.html((d) => {
+				const svg = d.name === 'Flybondi' ? FlybondiSvg : AerolineasArgentinasSvg;
+				// Extract the SVG content and viewBox between opening and closing tags
+				const svgMatch = svg.match(/<svg[^>]*viewBox="([^"]*)"[^>]*>([\s\S]*?)<\/svg>/i);
+				const viewBox = svgMatch?.[1] || '0 0 100 100';
+				const svgContent = svgMatch?.[2] || '';
+				// Create new SVG with original viewBox and styling
+				return `<svg width="50" height="${y.bandwidth() + 10}" viewBox="${viewBox}" fill="currentColor" preserveAspectRatio="xMidYMid meet">
+					${svgContent.replaceAll('"cls-1', '"asdfasdf')}
+				</svg>`;
+			});
 		// Add labels
 		svg
 			.selectAll('.label')
@@ -135,5 +130,13 @@
 
 	.chart-container :global(.logo) {
 		filter: grayscale(100%) !important;
+		color: #333 !important;
+	}
+
+	@media (prefers-color-scheme: dark) {
+		.chart-container :global(.logo) {
+			filter: grayscale(100%) !important;
+			color: #ccc !important;
+		}
 	}
 </style>
