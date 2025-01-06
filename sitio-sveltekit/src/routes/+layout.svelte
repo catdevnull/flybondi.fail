@@ -8,7 +8,10 @@
 	const description =
 		'Estadísticas de demoras en vuelos de Flybondi. Mirá cuánto tiempo perdieron los pasajeros.';
 	const url = 'https://flybondi.fail';
+	import { ModeWatcher } from 'mode-watcher';
 </script>
+
+<ModeWatcher />
 
 <svelte:head>
 	{#if import.meta.env.PROD}

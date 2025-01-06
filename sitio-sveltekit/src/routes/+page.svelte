@@ -26,6 +26,7 @@
 	import AlertTitle from '@/components/ui/alert/alert-title.svelte';
 	import AlertDescription from '@/components/ui/alert/alert-description.svelte';
 	import DateTime from './date-time.svelte';
+	import * as AlertDialog from '@/components/ui/alert-dialog';
 
 	export let data;
 	$: ({ vuelos: todosLosVuelos, date, hasTomorrowData, hasYesterdayData } = data);
@@ -293,7 +294,40 @@
 				class="flex flex-col items-center justify-center gap-2 rounded-lg border bg-neutral-50 text-xl dark:border-neutral-700 dark:bg-neutral-800"
 			>
 				<figure class="mb-3 mt-1 w-full px-4">
-					<figcaption class="my-2 text-xl">Promedio de retraso en el despegue</figcaption>
+					<figcaption class="my-2 flex justify-between text-xl">
+						Promedio de retraso en el despegue
+
+						<AlertDialog.Root>
+							<AlertDialog.Trigger>
+								<Button size="icon" variant="outline" class="size-7" aria-label="Ver metodología">
+									<Icon icon="grommet-icons:info" class="size-4" />
+								</Button>
+							</AlertDialog.Trigger>
+							<AlertDialog.Content>
+								<AlertDialog.Header>
+									<AlertDialog.Title>Metodología</AlertDialog.Title>
+									<AlertDialog.Description class="prose prose-neutral dark:prose-invert">
+										Para calcular el promedio, se toman todos los vuelos que aterrizaron y se
+										calcula la diferencia entre la hora programada y la hora real de despegue. Solo
+										se incluyen vuelos que:
+										<ul>
+											<li>Ya despegaron (tienen hora real de despegue)</li>
+											<li>Para Flybondi: son operados por Flybondi (código FO)</li>
+											<li>
+												Para Aerolíneas: son operados por Aerolíneas Argentinas (código AR) y vuelan
+												entre aeropuertos donde también opera Flybondi
+											</li>
+										</ul>
+										Los vuelos cancelados no se incluyen en este cálculo.
+										<a href="/acerca">Mas info</a>
+									</AlertDialog.Description>
+								</AlertDialog.Header>
+								<AlertDialog.Footer>
+									<AlertDialog.Cancel>oka</AlertDialog.Cancel>
+								</AlertDialog.Footer>
+							</AlertDialog.Content>
+						</AlertDialog.Root>
+					</figcaption>
 					<AverageVis
 						airlineData={[
 							{ name: 'Flybondi', avgDelay: promedioDelta / 60 },
@@ -304,7 +338,7 @@
 			</div>
 
 			<div
-				class="flex flex-col justify-center rounded-lg border bg-neutral-50 p-4 text-xl dark:border-neutral-700 dark:bg-neutral-800"
+				class="relative flex flex-col items-center justify-center rounded-lg border bg-neutral-50 p-4 text-xl dark:border-neutral-700 dark:bg-neutral-800"
 			>
 				<p>
 					En total, Flybondi desperdició aproximadamente
@@ -317,6 +351,39 @@
 					</span>
 					de vida entre todos sus pasajeros.
 				</p>
+
+				<AlertDialog.Root>
+					<AlertDialog.Trigger>
+						<Button
+							size="icon"
+							variant="outline"
+							class="absolute right-4 top-4 size-7"
+							aria-label="Ver metodología"
+						>
+							<Icon icon="grommet-icons:info" class="size-4" />
+						</Button>
+					</AlertDialog.Trigger>
+					<AlertDialog.Content>
+						<AlertDialog.Header>
+							<AlertDialog.Title>Metodología</AlertDialog.Title>
+							<AlertDialog.Description class="prose prose-neutral dark:prose-invert">
+								Para calcular el tiempo total desperdiciado, se:
+								<ul>
+									<li>Toma cada vuelo que ya despegó</li>
+									<li>Multiplica el retraso por la cantidad de asientos del avión</li>
+									<li>Asume una ocupación del 75% en cada vuelo</li>
+								</ul>
+								Por ejemplo, si un avión de 180 asientos se atrasa 1 hora, se calcula: 60 minutos × 180
+								asientos × 0.75 = 8.100 minutos-persona desperdiciados.
+								<p>Los vuelos cancelados no se incluyen en este cálculo.</p>
+								<a href="/acerca">Mas info</a>
+							</AlertDialog.Description>
+						</AlertDialog.Header>
+						<AlertDialog.Footer>
+							<AlertDialog.Cancel>oka</AlertDialog.Cancel>
+						</AlertDialog.Footer>
+					</AlertDialog.Content>
+				</AlertDialog.Root>
 			</div>
 
 			<div
@@ -472,8 +539,13 @@
 		responsables de los errores que puedan haber en la información presentada.
 	</p>
 
-	<p class="prose prose-neutral dark:prose-invert mb-4 max-w-[800px]">
-		Flybondi.fail es un experimento de <a href="https://nulo.lol">Nulo Science Inc™</a>.
+	<div class="prose prose-neutral dark:prose-invert mb-4 flex max-w-[800px] flex-col">
+		<p class="my-0">
+			Flybondi.fail es un experimento de <a href="https://nulo.lol">Nulo Science Inc™</a>.
+		</p>
+
+		<a href="/acerca">Acerca del sitio, sus datos, etc</a>
+
 		<a href="https://x.com/esoesnulo">@esoesnulo</a>
-	</p>
+	</div>
 </footer>

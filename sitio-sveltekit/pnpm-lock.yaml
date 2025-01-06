@@ -26,6 +26,9 @@ importers:
       dayjs:
         specifier: ^1.11.13
         version: 1.11.13
+      mode-watcher:
+        specifier: ^0.5.0
+        version: 0.5.0(svelte@5.16.0)
       postgres:
         specifier: ^3.4.5
         version: 3.4.5
@@ -1660,6 +1663,11 @@ packages:
   minipass@7.1.2:
     resolution: {integrity: sha512-qOOzS1cBTWYF4BH8fVePDBOO9iptMnGUEZwNc/cMWnTV2nVLZ7VoNWEPHkYczZA0pdoA7dl6e7FL659nX9S2aw==}
     engines: {node: '>=16 || 14 >=14.17'}
+
+  mode-watcher@0.5.0:
+    resolution: {integrity: sha512-5E6fh/aXhAVv+U+DbeM0hCmskQE9u7WSmvnCRijJB/MJu7HtB73sjiCaZ9n1M8QHmzLrBFo8XBAUcWXkDm8Z9A==}
+    peerDependencies:
+      svelte: ^4.0.0 || ^5.0.0-next.1
 
   module-details-from-path@1.0.3:
     resolution: {integrity: sha512-ySViT69/76t8VhE1xXHK6Ch4NcDd26gx0MzKXLO+F7NOtnqH68d9zF94nT8ZWSxXh8ELOERsnJO/sWt1xZYw5A==}
@@ -3899,6 +3907,10 @@ snapshots:
   minipass@4.2.8: {}
 
   minipass@7.1.2: {}
+
+  mode-watcher@0.5.0(svelte@5.16.0):
+    dependencies:
+      svelte: 5.16.0
 
   module-details-from-path@1.0.3: {}
 
