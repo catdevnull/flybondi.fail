@@ -192,7 +192,7 @@
 
 <main class="mx-auto max-w-[1000px]">
 	<nav
-		class="sticky top-0 mb-4 flex flex-col border-b bg-white pb-1 text-center dark:bg-neutral-800"
+		class="sticky top-0 mb-4 flex flex-col border-b bg-white pb-1 text-center dark:border-neutral-700 dark:bg-neutral-900"
 	>
 		<h1 class="flex items-end justify-center">
 			<img src={FlybondiSvg} alt="Flybondi" class="h-8" />
