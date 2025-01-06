@@ -394,7 +394,7 @@
 
 								<TimeBar maxSeconds={vueloMasAtrasado.delta} seconds={vuelo.delta} />
 							{:else if vuelo.json.estes === 'Cancelado'}
-								<span class="font-black text-black">Cancelado</span>
+								<span class="font-black text-black dark:text-neutral-100">Cancelado</span>
 							{/if}
 						</td>
 					</tr>
@@ -433,10 +433,10 @@
 							{#if vuelo.atda}
 								<DateTime date={vuelo.atda} baseDate={date} />
 							{:else if vuelo.json.estes === 'Cancelado'}
-								<span class="font-black text-black">Cancelado</span>
+								<span class="font-black text-black dark:text-neutral-100">Cancelado</span>
 							{/if}
 							<span
-								class={`font-bold ${vuelo.json.estes === 'Cancelado' ? 'font-black text-black' : getDelayColor(vuelo.delta, true)} flex items-center text-sm leading-none`}
+								class={`font-bold ${vuelo.json.estes === 'Cancelado' ? 'font-black text-black dark:text-neutral-100' : getDelayColor(vuelo.delta, true)} flex items-center text-sm leading-none`}
 							>
 								{#if vuelo.atda}
 									<PlaneTakeoffIcon class="mr-1 h-4 w-4" />

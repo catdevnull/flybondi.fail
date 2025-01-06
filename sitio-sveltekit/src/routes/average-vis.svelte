@@ -71,12 +71,13 @@
 			.attr(
 				'href',
 				(d) =>
-					`data:image/svg+xml,${encodeURIComponent(
+					'data:image/svg+xml,' +
+					encodeURIComponent(
 						(d.name === 'Flybondi' ? FlybondiSvg : AerolineasArgentinasSvg).replace(
-							`</style>`,
-							`</style><style>*{fill: #333 !important}</style>`
+							'</style>',
+							'</style><style>*{fill: #333 !important;} @media (prefers-color-scheme: dark) { *{fill: #ccc !important} }</style>'
 						)
-					)}`
+					)
 			)
 			.attr('preserveAspectRatio', 'xMidYMid meet');
 
