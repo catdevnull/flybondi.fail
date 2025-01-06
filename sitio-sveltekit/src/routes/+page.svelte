@@ -477,10 +477,6 @@
 		<a href="https://nulo.lol">
 			<img src={NuloScienceSvg} alt="Nulo Science Inc" class="w-30 h-16 dark:invert" />
 		</a>
-		<span>&</span>
-		<a href="https://visualizando.ar" class="bg-[#FF666C] px-4 py-2 font-bold text-[#28FFD7]"
-			>visualizando.ar</a
-		>
 	</div>
 
 	<p class="text-lg">
