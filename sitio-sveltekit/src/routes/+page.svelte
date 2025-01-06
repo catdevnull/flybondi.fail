@@ -6,6 +6,8 @@
 	import { Button } from '@/components/ui/button';
 	import type { Vuelo } from '$lib';
 	import {
+		AlertCircleIcon,
+		AlertOctagonIcon,
 		ArrowLeftIcon,
 		ArrowRightIcon,
 		ClockIcon,
@@ -19,6 +21,9 @@
 	import { getDelayColor, COLOR_CLASSES } from '$lib/colors';
 	import { AEROPUERTOS_FLYBONDI } from '@/aeropuertos-flybondi';
 	import TimeBar from './time-bar.svelte';
+	import Alert from '@/components/ui/alert/alert.svelte';
+	import AlertTitle from '@/components/ui/alert/alert-title.svelte';
+	import AlertDescription from '@/components/ui/alert/alert-description.svelte';
 
 	export let data;
 	$: ({ vuelos: todosLosVuelos, date, hasTomorrowData, hasYesterdayData } = data);
@@ -352,6 +357,17 @@
 				</p>
 			</div>
 		</div>
+		{#if (dayjs(date).date() === 31 && dayjs(date).month() === 11) || (dayjs(date).date() === 1 && dayjs(date).month() === 0)}
+			<Alert class="mb-4">
+				<AlertCircleIcon class="size-4" />
+
+				<AlertTitle>Problema con los datos</AlertTitle>
+				<AlertDescription>
+					Los datos de vuelos pueden ser inexactos debido al cambio de año. Vamos a arreglarlo
+					eventualmente.
+				</AlertDescription>
+			</Alert>
+		{/if}
 	{:else}
 		<p class="mb-4 text-lg">No hay datos de vuelos para mostrar</p>
 	{/if}
