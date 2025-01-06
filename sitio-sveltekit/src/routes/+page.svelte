@@ -467,8 +467,9 @@
 	class="mt-10 flex flex-col items-center justify-center text-center text-sm text-neutral-600 dark:text-neutral-400"
 >
 	<p class="prose mb-4 max-w-[800px]">
-		Flybondi.fail no está afiliado con Flybondi. La información presentada es meramente informativa.
-		No nos hacemos responsables de los errores que puedan haber en la información presentada.
+		Flybondi.fail no está afiliado con Flybondi. Flybondi.fail es una página homenaje a los vuelos
+		de Flybondi que se atrasan. La información presentada es meramente informativa. No nos hacemos
+		responsables de los errores que puedan haber en la información presentada.
 	</p>
 
 	<div class="mb-4 flex flex-col flex-wrap items-center justify-center gap-4 text-xl sm:flex-row">
