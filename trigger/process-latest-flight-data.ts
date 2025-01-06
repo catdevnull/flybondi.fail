@@ -7,6 +7,7 @@ import {
   PutObjectCommand,
 } from "@aws-sdk/client-s3";
 import PQueue from "p-queue";
+import { basename } from "path";
 
 export const processLatestFlightDataTask = schedules.task({
   id: "process-latest-flight-data",
@@ -45,20 +46,20 @@ export const processLatestFlightDataTask = schedules.task({
       logger.info("Processing", { path, urls: keys.map(getPublicB2Url) });
 
       const allJsonAlreadyExists = list.find(
-        (item) => item.Key === `${path}all.json`
+        (item) => item.Key === `${path}all-keys.json`
       );
-      let allEntries;
+      let allEntriesWithKeys;
       if (allJsonAlreadyExists) {
         const { Body } = await b2.send(
           new GetObjectCommand({
             Bucket: B2_BUCKET,
-            Key: `${path}all.json`,
+            Key: `${path}all-keys.json`,
           })
         );
         if (!Body) throw new Error("No body");
-        allEntries = JSON.parse(await Body.transformToString());
+        allEntriesWithKeys = JSON.parse(await Body.transformToString());
       } else {
-        allEntries = (
+        allEntriesWithKeys = Object.fromEntries(
           await Promise.all(
             keys.map(async (key) => {
               const { Body } = await b2.send(
@@ -68,30 +69,42 @@ export const processLatestFlightDataTask = schedules.task({
                 })
               );
               if (!Body) throw new Error("No body");
-              return JSON.parse(await Body.transformToString());
+              return [key, JSON.parse(await Body.transformToString())];
             })
           )
-        ).flat();
+        );
         await b2.send(
           new PutObjectCommand({
             Bucket: B2_BUCKET,
-            Key: `${path}all.json`,
-            Body: JSON.stringify(allEntries),
+            Key: `${path}all-keys.json`,
+            Body: JSON.stringify(allEntriesWithKeys),
           })
         );
-        logger.info("Stored all.json", {
+        logger.info("Stored all-keys.json", {
           path,
-          url: getPublicB2Url(`${path}all.json`),
+          url: getPublicB2Url(`${path}all-keys.json`),
         });
       }
 
+      const allEntries = Object.entries(allEntriesWithKeys)
+        .map(([key, value]) => {
+          const { flightDate } = parsePath(key);
+          return (value as any).map((v) => ({
+            ...v,
+            x_date: flightDate,
+          }));
+        })
+        .flat();
+
+      console.log(allEntries);
+
       await sql`
       INSERT INTO aerolineas_latest_flight_status (aerolineas_flight_id, last_updated, json)
-      SELECT DISTINCT ON(aerolineas_flight_id) value->>'id' as aerolineas_flight_id, ${key.fetchedAt}, value as json
+      SELECT DISTINCT ON(aerolineas_flight_id) value->>'id' as aerolineas_flight_id, ${key.fetchedAt} as last_updated, value as json
       FROM json_array_elements(${allEntries}) as value
       ON CONFLICT (aerolineas_flight_id) 
       DO UPDATE SET last_updated = EXCLUDED.last_updated, json = EXCLUDED.json
-      WHERE EXCLUDED.last_updated > aerolineas_latest_flight_status.last_updated
+      WHERE EXCLUDED.last_updated >= aerolineas_latest_flight_status.last_updated
       `;
     });
 
@@ -114,9 +127,7 @@ function parsePath(path: string) {
   return {
     airport: idarpt,
     direction: movtp,
-    flightDate: flightDate
-      ? new Date(flightDate.split("-").reverse().join("-"))
-      : null,
+    flightDate: flightDate ? flightDate.split("-").reverse().join("-") : null,
     fetchedAt,
   };
 }
