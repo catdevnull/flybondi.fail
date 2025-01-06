@@ -42,8 +42,7 @@
 			.attr('x', x(0))
 			.attr('y', (d) => y(d.name))
 			.attr('width', x(180) - x(0))
-			.attr('height', y.bandwidth())
-			.attr('fill', '#ddd');
+			.attr('height', y.bandwidth());
 
 		svg
 			.selectAll('.bar')
@@ -133,10 +132,26 @@
 		color: #333 !important;
 	}
 
+	.chart-container :global(.bar-bg) {
+		fill: #e5e5e5;
+	}
+
+	.chart-container :global(.label) {
+		fill: #333;
+	}
+
 	@media (prefers-color-scheme: dark) {
 		.chart-container :global(.logo) {
 			filter: grayscale(100%) !important;
 			color: #ccc !important;
+		}
+
+		.chart-container :global(.bar-bg) {
+			fill: #404040;
+		}
+
+		.chart-container :global(.label) {
+			fill: #ccc;
 		}
 	}
 </style>
