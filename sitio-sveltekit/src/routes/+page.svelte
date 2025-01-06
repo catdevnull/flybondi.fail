@@ -302,12 +302,15 @@
 			<div
 				class="flex flex-col items-center justify-center gap-2 rounded-lg border bg-neutral-50 text-xl dark:border-neutral-700 dark:bg-neutral-800"
 			>
-				<AverageVis
-					airlineData={[
-						{ name: 'Flybondi', avgDelay: promedioDelta / 60 },
-						{ name: 'Aerolineas Argentinas', avgDelay: promedioDeltaAerolineas / 60 }
-					]}
-				/>
+				<figure class="mb-3 mt-1 w-full px-4">
+					<figcaption class="my-2 text-xl">Promedio de retraso en el despegue</figcaption>
+					<AverageVis
+						airlineData={[
+							{ name: 'Flybondi', avgDelay: promedioDelta / 60 },
+							{ name: 'Aerolineas Argentinas', avgDelay: promedioDeltaAerolineas / 60 }
+						]}
+					/>
+				</figure>
 			</div>
 
 			<div

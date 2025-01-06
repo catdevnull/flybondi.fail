@@ -12,11 +12,11 @@
 		name: string;
 		avgDelay: number;
 	}[];
+	const height = 90; // Increased from 100
 
 	function updateChart() {
 		const svg = d3.select(svgEl);
-		const height = 120; // Increased from 100
-		const margin = { top: 20, right: 20, bottom: 30, left: 70 }; // Increased left margin for bigger logos
+		const margin = { top: 0, right: 10, bottom: 20, left: 60 }; // Increased left margin for bigger logos
 
 		const x = d3
 			.scaleLinear()
@@ -103,6 +103,7 @@
 		const xAxis = d3
 			.axisBottom(x)
 			.tickValues([0, 60, 120, 180])
+			.tickSize(0)
 			.tickFormat((d: number) => `${d / 60}hs`);
 
 		svg
@@ -122,7 +123,7 @@
 </script>
 
 <div class="chart-container" bind:clientWidth={width}>
-	<svg bind:this={svgEl} width="100%" height="120"></svg>
+	<svg bind:this={svgEl} width="100%" {height}></svg>
 </div>
 
 <style>
