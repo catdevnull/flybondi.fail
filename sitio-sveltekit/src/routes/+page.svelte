@@ -466,22 +466,14 @@
 <footer
 	class="mt-10 flex flex-col items-center justify-center text-center text-sm text-neutral-600 dark:text-neutral-400"
 >
-	<p class="prose mb-4 max-w-[800px]">
+	<p class="prose prose-neutral dark:prose-invert mb-4 max-w-[800px]">
 		Flybondi.fail no está afiliado con Flybondi. Flybondi.fail es una página homenaje a los vuelos
 		de Flybondi que se atrasan. La información presentada es meramente informativa. No nos hacemos
 		responsables de los errores que puedan haber en la información presentada.
 	</p>
 
-	<div class="mb-4 flex flex-col flex-wrap items-center justify-center gap-4 text-xl sm:flex-row">
-		<span>Flybondi.fail es un experimento de</span>
-		<a href="https://nulo.lol">
-			<img src={NuloScienceSvg} alt="Nulo Science Inc" class="w-30 h-16 dark:invert" />
-		</a>
-	</div>
-
-	<p class="text-lg">
-		<a class="text-brand underline" href="mailto:hola@nulo.lol">hola@nulo.lol</a>
-		⋅
-		<a class="text-brand underline" href="https://x.com/esoesnulo">@esoesnulo</a>
+	<p class="prose prose-neutral dark:prose-invert mb-4 max-w-[800px]">
+		Flybondi.fail es un experimento de <a href="https://nulo.lol">Nulo Science Inc™</a>.
+		<a href="https://x.com/esoesnulo">@esoesnulo</a>
 	</p>
 </footer>
