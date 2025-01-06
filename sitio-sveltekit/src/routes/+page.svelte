@@ -182,6 +182,22 @@
 		el?.scrollIntoView({ behavior: 'smooth' });
 		el?.focus();
 	}
+
+	function genPhrase() {
+		const frases = [
+			'¡Qué bajón!',
+			'¡Qué macana!',
+			'¡Qué embole!',
+			'¡Qué plomo!',
+			'¡Qué quilombo!',
+			'¡Qué desastre!',
+			'¡Qué paja!',
+			'¡Qué cagada!',
+			'¡Qué papelón!',
+			'¡Qué mala leche!'
+		];
+		return frases[Math.floor(Math.random() * frases.length)];
+	}
 </script>
 
 <svelte:head>
@@ -323,7 +339,7 @@
 					)}, que salió
 					<span class={`font-bold ${getDelayColor(vueloMasAtrasado.delta, true)}`}>
 						{delayString(vueloMasAtrasado, false)}
-					</span>. ¡Que bodrio!
+					</span>. {genPhrase()}
 				</p>
 			</div>
 		</div>
@@ -391,7 +407,7 @@
 		<div class="grid grid-cols-1 gap-2 sm:hidden">
 			<div class="my-1 flex items-center gap-2">
 				<h2 class="text-xl font-bold leading-none text-neutral-900 dark:text-neutral-100">
-					Vuelos
+					Detalle de los vuelos
 				</h2>
 				<hr class="flex-1 border-neutral-200 dark:border-neutral-700" />
 			</div>
@@ -452,7 +468,9 @@
 		>
 	</div>
 
-	<p class="text-brand text-lg underline">
-		<a href="mailto:hola@nulo.lol">hola@nulo.lol</a>
+	<p class="text-lg">
+		<a class="text-brand underline" href="mailto:hola@nulo.lol">hola@nulo.lol</a>
+		⋅
+		<a class="text-brand underline" href="https://x.com/esoesnulo">@esoesnulo</a>
 	</p>
 </footer>
