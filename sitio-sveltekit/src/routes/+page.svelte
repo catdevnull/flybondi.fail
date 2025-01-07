@@ -45,7 +45,7 @@
 	$: aerolineasVuelosAterrizados = todosLosVuelos.filter(
 		(vuelo) =>
 			vuelo.json.idaerolinea === 'AR' &&
-			vuelo.atda !== undefined &&
+			!!vuelo.atda &&
 			AEROPUERTOS_FLYBONDI.includes(vuelo.json.IATAdestorig) &&
 			AEROPUERTOS_FLYBONDI.includes(vuelo.json.arpt)
 	);
@@ -57,7 +57,8 @@
 		aerolineasVuelosAterrizados.reduce((acc, v) => acc + v.delta, 0) /
 		aerolineasVuelosAterrizados.length;
 
-	$: vuelosAterrizados = vuelos.filter((v): v is Vuelo & { atda: Date } => v.atda !== undefined);
+	$: vuelosAterrizados = vuelos.filter((v): v is Vuelo & { atda: Date } => !!v.atda);
+	$: console.log({ vuelosAterrizados });
 	$: vuelosCancelados = vuelos.filter((v) => v.json.estes === 'Cancelado');
 
 	$: vueloMasAtrasado = vuelosAterrizados.reduce<Vuelo & { atda: Date }>(
@@ -82,7 +83,7 @@
 	function delayString(vuelo: (typeof vuelos)[number], showPrefix: boolean = true) {
 		if (vuelo.json.estes === 'Cancelado') {
 			return 'cancelado';
-		} else if (vuelo.atda === undefined) {
+		} else if (!vuelo.atda) {
 			throw new Error('no atda');
 		}
 
