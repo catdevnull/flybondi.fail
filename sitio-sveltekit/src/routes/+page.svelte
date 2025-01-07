@@ -2,6 +2,10 @@
 	import { formatDuration, intervalToDuration, type Duration } from 'date-fns';
 	import { es } from 'date-fns/locale/es';
 	import dayjs from 'dayjs';
+	import utc from 'dayjs/plugin/utc';
+	import timezone from 'dayjs/plugin/timezone';
+	dayjs.extend(utc);
+	dayjs.extend(timezone);
 	import AIRPORTS from '$lib/aerolineas-airports.json';
 	import { Button } from '@/components/ui/button';
 	import type { Vuelo } from '$lib';
