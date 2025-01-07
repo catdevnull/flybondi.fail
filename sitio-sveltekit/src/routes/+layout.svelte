@@ -4,7 +4,7 @@
 
 	import cardPath from '$lib/assets/twitter-card.png';
 
-	const title = 'flybondi.fail';
+	const title = 'Failbondi - La libertad de NO volar';
 	const description =
 		'Estadísticas de demoras en vuelos de Flybondi. Mirá cuánto tiempo perdieron los pasajeros.';
 	const url = 'https://flybondi.fail';
