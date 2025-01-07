@@ -13,6 +13,8 @@ Los datos salen de la página web de estados de vuelos de [Aeropuertos Argentina
 
 Podes descargar una copia de los datos en el endpoint `https://flybondi.fail/api/dump`, aunque no garantizamos la estabilidad del endpoint. Si te interesa tener una copia en algun otro formato, incluyendo una copia cruda de todas las respuestas de la API de Aeropuertos Argentinas, [contactanos](mailto:hola@nulo.lol).
 
+Podes ver todo el código [en GitHub](https://github.com/catdevnull/flybondi.fail).
+
 ## ¿Por qué se enfocan en Flybondi?
 
 Porque en promedio es de las aerolineas con mas atrasos y cancelaciones de Argentina y del mundo.
