@@ -70,13 +70,10 @@
 		aerolineasVuelosAterrizados.reduce((acc, v) => acc + v.delta, 0) /
 		aerolineasVuelosAterrizados.length;
 
-	$: console.log({ otrosVuelosAterrizados });
-
 	$: promedioDeltaOtros =
 		otrosVuelosAterrizados.reduce((acc, v) => acc + v.delta, 0) / otrosVuelosAterrizados.length;
 
 	$: vuelosAterrizados = vuelos.filter((v): v is Vuelo & { atda: Date } => !!v.atda);
-	$: console.log({ vuelosAterrizados });
 	$: vuelosCancelados = vuelos.filter((v) => v.json.estes === 'Cancelado');
 
 	$: vueloMasAtrasado = vuelosAterrizados.reduce<Vuelo & { atda: Date }>(
