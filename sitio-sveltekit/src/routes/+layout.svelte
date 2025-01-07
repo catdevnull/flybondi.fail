@@ -38,6 +38,6 @@
 	<meta name="twitter:image" content={'https://flybondi.fail' + cardPath} />
 </svelte:head>
 
-<div class="min-h-screen bg-white p-4 dark:bg-neutral-900 dark:text-neutral-200">
+<div class="min-h-screen bg-white dark:bg-neutral-900 dark:text-neutral-200">
 	{@render children()}
 </div>

@@ -192,49 +192,49 @@
 	{/if}
 </svelte:head>
 
-<main class="mx-auto max-w-[1000px]">
-	<nav
-		class="sticky top-0 z-10 mb-4 flex flex-col border-b bg-white pb-1 text-center dark:border-neutral-700 dark:bg-neutral-900"
-	>
-		<h1 class="flex items-end justify-center">
-			<img src={FlybondiDerpSvg} alt="Flybondi" class="h-8" />
-			<span class="text-4xl font-medium leading-none text-red-600">.fail</span>
-		</h1>
+<nav
+	class="sticky top-0 z-10 mb-4 flex flex-col border-b bg-white px-4 pb-1 text-center dark:border-neutral-700 dark:bg-neutral-900"
+>
+	<h1 class="flex items-end justify-center">
+		<img src={FlybondiDerpSvg} alt="Flybondi" class="h-8" />
+		<span class="text-4xl font-medium leading-none text-red-600">.fail</span>
+	</h1>
 
-		<div class="flex items-center justify-between gap-4">
-			{#if hasYesterdayData}
-				<Button
-					variant="outline"
-					size="icon"
-					class="size-8"
-					href="/?date={dayjs(date).subtract(1, 'day').format('YYYY-MM-DD')}"
-				>
-					<ArrowLeftIcon class="h-4 w-4" />
-				</Button>
-			{:else}
-				<div></div>
-			{/if}
-			<h3 class="flex flex-col items-center justify-center text-neutral-700 dark:text-neutral-300">
-				<span class="text-xs leading-tight">viendo datos de</span>
-				<span class=" font-bold leading-tight"
-					>{longDateFormatter.format(dayjs(date).toDate()).replace(',', '')}</span
-				>
-			</h3>
-			{#if hasTomorrowData}
-				<Button
-					variant="outline"
-					size="icon"
-					class="size-8"
-					href="/?date={dayjs(date).add(1, 'day').format('YYYY-MM-DD')}"
-				>
-					<ArrowRightIcon class="h-4 w-4" />
-				</Button>
-			{:else}
-				<div></div>
-			{/if}
-		</div>
-	</nav>
+	<div class="flex items-center justify-between gap-4">
+		{#if hasYesterdayData}
+			<Button
+				variant="outline"
+				size="icon"
+				class="size-8"
+				href="/?date={dayjs(date).subtract(1, 'day').format('YYYY-MM-DD')}"
+			>
+				<ArrowLeftIcon class="h-4 w-4" />
+			</Button>
+		{:else}
+			<div></div>
+		{/if}
+		<h3 class="flex flex-col items-center justify-center text-neutral-700 dark:text-neutral-300">
+			<span class="text-xs leading-tight">viendo datos de</span>
+			<span class=" font-bold leading-tight"
+				>{longDateFormatter.format(dayjs(date).toDate()).replace(',', '')}</span
+			>
+		</h3>
+		{#if hasTomorrowData}
+			<Button
+				variant="outline"
+				size="icon"
+				class="size-8"
+				href="/?date={dayjs(date).add(1, 'day').format('YYYY-MM-DD')}"
+			>
+				<ArrowRightIcon class="h-4 w-4" />
+			</Button>
+		{:else}
+			<div></div>
+		{/if}
+	</div>
+</nav>
 
+<main class="mx-auto max-w-[1000px] p-4">
 	{#if vuelos.length > 0}
 		<div class="mb-4 grid grid-rows-3 gap-4 text-balance md:grid-cols-2">
 			<div
