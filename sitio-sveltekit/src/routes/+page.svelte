@@ -220,7 +220,10 @@
 				variant="outline"
 				size="icon"
 				class="size-8"
-				href="/?date={dayjs(date).subtract(1, 'day').format('YYYY-MM-DD')}"
+				href="/?date={dayjs(date)
+					.tz('America/Argentina/Buenos_Aires')
+					.subtract(1, 'day')
+					.format('YYYY-MM-DD')}"
 			>
 				<ArrowLeftIcon class="h-4 w-4" />
 			</Button>
@@ -238,7 +241,10 @@
 				variant="outline"
 				size="icon"
 				class="size-8"
-				href="/?date={dayjs(date).add(1, 'day').format('YYYY-MM-DD')}"
+				href="/?date={dayjs(date)
+					.tz('America/Argentina/Buenos_Aires')
+					.add(1, 'day')
+					.format('YYYY-MM-DD')}"
 			>
 				<ArrowRightIcon class="h-4 w-4" />
 			</Button>
