@@ -250,9 +250,9 @@
 
 <main class="mx-auto max-w-[1000px] p-4">
 	{#if vuelos.length > 0}
-		<div class="mb-4 grid grid-rows-3 gap-4 text-balance md:grid-cols-2">
+		<div class="mb-4 grid grid-rows-4 gap-4 text-balance md:grid-cols-2">
 			<div
-				class="row-span-3 flex flex-col items-center justify-center gap-4 rounded-lg border bg-neutral-50 p-4 text-xl dark:border-neutral-700 dark:bg-neutral-800"
+				class="row-span-4 flex flex-col items-center justify-center gap-4 rounded-lg border bg-neutral-50 p-4 text-xl dark:border-neutral-700 dark:bg-neutral-800"
 			>
 				<div class="grid grid-cols-9 gap-2">
 					{#each vuelos as vuelo}
@@ -306,7 +306,7 @@
 				</div>
 			</div>
 			<div
-				class="flex flex-col items-center justify-center gap-2 rounded-lg border bg-neutral-50 text-xl dark:border-neutral-700 dark:bg-neutral-800"
+				class="row-span-2 flex flex-col items-center justify-center gap-2 rounded-lg border bg-neutral-50 text-xl dark:border-neutral-700 dark:bg-neutral-800"
 			>
 				<figure class="mb-3 mt-1 w-full px-4">
 					<figcaption class="my-2 flex justify-between text-xl">
@@ -371,7 +371,7 @@
 			</div>
 
 			<div
-				class="relative flex flex-col items-center justify-center rounded-lg border bg-neutral-50 p-4 text-xl dark:border-neutral-700 dark:bg-neutral-800"
+				class="relative flex flex-col items-center justify-center rounded-lg border bg-neutral-50 p-4 pr-8 text-xl dark:border-neutral-700 dark:bg-neutral-800"
 			>
 				<p>
 					En total, Flybondi desperdició aproximadamente
