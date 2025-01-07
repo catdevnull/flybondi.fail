@@ -11,12 +11,23 @@
 	export let airlineData: {
 		name: string;
 		avgDelay: number;
+		nVuelos: number;
+		otherAerolineas?: string[];
 	}[];
-	const height = 90; // Increased from 100
+	const height = 180; // Increased height for taller bars
+
+	const FONT_STACK = 'system-ui, sans-serif';
+
+	const IATA_MAP = {
+		WJ: 'JetSmart',
+		G3: 'GOL',
+		JJ: 'TAM',
+		O4: 'Andes L.A.'
+	};
 
 	function updateChart() {
 		const svg = d3.select(svgEl);
-		const margin = { top: 0, right: 10, bottom: 20, left: 60 }; // Increased left margin for bigger logos
+		const margin = { top: 10, right: 0, bottom: 5, left: 0 }; // Increased top margin for labels
 
 		const x = d3
 			.scaleLinear()
@@ -27,7 +38,7 @@
 			.scaleBand()
 			.domain(airlineData.map((d) => d.name))
 			.range([margin.top, height - margin.bottom])
-			.padding(0.2); // Increased padding for taller bars
+			.padding(0.5); // Reduced padding to make bars taller
 
 		// Clear existing content
 		svg.selectAll('*').remove();
@@ -40,7 +51,7 @@
 			.append('rect')
 			.attr('class', 'bar-bg')
 			.attr('x', x(0))
-			.attr('y', (d) => y(d.name))
+			.attr('y', (d) => y(d.name)!)
 			.attr('width', x(180) - x(0))
 			.attr('height', y.bandwidth());
 
@@ -51,31 +62,44 @@
 			.append('rect')
 			.attr('class', 'bar')
 			.attr('x', x(0))
-			.attr('y', (d) => y(d.name))
+			.attr('y', (d) => y(d.name)!)
 			.attr('width', (d) => x(d.avgDelay) - x(0))
 			.attr('height', y.bandwidth())
 			.attr('fill', (d) => COLORS[getDelaySimplified(d.avgDelay * 60)]);
 
-		// Add airline logos
-		svg
-			.selectAll('.logo')
-			.data(airlineData)
-			.enter()
-			.append('g')
-			.attr('class', 'logo')
-			.attr('transform', (d) => `translate(${margin.left - 60}, ${y(d.name) - 5})`)
-			.html((d) => {
-				const svg = d.name === 'Flybondi' ? FlybondiDerpSvg : AerolineasArgentinasSvg;
-				// Extract the SVG content and viewBox between opening and closing tags
-				const svgMatch = svg.match(/<svg[^>]*viewBox="([^"]*)"[^>]*>([\s\S]*?)<\/svg>/i);
-				const viewBox = svgMatch?.[1] || '0 0 100 100';
-				const svgContent = svgMatch?.[2] || '';
-				// Create new SVG with original viewBox and styling
-				return `<svg width="50" height="${y.bandwidth() + 10}" viewBox="${viewBox}" fill="currentColor" preserveAspectRatio="xMidYMid meet">
-					${svgContent.replaceAll('"cls-1', '"asdfasdf').replaceAll('"st0', '"asdfasdf')}
-				</svg>`;
+		// Add labels above bars
+		const barLabels = svg.selectAll('.bar-label').data(airlineData).enter().append('text');
+		barLabels
+			.attr('class', 'bar-label')
+			.attr('x', x(0))
+			.attr('y', (d) => y(d.name)! - 4) // Reduced space between bar and label to 2px
+			.attr('text-anchor', 'start')
+			.attr('fill', 'currentColor')
+			.attr('font-family', FONT_STACK)
+			.attr('font-size', '14px')
+			.attr('font-weight', '500')
+			.each(function (d) {
+				const text = d3.select(this);
+				text.text(d.name);
+				text
+					.append('tspan')
+					// .attr('x', x(0))
+					// .attr('dy', '1.2em')
+					.attr('opacity', '0.5')
+					.attr('font-size', '14px')
+					.attr('font-weight', 'normal')
+					.text(`  ${d.nVuelos} vuelos`)
+					.append('tspan')
+					.attr('class', 'hidden sm:block')
+					.attr('font-size', '14px')
+					.attr('font-weight', 'normal')
+
+					.text(
+						`${d.otherAerolineas ? ` (${d.otherAerolineas.map((a) => (IATA_MAP as any)[a] ?? a).join(', ')})` : ''}`
+					);
 			});
-		// Add labels
+
+		// Add time labels
 		svg
 			.selectAll('.label')
 			.data(airlineData)
@@ -83,7 +107,7 @@
 			.append('text')
 			.attr('class', 'label')
 			.attr('x', (d) => x(d.avgDelay) + 5)
-			.attr('y', (d) => y(d.name) + y.bandwidth() / 2)
+			.attr('y', (d) => y(d.name)! + y.bandwidth() / 2)
 			.attr('dy', '0.35em')
 			.text((d) => {
 				const hours = Math.floor(d.avgDelay / 60);
@@ -91,7 +115,7 @@
 				return hours > 0 ? `${hours}:${minutes.toString().padStart(2, '0')}hs` : `${minutes}min`;
 			})
 			.attr('fill', '#333')
-			.attr('font-family', 'Arial')
+			.attr('font-family', FONT_STACK)
 			.attr('font-size', '14px');
 
 		// Add x-axis
@@ -100,16 +124,18 @@
 			.tickValues([0, 60, 120, 180])
 			.tickSize(0)
 			.tickFormat((d: number) => `${d / 60}hs`);
-
-		svg
+		const ejex = svg
 			.append('g')
-			.attr('transform', `translate(0,${height - margin.bottom})`)
-			.call(xAxis)
+			.attr('transform', `translate(0,${height - margin.bottom - 20})`)
+			.call(xAxis);
+		ejex
 			.selectAll('text')
-			.attr('font-family', 'Arial')
-			.attr('font-size', '12px');
-
-		svg.selectAll('.domain').remove();
+			.attr('font-family', FONT_STACK)
+			.attr('font-size', '12px')
+			.attr('opacity', '0.7');
+		ejex.select('.domain').remove();
+		ejex.select('.tick').attr('text-anchor', 'start');
+		ejex.select('.tick:last-of-type').attr('text-anchor', 'end');
 	}
 
 	$: if (svgEl && width && airlineData) {
@@ -127,11 +153,6 @@
 		max-width: 800px;
 	}
 
-	.chart-container :global(.logo) {
-		filter: grayscale(100%) !important;
-		color: #333 !important;
-	}
-
 	.chart-container :global(.bar-bg) {
 		fill: #e5e5e5;
 	}
@@ -141,11 +162,6 @@
 	}
 
 	@media (prefers-color-scheme: dark) {
-		.chart-container :global(.logo) {
-			filter: grayscale(100%) !important;
-			color: #ccc !important;
-		}
-
 		.chart-container :global(.bar-bg) {
 			fill: #404040;
 		}

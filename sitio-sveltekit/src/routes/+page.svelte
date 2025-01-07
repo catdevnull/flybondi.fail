@@ -51,11 +51,25 @@
 	);
 	$: vuelosAtrasados = vuelos.filter((vuelo) => vuelo.delta > 60 * 30);
 
+	$: otrosVuelosAterrizados = todosLosVuelos.filter(
+		(vuelo) =>
+			!!vuelo.atda &&
+			vuelo.json.idaerolinea !== 'AR' &&
+			vuelo.json.idaerolinea !== 'FO' &&
+			AEROPUERTOS_FLYBONDI.includes(vuelo.json.IATAdestorig) &&
+			AEROPUERTOS_FLYBONDI.includes(vuelo.json.arpt)
+	);
+
 	$: promedioDelta =
 		vuelosAterrizados.reduce((acc, v) => acc + v.delta, 0) / vuelosAterrizados.length;
 	$: promedioDeltaAerolineas =
 		aerolineasVuelosAterrizados.reduce((acc, v) => acc + v.delta, 0) /
 		aerolineasVuelosAterrizados.length;
+
+	$: console.log({ otrosVuelosAterrizados });
+
+	$: promedioDeltaOtros =
+		otrosVuelosAterrizados.reduce((acc, v) => acc + v.delta, 0) / otrosVuelosAterrizados.length;
 
 	$: vuelosAterrizados = vuelos.filter((v): v is Vuelo & { atda: Date } => !!v.atda);
 	$: console.log({ vuelosAterrizados });
@@ -318,6 +332,10 @@
 												Para Aerolíneas: son operados por Aerolíneas Argentinas (código AR) y vuelan
 												entre aeropuertos donde también opera Flybondi
 											</li>
+											<li>
+												Para otras aerolineas: son operadas por otras aerolineas y vuelan entre
+												aeropuertos donde también opera Flybondi
+											</li>
 										</ul>
 										Los vuelos cancelados no se incluyen en este cálculo.
 										<a href="/acerca">Mas info</a>
@@ -331,8 +349,22 @@
 					</figcaption>
 					<AverageVis
 						airlineData={[
-							{ name: 'Flybondi', avgDelay: promedioDelta / 60 },
-							{ name: 'Aerolineas Argentinas', avgDelay: promedioDeltaAerolineas / 60 }
+							{
+								name: 'Flybondi',
+								avgDelay: promedioDelta / 60,
+								nVuelos: vuelosAterrizados.length
+							},
+							{
+								name: 'Aerolineas Argentinas',
+								avgDelay: promedioDeltaAerolineas / 60,
+								nVuelos: aerolineasVuelosAterrizados.length
+							},
+							{
+								name: 'Otros',
+								avgDelay: promedioDeltaOtros / 60,
+								nVuelos: otrosVuelosAterrizados.length,
+								otherAerolineas: [...new Set(otrosVuelosAterrizados.map((v) => v.json.idaerolinea))]
+							}
 						]}
 					/>
 				</figure>
