@@ -31,11 +31,11 @@
 	import DateTime from './date-time.svelte';
 	import * as AlertDialog from '@/components/ui/alert-dialog';
 	import * as Select from '@/components/ui/select';
+	import { browser } from '$app/environment';
 
 	export let data;
 	$: ({ vuelos: todosLosVuelos, date, hasTomorrowData, hasYesterdayData } = data);
 
-	let aerolineaSeleccionada: keyof typeof AEROLINEAS = 'FO';
 	const AEROLINEAS = {
 		FO: 'Flybondi',
 		AR: 'Aerolíneas Argentinas',
@@ -47,6 +47,36 @@
 		ZP: 'Paranair',
 		H2: 'SKY'
 	};
+	function getAerolineaSeleccionada() {
+		let aerolinea;
+		if (browser) {
+			aerolinea = new URL(location.href).searchParams.get('aerolinea');
+		} else {
+			aerolinea = data.aerolineaEnUrl;
+		}
+		if (aerolinea && Object.keys(AEROLINEAS).includes(aerolinea)) {
+			return aerolinea as keyof typeof AEROLINEAS;
+		}
+		return 'FO';
+	}
+	let aerolineaSeleccionada = getAerolineaSeleccionada();
+	$: {
+		if (aerolineaSeleccionada !== getAerolineaSeleccionada() && browser) {
+			const queryParams = new URLSearchParams(window.location.search);
+			queryParams.set('aerolinea', aerolineaSeleccionada);
+			window.history.pushState(null, '', window.location.pathname + '?' + queryParams.toString());
+		}
+	}
+
+	$: aerolineasConVuelos = Object.keys(AEROLINEAS).filter((a) =>
+		todosLosVuelos.some(
+			(v) =>
+				v.json.idaerolinea === a &&
+				AEROPUERTOS_FLYBONDI.includes(v.json.arpt) &&
+				AEROPUERTOS_FLYBONDI.includes(v.json.IATAdestorig) &&
+				(!!v.atda || v.json.estes === 'Cancelado')
+		)
+	);
 
 	$: vuelos = todosLosVuelos
 		.filter((v) => v.json.idaerolinea === aerolineaSeleccionada)
@@ -59,6 +89,7 @@
 			if (b.json.estes === 'Cancelado') return 1;
 			return b.delta - a.delta;
 		});
+	$: console.log(vuelos, todosLosVuelos);
 	$: aerolineasVuelosAterrizados = todosLosVuelos.filter(
 		(vuelo) =>
 			vuelo.json.idaerolinea === 'AR' &&
@@ -221,7 +252,7 @@
 </svelte:head>
 
 <nav
-	class="sticky top-0 z-10 mb-4 flex flex-col border-b bg-white px-4 pb-1 text-center dark:border-neutral-700 dark:bg-neutral-900"
+	class="sticky top-0 z-10 mb-4 flex flex-col border-b bg-white px-1 pb-1 text-center sm:px-4 dark:border-neutral-700 dark:bg-neutral-900"
 >
 	<h1 class="flex items-end justify-center">
 		<span class="text-4xl font-medium leading-none text-red-600">failbondi.fail</span>
@@ -236,34 +267,38 @@
 				href="/?date={dayjs(date)
 					.tz('America/Argentina/Buenos_Aires')
 					.subtract(1, 'day')
-					.format('YYYY-MM-DD')}"
+					.format('YYYY-MM-DD')}{aerolineaSeleccionada !== 'FO'
+					? '&aerolinea=' + aerolineaSeleccionada
+					: ''}"
 			>
 				<ArrowLeftIcon class="h-4 w-4" />
 			</Button>
 		{:else}
 			<div></div>
 		{/if}
-		<h3 class="flex flex-col items-center justify-center text-neutral-700 dark:text-neutral-300">
-			<span class="text-xs leading-tight">viendo datos de</span>
-			<span class=" font-bold leading-tight"
-				>{longDateFormatter.format(dayjs(date).toDate()).replace(',', '')}</span
+		<div class="flex items-center gap-4">
+			<h3 class="flex flex-col items-center justify-center text-neutral-700 dark:text-neutral-300">
+				<span class="text-xs leading-tight">viendo datos de</span>
+				<span class=" font-bold leading-tight"
+					>{longDateFormatter.format(dayjs(date).toDate()).replace(',', '')}</span
+				>
+			</h3>
+			<Select.Root
+				selected={{ value: aerolineaSeleccionada, label: AEROLINEAS[aerolineaSeleccionada] }}
+				onSelectedChange={(e) => (aerolineaSeleccionada = e?.value as keyof typeof AEROLINEAS)}
 			>
-		</h3>
-		<Select.Root
-			selected={{ value: aerolineaSeleccionada, label: AEROLINEAS[aerolineaSeleccionada] }}
-			onSelectedChange={(e) => (aerolineaSeleccionada = e?.value as keyof typeof AEROLINEAS)}
-		>
-			<Select.Trigger class="w-[150px]">
-				<Select.Value placeholder="Seleccionar aerolínea" />
-			</Select.Trigger>
-			<Select.Content>
-				{#each Object.keys(AEROLINEAS).filter( (a) => todosLosVuelos.some((v) => v.json.idaerolinea === a && AEROPUERTOS_FLYBONDI.includes(v.json.arpt) && AEROPUERTOS_FLYBONDI.includes(v.json.IATAdestorig) && (!!v.atda || v.json.estes === 'Cancelado')) ) as aerolinea}
-					<Select.Item value={aerolinea}>
-						{AEROLINEAS[aerolinea as keyof typeof AEROLINEAS]}
-					</Select.Item>
-				{/each}
-			</Select.Content>
-		</Select.Root>
+				<Select.Trigger class="w-[150px]">
+					<Select.Value placeholder="Seleccionar aerolínea" />
+				</Select.Trigger>
+				<Select.Content>
+					{#each aerolineasConVuelos as aerolinea}
+						<Select.Item value={aerolinea}>
+							{AEROLINEAS[aerolinea as keyof typeof AEROLINEAS]}
+						</Select.Item>
+					{/each}
+				</Select.Content>
+			</Select.Root>
+		</div>
 		{#if hasTomorrowData}
 			<Button
 				variant="outline"

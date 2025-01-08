@@ -46,10 +46,6 @@ const config: Config = {
 				card: {
 					DEFAULT: 'hsl(var(--card) / <alpha-value>)',
 					foreground: 'hsl(var(--card-foreground) / <alpha-value>)'
-				},
-				brand: {
-					DEFAULT: '#FEBE11',
-					foreground: '#000'
 				}
 			},
 			borderRadius: {

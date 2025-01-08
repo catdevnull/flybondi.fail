@@ -44,6 +44,7 @@ export const load: PageServerLoad = async ({ url, platform }) => {
 		hasTomorrowData: vuelos.some(
 			(vuelo) => vuelo.stda >= tomorrowStart.toDate() && vuelo.stda <= tomorrowEnd.toDate()
 		),
-		hasCustomDate: url.searchParams.has('date')
+		hasCustomDate: url.searchParams.has('date'),
+		aerolineaEnUrl: url.searchParams.get('aerolinea')
 	};
 };
