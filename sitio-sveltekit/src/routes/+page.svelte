@@ -8,7 +8,6 @@
 	dayjs.extend(timezone);
 	import AIRPORTS from '$lib/aerolineas-airports.json';
 	import { Button } from '@/components/ui/button';
-	import 'iconify-icon';
 	import type { Vuelo } from '$lib';
 	import {
 		AlertCircleIcon,
@@ -227,7 +226,7 @@
 					.subtract(1, 'day')
 					.format('YYYY-MM-DD')}"
 			>
-				<iconify-icon width="1rem" height="1rem" icon="fa-solid:arrow-left"></iconify-icon>
+				<ArrowLeftIcon class="h-4 w-4" />
 			</Button>
 		{:else}
 			<div></div>
@@ -248,7 +247,7 @@
 					.add(1, 'day')
 					.format('YYYY-MM-DD')}"
 			>
-				<iconify-icon width="1rem" height="1rem" icon="fa-solid:arrow-right"></iconify-icon>
+				<ArrowRightIcon class="h-4 w-4" />
 			</Button>
 		{:else}
 			<div></div>
@@ -264,25 +263,14 @@
 			>
 				<div class="grid grid-cols-9 gap-2">
 					{#each vuelos as vuelo}
-						<button
-							on:click={goToVuelo}
-							data-id={vuelo.aerolineas_flight_id}
-							class="flex items-center justify-center"
-						>
+						<button on:click={goToVuelo} data-id={vuelo.aerolineas_flight_id}>
 							{#if vuelo.atda}
-								<iconify-icon
-									width="2rem"
-									height="2rem"
-									class={getDelayColor(vuelo.delta)}
-									icon="fa-solid:plane"
-								></iconify-icon>
+								<Icon class="h-8 w-8 {getDelayColor(vuelo.delta)}" icon="fa-solid:plane" />
 							{:else if vuelo.json.estes === 'Cancelado'}
-								<iconify-icon
-									width="2rem"
-									height="2rem"
-									class="text-neutral-700 dark:text-neutral-300"
+								<Icon
+									class="h-8 w-8 text-neutral-700 dark:text-neutral-300"
 									icon="fa-solid:plane-slash"
-								></iconify-icon>
+								/>
 							{/if}
 						</button>
 					{/each}
@@ -300,48 +288,26 @@
 				</p>
 				<div class="flex flex-wrap items-center justify-center gap-x-4 gap-y-2 text-xs">
 					<div class="flex items-center gap-1">
-						<iconify-icon
-							width="1rem"
-							height="1rem"
-							class="text-neutral-700 dark:text-neutral-300"
+						<Icon
+							class="size-4 text-neutral-700 dark:text-neutral-300"
 							icon="fa-solid:plane-slash"
-						></iconify-icon>
+						/>
 						<span>Cancelado</span>
 					</div>
 					<div class="flex items-center gap-1">
-						<iconify-icon
-							width="1rem"
-							height="1rem"
-							class={COLOR_CLASSES[60 * 60]}
-							icon="fa-solid:plane"
-						></iconify-icon>
+						<Icon class="size-4 text-[#b10000]" icon="fa-solid:plane" />
 						<span>mas de 45min</span>
 					</div>
 					<div class="flex items-center gap-1">
-						<iconify-icon
-							width="1rem"
-							height="1rem"
-							class={COLOR_CLASSES[45 * 60]}
-							icon="fa-solid:plane"
-						></iconify-icon>
+						<Icon class="size-4 {COLOR_CLASSES[45 * 60]}" icon="fa-solid:plane" />
 						<span>45-30min</span>
 					</div>
 					<div class="flex items-center gap-1">
-						<iconify-icon
-							width="1rem"
-							height="1rem"
-							class={COLOR_CLASSES[30 * 60]}
-							icon="fa-solid:plane"
-						></iconify-icon>
+						<Icon class="size-4 {COLOR_CLASSES[30 * 60]}" icon="fa-solid:plane" />
 						<span>30-15min</span>
 					</div>
 					<div class="flex items-center gap-1">
-						<iconify-icon
-							width="1rem"
-							height="1rem"
-							class={COLOR_CLASSES[15 * 60]}
-							icon="fa-solid:plane"
-						></iconify-icon>
+						<Icon class="size-4 {COLOR_CLASSES[15 * 60]}" icon="fa-solid:plane" />
 						<span>15-0min</span>
 					</div>
 				</div>
@@ -356,7 +322,7 @@
 						<AlertDialog.Root>
 							<AlertDialog.Trigger>
 								<Button size="icon" variant="outline" class="size-7" aria-label="Ver metodología">
-									<iconify-icon width="1rem" height="1rem" icon="grommet-icons:info"></iconify-icon>
+									<Icon icon="grommet-icons:info" class="size-4" />
 								</Button>
 							</AlertDialog.Trigger>
 							<AlertDialog.Content>
@@ -434,7 +400,7 @@
 							class="absolute right-4 top-4 size-7"
 							aria-label="Ver metodología"
 						>
-							<iconify-icon width="1rem" height="1rem" icon="grommet-icons:info"></iconify-icon>
+							<Icon icon="grommet-icons:info" class="size-4" />
 						</Button>
 					</AlertDialog.Trigger>
 					<AlertDialog.Content>
@@ -506,7 +472,7 @@
 					<th class="px-4 py-2 text-left text-neutral-700 dark:text-neutral-300">Hora Real</th>
 					<th class="flex items-center px-4 py-2 text-left text-neutral-700 dark:text-neutral-300">
 						Demora en despegar
-						<iconify-icon width="1rem" height="1rem" icon="fa-solid:arrow-down"></iconify-icon>
+						<ArrowDownIcon class="size-4" />
 					</th>
 				</tr>
 			</thead>

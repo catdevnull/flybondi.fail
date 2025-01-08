@@ -21,10 +21,8 @@
 	$: ({ formatted, amntExtraDays } = formatDateTime(date, baseDate));
 </script>
 
-<span>
-	{formatted}
+{formatted}
 
-	{#if amntExtraDays}
-		<sup>+{amntExtraDays}</sup>
-	{/if}
-</span>
+{#if amntExtraDays}
+	<sup>+{amntExtraDays}</sup>
+{/if}
