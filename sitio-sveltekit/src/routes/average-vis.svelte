@@ -109,7 +109,7 @@
 			.enter()
 			.append('text')
 			.attr('class', 'label')
-			.attr('x', (d) => x(d.avgDelay) + 5)
+			.attr('x', (d) => d3.min([x(d.avgDelay) + 5, x(180) - 50]))
 			.attr('y', (d) => y(d.name)! + y.bandwidth() / 2)
 			.attr('dy', '0.35em')
 			.text((d) => {
