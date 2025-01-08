@@ -1,9 +1,9 @@
-# fly.toml app configuration file generated for flybondi-fail-sveltekit on 2025-01-01T19:23:16-03:00
+# fly.toml app configuration file generated for failbondi-fail-sveltekit on 2025-01-08T19:26:35-03:00
 #
 # See https://fly.io/docs/reference/configuration/ for information about how to use this file.
 #
 
-app = 'flybondi-fail-sveltekit'
+app = 'failbondi-fail-sveltekit'
 primary_region = 'gru'
 
 [build]
