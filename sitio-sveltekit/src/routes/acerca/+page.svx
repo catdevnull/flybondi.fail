@@ -3,15 +3,17 @@
 
 <div class="prose prose-neutral dark:prose-invert max-w-[600px] mx-auto p-4">
 
-# Acerca de Flybondi.fail
+# Acerca de Failbondi.fail
 
-Flybondi.fail es una página web homenaje a todos los vuelos atrasados y cancelados de la aerolinea argentina low-cost Flybondi. Fue creada por [Nulo Science Inc.™](https://nulo.lol), la empresa lider en shitposts políticos de alta calidad.
+Failbondi.fail es una página web homenaje a todos los vuelos atrasados y cancelados de la aerolinea argentina low-cost Flybondi. Fue creada por [Nulo Science Inc.™](https://nulo.lol), la empresa lider en shitposts políticos de alta calidad.
+
+Originalmente se llamaba "Failbondi.fail", pero los abogados de Flybondi (FB Líneas Aéreas S.A.) nos mandaron una amenaza por la utilización de la marca.
 
 ## ¿De dónde salen los datos?
 
 Los datos salen de la página web de estados de vuelos de [Aeropuertos Argentina](https://www.aeropuertosargentina.com/es/AEP), ya que administran la mayoría de los aeropuertos en Argentina. Alguna información complementaria, como la configuración de asientos de los aviones, es accedida de [Airfleets](https://www.airfleets.es).
 
-Podes descargar una copia de los datos en el endpoint `https://flybondi.fail/api/dump`, aunque no garantizamos la estabilidad del endpoint. Si te interesa tener una copia en algun otro formato, incluyendo una copia cruda de todas las respuestas de la API de Aeropuertos Argentinas, [contactanos](mailto:hola@nulo.lol).
+Podes descargar una copia de los datos en el endpoint `https://failbondi.fail/api/dump`, aunque no garantizamos la estabilidad del endpoint. Si te interesa tener una copia en algun otro formato, incluyendo una copia cruda de todas las respuestas de la API de Aeropuertos Argentinas, [contactanos](mailto:hola@nulo.lol).
 
 Podes ver todo el código [en GitHub](https://github.com/catdevnull/flybondi.fail).
 
@@ -23,7 +25,7 @@ Actualmente comparamos el promedio de atraso diario con el de Aerolineas Argenti
 
 ## ¿Quien financió esto?
 
-Flybondi.fail es desarrollada en el tiempo libre de los empleados y colaboradores de Nulo Science Inc.™, con los fondos privados de la misma. Hasta la fecha, ninguna otra empresa u organización proveyó fondos ni recursos para el desarrollo de la página.
+Failbondi.fail es desarrollada en el tiempo libre de los empleados y colaboradores de Nulo Science Inc.™, con los fondos privados de la misma. Hasta la fecha, ninguna otra empresa u organización proveyó fondos ni recursos para el desarrollo de la página.
 
 ## ¿Donde te envio cartas de amor/amenazas de muerte/cartas documento?
 

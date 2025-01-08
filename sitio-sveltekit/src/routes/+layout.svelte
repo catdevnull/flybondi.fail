@@ -4,10 +4,10 @@
 
 	import cardPath from '$lib/assets/twitter-card.png';
 
-	const title = 'Failbondi - La libertad de NO volar';
+	const title = 'Failbondi - Demoras de las aerolineas argentinas';
 	const description =
-		'Estadísticas de demoras en vuelos de Flybondi. Mirá cuánto tiempo perdieron los pasajeros.';
-	const url = 'https://flybondi.fail';
+		'Estadísticas de demoras en vuelos argentinos. Mirá cuánto tiempo perdieron los pasajeros.';
+	const url = 'https://failbondi.fail';
 	import { ModeWatcher } from 'mode-watcher';
 </script>
 
@@ -35,7 +35,7 @@
 	<meta name="twitter:description" content={description} />
 	<meta name="twitter:url" content={url} />
 	<!-- twitter requiere url completa https://leimao.github.io/blog/Missing-Image-Twitter-Card/ -->
-	<meta name="twitter:image" content={'https://flybondi.fail' + cardPath} />
+	<meta name="twitter:image" content={'https://failbondi.fail' + cardPath} />
 </svelte:head>
 
 <div class="min-h-screen bg-white dark:bg-neutral-900 dark:text-neutral-200">

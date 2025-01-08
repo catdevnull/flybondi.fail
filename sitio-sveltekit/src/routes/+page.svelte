@@ -20,7 +20,6 @@
 		PlaneTakeoffIcon
 	} from 'lucide-svelte';
 	import NuloScienceSvg from '$lib/assets/Nulo_Science_Inc.svg';
-	import FlybondiDerpSvg from '$lib/assets/flybondi-derp.svg';
 	import Icon from '@iconify/svelte';
 	import AverageVis from './average-vis.svelte';
 	import { getDelayColor, COLOR_CLASSES } from '$lib/colors';
@@ -211,8 +210,7 @@
 	class="sticky top-0 z-10 mb-4 flex flex-col border-b bg-white px-4 pb-1 text-center dark:border-neutral-700 dark:bg-neutral-900"
 >
 	<h1 class="flex items-end justify-center">
-		<img src={FlybondiDerpSvg} alt="Flybondi" class="h-8" />
-		<span class="text-4xl font-medium leading-none text-red-600">.fail</span>
+		<span class="text-4xl font-medium leading-none text-red-600">failbondi.fail</span>
 	</h1>
 
 	<div class="flex items-center justify-between gap-4">
@@ -574,14 +572,14 @@
 	class="mt-10 flex flex-col items-center justify-center text-center text-sm text-neutral-600 dark:text-neutral-400"
 >
 	<p class="prose prose-neutral dark:prose-invert mb-4 max-w-[800px]">
-		Flybondi.fail no está afiliado con Flybondi. Flybondi.fail es una página homenaje a los vuelos
+		Failbondi.fail no está afiliado con Flybondi. Failbondi.fail es una página homenaje a los vuelos
 		de Flybondi que se atrasan. La información presentada es meramente informativa. No nos hacemos
 		responsables de los errores que puedan haber en la información presentada.
 	</p>
 
 	<div class="prose prose-neutral dark:prose-invert mb-4 flex max-w-[800px] flex-col">
 		<p class="my-0">
-			Flybondi.fail es un experimento de <a href="https://nulo.lol">Nulo Science Inc™</a>.
+			Failbondi.fail es un experimento de <a href="https://nulo.lol">Nulo Science Inc™</a>.
 		</p>
 
 		<a href="/acerca">Acerca del sitio, sus datos, etc</a>

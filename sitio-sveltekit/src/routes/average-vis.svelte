@@ -1,8 +1,6 @@
 <script lang="ts">
 	import * as d3 from 'd3';
 
-	import FlybondiDerpSvg from '$lib/assets/flybondi-derp.svg?raw';
-	import AerolineasArgentinasSvg from '$lib/assets/aerolineas-argentinas.svg?raw';
 	import { COLORS, getDelaySimplified } from '@/colors';
 
 	let svgEl: SVGSVGElement;
