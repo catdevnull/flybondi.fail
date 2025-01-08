@@ -258,7 +258,7 @@
 		<span class="text-4xl font-medium leading-none text-red-600">failbondi.fail</span>
 	</h1>
 
-	<div class="flex items-center justify-between gap-4">
+	<div class="mx-auto flex max-w-[600px] items-center justify-between gap-4">
 		{#if hasYesterdayData}
 			<Button
 				variant="outline"
@@ -277,7 +277,9 @@
 			<div></div>
 		{/if}
 		<div class="flex items-center gap-4">
-			<h3 class="flex flex-col items-center justify-center text-neutral-700 dark:text-neutral-300">
+			<h3
+				class="flex w-full flex-col items-center justify-center text-neutral-700 dark:text-neutral-300"
+			>
 				<span class="text-xs leading-tight">viendo datos de</span>
 				<span class=" font-bold leading-tight"
 					>{longDateFormatter.format(dayjs(date).toDate()).replace(',', '')}</span
@@ -287,7 +289,7 @@
 				selected={{ value: aerolineaSeleccionada, label: AEROLINEAS[aerolineaSeleccionada] }}
 				onSelectedChange={(e) => (aerolineaSeleccionada = e?.value as keyof typeof AEROLINEAS)}
 			>
-				<Select.Trigger class="w-[150px]">
+				<Select.Trigger class="w-[150px] sm:w-[200px]">
 					<Select.Value placeholder="Seleccionar aerolínea" />
 				</Select.Trigger>
 				<Select.Content>
