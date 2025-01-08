@@ -7,8 +7,6 @@
 
 Failbondi.fail es una página web homenaje a todos los vuelos atrasados y cancelados de la aerolinea argentina low-cost Flybondi. Fue creada por [Nulo Science Inc.™](https://nulo.lol), la empresa lider en shitposts políticos de alta calidad.
 
-Originalmente se llamaba "Failbondi.fail", pero los abogados de Flybondi (FB Líneas Aéreas S.A.) nos mandaron una amenaza por la utilización de la marca.
-
 ## ¿De dónde salen los datos?
 
 Los datos salen de la página web de estados de vuelos de [Aeropuertos Argentina](https://www.aeropuertosargentina.com/es/AEP), ya que administran la mayoría de los aeropuertos en Argentina. Alguna información complementaria, como la configuración de asientos de los aviones, es accedida de [Airfleets](https://www.airfleets.es).
@@ -16,12 +14,6 @@ Los datos salen de la página web de estados de vuelos de [Aeropuertos Argentina
 Podes descargar una copia de los datos en el endpoint `https://failbondi.fail/api/dump`, aunque no garantizamos la estabilidad del endpoint. Si te interesa tener una copia en algun otro formato, incluyendo una copia cruda de todas las respuestas de la API de Aeropuertos Argentinas, [contactanos](mailto:hola@nulo.lol).
 
 Podes ver todo el código [en GitHub](https://github.com/catdevnull/flybondi.fail).
-
-## ¿Por qué se enfocan en Flybondi?
-
-Porque en promedio es de las aerolineas con mas atrasos y cancelaciones de Argentina y del mundo.
-
-Actualmente comparamos el promedio de atraso diario con el de Aerolineas Argentinas.
 
 ## ¿Quien financió esto?
 

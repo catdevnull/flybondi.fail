@@ -30,12 +30,26 @@
 	import AlertDescription from '@/components/ui/alert/alert-description.svelte';
 	import DateTime from './date-time.svelte';
 	import * as AlertDialog from '@/components/ui/alert-dialog';
+	import * as Select from '@/components/ui/select';
 
 	export let data;
 	$: ({ vuelos: todosLosVuelos, date, hasTomorrowData, hasYesterdayData } = data);
 
+	let aerolineaSeleccionada: keyof typeof AEROLINEAS = 'FO';
+	const AEROLINEAS = {
+		FO: 'Flybondi',
+		AR: 'Aerolíneas Argentinas',
+		WJ: 'JetSmart',
+		G3: 'GOL',
+		JJ: 'TAM',
+		O4: 'Andes L.A.',
+		'5U': 'TAG',
+		ZP: 'Paranair',
+		H2: 'SKY'
+	};
+
 	$: vuelos = todosLosVuelos
-		.filter((v) => v.json.idaerolinea === 'FO')
+		.filter((v) => v.json.idaerolinea === aerolineaSeleccionada)
 		.filter(
 			(v): v is Vuelo & ({ atda: Date } | { json: { estes: 'Cancelado' } }) =>
 				!!v.atda || v.json.estes === 'Cancelado'
@@ -58,7 +72,7 @@
 		(vuelo) =>
 			!!vuelo.atda &&
 			vuelo.json.idaerolinea !== 'AR' &&
-			vuelo.json.idaerolinea !== 'FO' &&
+			vuelo.json.idaerolinea !== aerolineaSeleccionada &&
 			AEROPUERTOS_FLYBONDI.includes(vuelo.json.IATAdestorig) &&
 			AEROPUERTOS_FLYBONDI.includes(vuelo.json.arpt)
 	);
@@ -235,6 +249,21 @@
 				>{longDateFormatter.format(dayjs(date).toDate()).replace(',', '')}</span
 			>
 		</h3>
+		<Select.Root
+			selected={{ value: aerolineaSeleccionada, label: AEROLINEAS[aerolineaSeleccionada] }}
+			onSelectedChange={(e) => (aerolineaSeleccionada = e?.value as keyof typeof AEROLINEAS)}
+		>
+			<Select.Trigger class="w-[150px]">
+				<Select.Value placeholder="Seleccionar aerolínea" />
+			</Select.Trigger>
+			<Select.Content>
+				{#each Object.keys(AEROLINEAS).filter( (a) => todosLosVuelos.some((v) => v.json.idaerolinea === a && AEROPUERTOS_FLYBONDI.includes(v.json.arpt) && AEROPUERTOS_FLYBONDI.includes(v.json.IATAdestorig) && (!!v.atda || v.json.estes === 'Cancelado')) ) as aerolinea}
+					<Select.Item value={aerolinea}>
+						{AEROLINEAS[aerolinea as keyof typeof AEROLINEAS]}
+					</Select.Item>
+				{/each}
+			</Select.Content>
+		</Select.Root>
 		{#if hasTomorrowData}
 			<Button
 				variant="outline"
@@ -332,15 +361,7 @@
 										se incluyen vuelos que:
 										<ul>
 											<li>Ya despegaron (tienen hora real de despegue)</li>
-											<li>Para Flybondi: son operados por Flybondi (código FO)</li>
-											<li>
-												Para Aerolíneas: son operados por Aerolíneas Argentinas (código AR) y vuelan
-												entre aeropuertos donde también opera Flybondi
-											</li>
-											<li>
-												Para otras aerolineas: son operadas por otras aerolineas y vuelan entre
-												aeropuertos donde también opera Flybondi
-											</li>
+											<li>vuelan entre aeropuertos donde también opera Flybondi</li>
 										</ul>
 										Los vuelos cancelados no se incluyen en este cálculo.
 										<a href="/acerca">Mas info</a>
@@ -355,7 +376,7 @@
 					<AverageVis
 						airlineData={[
 							{
-								name: 'Flybondi',
+								name: AEROLINEAS[aerolineaSeleccionada],
 								avgDelay: promedioDelta / 60,
 								nVuelos: vuelosAterrizados.length
 							},
@@ -379,7 +400,7 @@
 				class="relative flex flex-col items-center justify-center rounded-lg border bg-neutral-50 p-4 pr-8 text-xl dark:border-neutral-700 dark:bg-neutral-800"
 			>
 				<p>
-					En total, Flybondi desperdició aproximadamente
+					En total, {AEROLINEAS[aerolineaSeleccionada]} desperdició aproximadamente
 					<span class="font-bold">
 						{formatDurationWithoutSeconds({
 							...getDurationFromSeconds(totalSegundosDesperdiciados),
@@ -572,9 +593,11 @@
 	class="mt-10 flex flex-col items-center justify-center text-center text-sm text-neutral-600 dark:text-neutral-400"
 >
 	<p class="prose prose-neutral dark:prose-invert mb-4 max-w-[800px]">
-		Failbondi.fail no está afiliado con Flybondi. Failbondi.fail es una página homenaje a los vuelos
-		de Flybondi que se atrasan. La información presentada es meramente informativa. No nos hacemos
-		responsables de los errores que puedan haber en la información presentada.
+		La marca Flybondi es de FB Líneas Aéreas S.A. Este sitio web no está afiliado, respaldado ni
+		patrocinado por FB Líneas Aéreas S.A. Todos los derechos asociados a la marca y su uso están
+		reservados a su propietario legítimo. El uso de la marca en este sitio es únicamente
+		informativo. No nos hacemos responsables de los errores que puedan haber en la información
+		presentada.
 	</p>
 
 	<div class="prose prose-neutral dark:prose-invert mb-4 flex max-w-[800px] flex-col">
