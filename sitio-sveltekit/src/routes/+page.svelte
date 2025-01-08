@@ -627,7 +627,7 @@
 </main>
 
 <footer
-	class="mt-10 flex flex-col items-center justify-center text-center text-sm text-neutral-600 dark:text-neutral-400"
+	class="mt-10 flex flex-col items-center justify-center px-4 text-center text-sm text-neutral-600 dark:text-neutral-400"
 >
 	<p class="prose prose-neutral dark:prose-invert mb-4 max-w-[800px]">
 		La marca Flybondi es de FB Líneas Aéreas S.A. Este sitio web no está afiliado, respaldado ni
@@ -637,7 +637,7 @@
 		presentada.
 	</p>
 
-	<div class="prose prose-neutral dark:prose-invert mb-4 flex max-w-[800px] flex-col">
+	<div class="prose prose-neutral dark:prose-invert mb-4 flex max-w-[800px] flex-col gap-2">
 		<p class="my-0">
 			Failbondi.fail es un experimento de <a href="https://nulo.lol">Nulo Science Inc™</a>.
 		</p>
