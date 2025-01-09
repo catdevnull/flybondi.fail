@@ -41,6 +41,21 @@ export const load: PageServerLoad = async ({ url, platform, setHeaders }) => {
 		'cache-control': 'public, max-age=60'
 	});
 
+	for (const vuelo of vuelos) {
+		// @ts-ignore
+		delete vuelo.aeronave;
+		// @ts-ignore
+		delete vuelo.msn;
+		// @ts-ignore
+		delete vuelo.compania_aerea;
+		// @ts-ignore
+		delete vuelo.situacion;
+		// @ts-ignore
+		delete vuelo.detail_url;
+		// @ts-ignore
+		delete vuelo.edad_del_avion;
+	}
+
 	return {
 		vuelos: vuelos.filter((vuelo) => vuelo.stda >= start.toDate() && vuelo.stda <= end.toDate()),
 		date: date.toDate(),
