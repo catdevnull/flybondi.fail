@@ -7,7 +7,7 @@ import { sql, type Vuelo } from '$lib';
 dayjs.extend(utc);
 dayjs.extend(timezone);
 
-export const load: PageServerLoad = async ({ url, platform }) => {
+export const load: PageServerLoad = async ({ url, platform, setHeaders }) => {
 	const tsz = 'America/Argentina/Buenos_Aires';
 	const dateQ = url.searchParams.get('date');
 	const date = dateQ ? dayjs(dateQ).tz(tsz, true) : dayjs().tz(tsz).subtract(1, 'day');
@@ -36,6 +36,10 @@ export const load: PageServerLoad = async ({ url, platform }) => {
     FROM flight_data
     WHERE stda >= ${start.toDate()} AND stda < ${tomorrowEnd.toDate()};
     `;
+
+	setHeaders({
+		'cache-control': 'public, max-age=60'
+	});
 
 	return {
 		vuelos: vuelos.filter((vuelo) => vuelo.stda >= start.toDate() && vuelo.stda <= end.toDate()),
