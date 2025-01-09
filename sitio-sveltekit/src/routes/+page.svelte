@@ -7,7 +7,7 @@
 	dayjs.extend(utc);
 	dayjs.extend(timezone);
 	import AIRPORTS from '$lib/aerolineas-airports.json';
-	import { Button } from '@/components/ui/button';
+	import { Button, buttonVariants } from '@/components/ui/button';
 	import type { Vuelo } from '$lib';
 	import {
 		AlertCircleIcon,
@@ -374,10 +374,11 @@
 						Promedio de retraso en el despegue
 
 						<AlertDialog.Root>
-							<AlertDialog.Trigger>
-								<Button size="icon" variant="outline" class="size-7" aria-label="Ver metodología">
-									<Icon icon="grommet-icons-info" class="size-4" />
-								</Button>
+							<AlertDialog.Trigger
+								class="{buttonVariants({ size: 'icon', variant: 'outline' })} !size-7"
+								aria-label="Ver metodología"
+							>
+								<Icon icon="grommet-icons-info" class="size-4" />
 							</AlertDialog.Trigger>
 							<AlertDialog.Content>
 								<AlertDialog.Header>
@@ -439,15 +440,14 @@
 				</p>
 
 				<AlertDialog.Root>
-					<AlertDialog.Trigger>
-						<Button
-							size="icon"
-							variant="outline"
-							class="absolute right-4 top-4 size-7"
-							aria-label="Ver metodología"
-						>
-							<Icon icon="grommet-icons-info" class="size-4" />
-						</Button>
+					<AlertDialog.Trigger
+						class="absolute right-4 top-4 !size-7 {buttonVariants({
+							size: 'icon',
+							variant: 'outline'
+						})}"
+						aria-label="Ver metodología"
+					>
+						<Icon icon="grommet-icons-info" class="size-4" />
 					</AlertDialog.Trigger>
 					<AlertDialog.Content>
 						<AlertDialog.Header>
