@@ -218,16 +218,6 @@
 		return `https://www.flightradar24.com/data/flights/${vuelo.json.nro.replace(' ', '').toLowerCase()}`;
 	}
 
-	function goToVuelo(e: MouseEvent) {
-		const target = e.currentTarget as HTMLElement;
-		const els = Array.from<HTMLElement>(
-			document.querySelectorAll(`[data-id="${target.dataset.id}"]`)
-		);
-		const el = els.find((el) => window.getComputedStyle(el).display !== 'none');
-		el?.scrollIntoView({ behavior: 'smooth' });
-		el?.focus();
-	}
-
 	function genPhrase() {
 		const frases = [
 			'¡Qué bajón!',
@@ -327,16 +317,19 @@
 			>
 				<div class="grid grid-cols-9 gap-2">
 					{#each vuelos as vuelo}
-						<button on:click={goToVuelo} data-id={vuelo.aerolineas_flight_id}>
-							{#if vuelo.atda}
-								<Icon class="h-8 w-8 {getDelayColor(vuelo.delta)}" icon="fa-solid:plane" />
-							{:else if vuelo.json.estes === 'Cancelado'}
-								<Icon
-									class="h-8 w-8 text-neutral-700 dark:text-neutral-300"
-									icon="fa-solid:plane-slash"
-								/>
-							{/if}
-						</button>
+						{#if vuelo.atda}
+							<Icon
+								class="h-8 w-8 {getDelayColor(vuelo.delta)}"
+								icon="fa-solid:plane"
+								aria-label="Vuelo {vuelo.json.nro} con {vuelo.delta / 60} minutos de retraso"
+							/>
+						{:else if vuelo.json.estes === 'Cancelado'}
+							<Icon
+								class="h-8 w-8 text-neutral-700 dark:text-neutral-300"
+								icon="fa-solid:plane-slash"
+								aria-label="Vuelo {vuelo.json.nro} cancelado"
+							/>
+						{/if}
 					{/each}
 				</div>
 				<p class="text-center">
@@ -534,10 +527,7 @@
 			</thead>
 			<tbody>
 				{#each vuelos as vuelo}
-					<tr
-						class="hidden border-b border-neutral-200 sm:table-row dark:border-neutral-700"
-						data-id={vuelo.aerolineas_flight_id}
-					>
+					<tr class="border-b border-neutral-200 dark:border-neutral-700">
 						<td class="whitespace-nowrap px-4 py-2 text-neutral-900 dark:text-neutral-100">
 							<a
 								href={flightradar24(vuelo)}
