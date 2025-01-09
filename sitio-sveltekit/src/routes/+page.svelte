@@ -6,7 +6,7 @@
 	import timezone from 'dayjs/plugin/timezone';
 	dayjs.extend(utc);
 	dayjs.extend(timezone);
-	import AIRPORTS from '$lib/aerolineas-airports.json';
+	import AIRPORTS_ALIAS from '$lib/aerolineas-airports-subset-alias.json';
 	import { Button, buttonVariants } from '@/components/ui/button';
 	import type { Vuelo } from '$lib';
 	import {
@@ -194,8 +194,8 @@
 		ASU: 'Asunción'
 	};
 	const getAirport = (iata: string) => {
-		const airport = AIRPORTS.data.find((a) => a.iata === iata);
-		if (airport) return airport.alias;
+		const airport = AIRPORTS_ALIAS[iata as keyof typeof AIRPORTS_ALIAS];
+		if (airport) return airport;
 		if (OTHER_AIRPORTS[iata as keyof typeof OTHER_AIRPORTS])
 			return OTHER_AIRPORTS[iata as keyof typeof OTHER_AIRPORTS];
 		console.warn(`Airport ${iata} not found`);
