@@ -418,7 +418,7 @@
 								nVuelos: vuelosAterrizados.length
 							},
 							{
-								name: 'Aerolíneas Argentinas',
+								name: 'Aerolineas Argentinas',
 								avgDelay: promedioDeltaAerolineas / 60,
 								nVuelos: aerolineasVuelosAterrizados.length
 							},
