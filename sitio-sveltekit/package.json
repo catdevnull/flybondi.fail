@@ -36,7 +36,6 @@
 		"vite": "^6.0.0"
 	},
 	"dependencies": {
-		"@iconify/svelte": "^4.1.0",
 		"@sentry/sveltekit": "^8",
 		"@tailwindcss/typography": "^0.5.15",
 		"d3": "^7.9.0",

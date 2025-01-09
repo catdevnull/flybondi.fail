@@ -11,16 +11,12 @@
 	import type { Vuelo } from '$lib';
 	import {
 		AlertCircleIcon,
-		AlertOctagonIcon,
 		ArrowDownIcon,
 		ArrowLeftIcon,
 		ArrowRightIcon,
-		ClockIcon,
-		PlaneIcon,
 		PlaneTakeoffIcon
 	} from 'lucide-svelte';
-	import NuloScienceSvg from '$lib/assets/Nulo_Science_Inc.svg';
-	import Icon from '@iconify/svelte';
+	import Icon from '$lib/components/icon.svelte';
 	import AverageVis from './average-vis.svelte';
 	import { getDelayColor, COLOR_CLASSES } from '$lib/colors';
 	import { AEROPUERTOS_FLYBONDI } from '@/aeropuertos-flybondi';
@@ -89,7 +85,6 @@
 			if (b.json.estes === 'Cancelado') return 1;
 			return b.delta - a.delta;
 		});
-	$: console.log(vuelos, todosLosVuelos);
 	$: aerolineasVuelosAterrizados = todosLosVuelos.filter(
 		(vuelo) =>
 			vuelo.json.idaerolinea === 'AR' &&
@@ -260,6 +255,7 @@
 					.format('YYYY-MM-DD')}{aerolineaSeleccionada !== 'FO'
 					? '&aerolinea=' + aerolineaSeleccionada
 					: ''}"
+				aria-label="Ir al día anterior"
 			>
 				<ArrowLeftIcon class="h-4 w-4" />
 			</Button>
@@ -267,14 +263,14 @@
 			<div></div>
 		{/if}
 		<div class="flex items-center gap-4">
-			<h3
+			<span
 				class="flex w-full flex-col items-center justify-center text-neutral-700 dark:text-neutral-300"
 			>
 				<span class="text-xs leading-tight">viendo datos de</span>
 				<span class=" font-bold leading-tight"
 					>{longDateFormatter.format(dayjs(date).toDate()).replace(',', '')}</span
 				>
-			</h3>
+			</span>
 			<Select.Root
 				selected={{ value: aerolineaSeleccionada, label: AEROLINEAS[aerolineaSeleccionada] }}
 				onSelectedChange={(e) => (aerolineaSeleccionada = e?.value as keyof typeof AEROLINEAS)}
@@ -300,6 +296,7 @@
 					.tz('America/Argentina/Buenos_Aires')
 					.add(1, 'day')
 					.format('YYYY-MM-DD')}"
+				aria-label="Ir al día siguiente"
 			>
 				<ArrowRightIcon class="h-4 w-4" />
 			</Button>
@@ -320,13 +317,13 @@
 						{#if vuelo.atda}
 							<Icon
 								class="h-8 w-8 {getDelayColor(vuelo.delta)}"
-								icon="fa-solid:plane"
+								icon="fa6-solid-plane"
 								aria-label="Vuelo {vuelo.json.nro} con {vuelo.delta / 60} minutos de retraso"
 							/>
 						{:else if vuelo.json.estes === 'Cancelado'}
 							<Icon
 								class="h-8 w-8 text-neutral-700 dark:text-neutral-300"
-								icon="fa-solid:plane-slash"
+								icon="fa6-solid-plane-slash"
 								aria-label="Vuelo {vuelo.json.nro} cancelado"
 							/>
 						{/if}
@@ -347,24 +344,24 @@
 					<div class="flex items-center gap-1">
 						<Icon
 							class="size-4 text-neutral-700 dark:text-neutral-300"
-							icon="fa-solid:plane-slash"
+							icon="fa6-solid-plane-slash"
 						/>
 						<span>Cancelado</span>
 					</div>
 					<div class="flex items-center gap-1">
-						<Icon class="size-4 text-[#b10000]" icon="fa-solid:plane" />
+						<Icon class="size-4 text-[#b10000]" icon="fa6-solid-plane" />
 						<span>mas de 45min</span>
 					</div>
 					<div class="flex items-center gap-1">
-						<Icon class="size-4 {COLOR_CLASSES[45 * 60]}" icon="fa-solid:plane" />
+						<Icon class="size-4 {COLOR_CLASSES[45 * 60]}" icon="fa6-solid-plane" />
 						<span>45-30min</span>
 					</div>
 					<div class="flex items-center gap-1">
-						<Icon class="size-4 {COLOR_CLASSES[30 * 60]}" icon="fa-solid:plane" />
+						<Icon class="size-4 {COLOR_CLASSES[30 * 60]}" icon="fa6-solid-plane" />
 						<span>30-15min</span>
 					</div>
 					<div class="flex items-center gap-1">
-						<Icon class="size-4 {COLOR_CLASSES[15 * 60]}" icon="fa-solid:plane" />
+						<Icon class="size-4 {COLOR_CLASSES[15 * 60]}" icon="fa6-solid-plane" />
 						<span>15-0min</span>
 					</div>
 				</div>
@@ -379,7 +376,7 @@
 						<AlertDialog.Root>
 							<AlertDialog.Trigger>
 								<Button size="icon" variant="outline" class="size-7" aria-label="Ver metodología">
-									<Icon icon="grommet-icons:info" class="size-4" />
+									<Icon icon="grommet-icons-info" class="size-4" />
 								</Button>
 							</AlertDialog.Trigger>
 							<AlertDialog.Content>
@@ -449,7 +446,7 @@
 							class="absolute right-4 top-4 size-7"
 							aria-label="Ver metodología"
 						>
-							<Icon icon="grommet-icons:info" class="size-4" />
+							<Icon icon="grommet-icons-info" class="size-4" />
 						</Button>
 					</AlertDialog.Trigger>
 					<AlertDialog.Content>
@@ -572,10 +569,7 @@
 				<hr class="flex-1 border-neutral-200 dark:border-neutral-700" />
 			</div>
 			{#each vuelos as vuelo}
-				<div
-					class="rounded-lg bg-neutral-100 px-2 py-1 dark:bg-neutral-800"
-					data-id={vuelo.aerolineas_flight_id}
-				>
+				<div class="rounded-lg bg-neutral-100 px-2 py-1 dark:bg-neutral-800">
 					<div class="flex flex-col justify-between">
 						<span class="text-sm text-neutral-900 dark:text-neutral-100">
 							<a
@@ -600,7 +594,7 @@
 								class={`font-bold ${vuelo.json.estes === 'Cancelado' ? 'font-black text-black dark:text-neutral-100' : getDelayColor(vuelo.delta, true)} flex items-center text-sm leading-none`}
 							>
 								{#if vuelo.atda}
-									<PlaneTakeoffIcon class="mr-1 h-4 w-4" />
+									<Icon icon="lucide-plane-takeoff" class="mr-1 size-4" />
 									{delayString(vuelo)}
 								{:else if vuelo.json.estes === 'Cancelado'}{/if}
 							</span>
