@@ -2,18 +2,80 @@
 	import { formatDuration, intervalToDuration, type Duration } from 'date-fns';
 	import { es } from 'date-fns/locale/es';
 	import dayjs from 'dayjs';
-	import AIRPORTS from '$lib/aerolineas-airports.json';
-	import { Button } from '@/components/ui/button';
+	import utc from 'dayjs/plugin/utc';
+	import timezone from 'dayjs/plugin/timezone';
+	dayjs.extend(utc);
+	dayjs.extend(timezone);
+	import AIRPORTS_ALIAS from '$lib/aerolineas-airports-subset-alias.json';
+	import { Button, buttonVariants } from '@/components/ui/button';
 	import type { Vuelo } from '$lib';
-	import { ArrowLeftIcon, ArrowRightIcon, ClockIcon, PlaneIcon } from 'lucide-svelte';
-	import NuloScienceSvg from '$lib/assets/Nulo_Science_Inc.svg';
-	import FlybondiSvg from '$lib/assets/flybondi.svg';
-	import Icon from '@iconify/svelte';
+	import {
+		AlertCircleIcon,
+		ArrowDownIcon,
+		ArrowLeftIcon,
+		ArrowRightIcon,
+		PlaneTakeoffIcon
+	} from 'lucide-svelte';
+	import Icon from '$lib/components/icon.svelte';
+	import AverageVis from './average-vis.svelte';
+	import { getDelayColor, COLOR_CLASSES } from '$lib/colors';
+	import { AEROPUERTOS_FLYBONDI } from '@/aeropuertos-flybondi';
+	import TimeBar from './time-bar.svelte';
+	import Alert from '@/components/ui/alert/alert.svelte';
+	import AlertTitle from '@/components/ui/alert/alert-title.svelte';
+	import AlertDescription from '@/components/ui/alert/alert-description.svelte';
+	import DateTime from './date-time.svelte';
+	import * as AlertDialog from '@/components/ui/alert-dialog';
+	import * as Select from '@/components/ui/select';
+	import { browser } from '$app/environment';
 
 	export let data;
 	$: ({ vuelos: todosLosVuelos, date, hasTomorrowData, hasYesterdayData } = data);
+
+	const AEROLINEAS = {
+		FO: 'Flybondi',
+		AR: 'Aerolíneas Argentinas',
+		WJ: 'JetSmart',
+		G3: 'GOL',
+		JJ: 'TAM',
+		O4: 'Andes L.A.',
+		'5U': 'TAG',
+		ZP: 'Paranair',
+		H2: 'SKY'
+	};
+	function getAerolineaSeleccionada() {
+		let aerolinea;
+		if (browser) {
+			aerolinea = new URL(location.href).searchParams.get('aerolinea');
+		} else {
+			aerolinea = data.aerolineaEnUrl;
+		}
+		if (aerolinea && Object.keys(AEROLINEAS).includes(aerolinea)) {
+			return aerolinea as keyof typeof AEROLINEAS;
+		}
+		return 'FO';
+	}
+	let aerolineaSeleccionada = getAerolineaSeleccionada();
+	$: {
+		if (aerolineaSeleccionada !== getAerolineaSeleccionada() && browser) {
+			const queryParams = new URLSearchParams(window.location.search);
+			queryParams.set('aerolinea', aerolineaSeleccionada);
+			window.history.pushState(null, '', window.location.pathname + '?' + queryParams.toString());
+		}
+	}
+
+	$: aerolineasConVuelos = Object.keys(AEROLINEAS).filter((a) =>
+		todosLosVuelos.some(
+			(v) =>
+				v.json.idaerolinea === a &&
+				AEROPUERTOS_FLYBONDI.includes(v.json.arpt) &&
+				AEROPUERTOS_FLYBONDI.includes(v.json.IATAdestorig) &&
+				(!!v.atda || v.json.estes === 'Cancelado')
+		)
+	);
+
 	$: vuelos = todosLosVuelos
-		.filter((v) => v.json.idaerolinea === 'FO')
+		.filter((v) => v.json.idaerolinea === aerolineaSeleccionada)
 		.filter(
 			(v): v is Vuelo & ({ atda: Date } | { json: { estes: 'Cancelado' } }) =>
 				!!v.atda || v.json.estes === 'Cancelado'
@@ -24,9 +86,22 @@
 			return b.delta - a.delta;
 		});
 	$: aerolineasVuelosAterrizados = todosLosVuelos.filter(
-		(vuelo) => vuelo.json.idaerolinea === 'AR' && vuelo.atda !== undefined
+		(vuelo) =>
+			vuelo.json.idaerolinea === 'AR' &&
+			!!vuelo.atda &&
+			AEROPUERTOS_FLYBONDI.includes(vuelo.json.IATAdestorig) &&
+			AEROPUERTOS_FLYBONDI.includes(vuelo.json.arpt)
 	);
-	$: vuelosAtrasados = vuelos.filter((vuelo) => vuelo.delta > 60 * 30);
+	$: vuelosAtrasados = vuelos.filter((vuelo) => vuelo.delta >= 60 * 30);
+
+	$: otrosVuelosAterrizados = todosLosVuelos.filter(
+		(vuelo) =>
+			!!vuelo.atda &&
+			vuelo.json.idaerolinea !== 'AR' &&
+			vuelo.json.idaerolinea !== aerolineaSeleccionada &&
+			AEROPUERTOS_FLYBONDI.includes(vuelo.json.IATAdestorig) &&
+			AEROPUERTOS_FLYBONDI.includes(vuelo.json.arpt)
+	);
 
 	$: promedioDelta =
 		vuelosAterrizados.reduce((acc, v) => acc + v.delta, 0) / vuelosAterrizados.length;
@@ -34,7 +109,10 @@
 		aerolineasVuelosAterrizados.reduce((acc, v) => acc + v.delta, 0) /
 		aerolineasVuelosAterrizados.length;
 
-	$: vuelosAterrizados = vuelos.filter((v): v is Vuelo & { atda: Date } => v.atda !== undefined);
+	$: promedioDeltaOtros =
+		otrosVuelosAterrizados.reduce((acc, v) => acc + v.delta, 0) / otrosVuelosAterrizados.length;
+
+	$: vuelosAterrizados = vuelos.filter((v): v is Vuelo & { atda: Date } => !!v.atda);
 	$: vuelosCancelados = vuelos.filter((v) => v.json.estes === 'Cancelado');
 
 	$: vueloMasAtrasado = vuelosAterrizados.reduce<Vuelo & { atda: Date }>(
@@ -59,7 +137,7 @@
 	function delayString(vuelo: (typeof vuelos)[number], showPrefix: boolean = true) {
 		if (vuelo.json.estes === 'Cancelado') {
 			return 'cancelado';
-		} else if (vuelo.atda === undefined) {
+		} else if (!vuelo.atda) {
 			throw new Error('no atda');
 		}
 
@@ -72,15 +150,14 @@
 				.replace(' minuto', 'min');
 		if (delayed) {
 			return shorter(
-				(showPrefix ? 'salió ' : '') +
-					formatDuration(
-						intervalToDuration({
-							start: new Date(vuelo.stda),
-							end: new Date(vuelo.atda)
-						}),
-						{ locale: es }
-					) +
-					' tarde'
+				// (showPrefix ? 'salió ' : '') +
+				formatDuration(
+					intervalToDuration({
+						start: new Date(vuelo.stda),
+						end: new Date(vuelo.atda)
+					}),
+					{ locale: es }
+				) + ' tarde'
 			);
 		} else if (vuelo.delta < 60 && vuelo.delta > -60) {
 			return 'a tiempo';
@@ -98,43 +175,13 @@
 		}
 	}
 
-	const timeFormatter = Intl.DateTimeFormat('es-AR', {
-		hour: '2-digit',
-		minute: '2-digit',
-		hour12: false,
-		timeZone: 'America/Argentina/Buenos_Aires'
-	});
-
-	const dateTimeFormatter = Intl.DateTimeFormat('es-AR', {
-		day: '2-digit',
-		month: '2-digit',
-		hour: '2-digit',
-		minute: '2-digit',
-		hour12: false,
-		timeZone: 'America/Argentina/Buenos_Aires'
-	});
-
-	const dateFormatter = Intl.DateTimeFormat('es-AR', {
-		// weekday: 'long',
-		day: '2-digit',
-		month: '2-digit',
-		timeZone: 'America/Argentina/Buenos_Aires'
-	});
-
 	const longDateFormatter = Intl.DateTimeFormat('es-AR', {
-		weekday: 'long',
+		weekday: 'short',
 		day: '2-digit',
-		month: 'long',
+		month: '2-digit',
 		year: 'numeric',
 		timeZone: 'America/Argentina/Buenos_Aires'
 	});
-
-	function formatDateTime(timestamp: Date) {
-		const date = dayjs();
-		return date.isSame(timestamp, 'day')
-			? timeFormatter.format(timestamp)
-			: dateTimeFormatter.format(timestamp);
-	}
 
 	const OTHER_AIRPORTS = {
 		CNQ: 'Corrientes',
@@ -147,8 +194,8 @@
 		ASU: 'Asunción'
 	};
 	const getAirport = (iata: string) => {
-		const airport = AIRPORTS.data.find((a) => a.iata === iata);
-		if (airport) return airport.alias;
+		const airport = AIRPORTS_ALIAS[iata as keyof typeof AIRPORTS_ALIAS];
+		if (airport) return airport;
 		if (OTHER_AIRPORTS[iata as keyof typeof OTHER_AIRPORTS])
 			return OTHER_AIRPORTS[iata as keyof typeof OTHER_AIRPORTS];
 		console.warn(`Airport ${iata} not found`);
@@ -162,33 +209,24 @@
 		return formatDuration({ ...duration, seconds: 0 }, { locale: es });
 	}
 
-	const colors = {
-		[15 * 60]: 'text-[#8dd895] dark:text-green-600',
-		[30 * 60]: 'text-[#f1e12d] dark:text-yellow-400',
-		[45 * 60]: 'text-[#eb6b00] dark:text-orange-400',
-		[60 * 60]: 'text-[#b10000] dark:text-red-400'
-	};
-
-	function getDelayColor(delay: number, text: boolean = false) {
-		if (delay <= 15 * 60) return text ? 'text-green-600 dark:text-green-600' : colors[15 * 60];
-		// if (delay < 30 * 60) return 'text-green-500 dark:text-green-700';
-		if (delay < 30 * 60) return text ? 'text-yellow-500 dark:text-yellow-400' : colors[30 * 60];
-		if (delay < 45 * 60) return colors[45 * 60];
-		return colors[60 * 60];
-	}
-
 	function flightradar24(vuelo: Vuelo) {
 		return `https://www.flightradar24.com/data/flights/${vuelo.json.nro.replace(' ', '').toLowerCase()}`;
 	}
 
-	function goToVuelo(e: MouseEvent) {
-		const target = e.currentTarget as HTMLElement;
-		const els = Array.from<HTMLElement>(
-			document.querySelectorAll(`[data-id="${target.dataset.id}"]`)
-		);
-		const el = els.find((el) => window.getComputedStyle(el).display !== 'none');
-		el?.scrollIntoView({ behavior: 'smooth' });
-		el?.focus();
+	function genPhrase() {
+		const frases = [
+			'¡Qué bajón!',
+			'¡Qué macana!',
+			'¡Qué embole!',
+			'¡Qué plomo!',
+			'¡Qué quilombo!',
+			'¡Qué desastre!',
+			'¡Qué paja!',
+			'¡Qué cagada!',
+			'¡Qué papelón!',
+			'¡Qué mala leche!'
+		];
+		return frases[Math.floor(Math.random() * frases.length)];
 	}
 </script>
 
@@ -198,60 +236,97 @@
 	{/if}
 </svelte:head>
 
-<h1 class="mb-4 flex items-end justify-center">
-	<img src={FlybondiSvg} alt="Flybondi" class="h-8" />
-	<span class="text-4xl font-medium leading-none text-red-600">.fail</span>
-</h1>
+<nav
+	class="sticky top-0 z-10 mb-4 flex flex-col border-b bg-white px-1 pb-1 text-center sm:px-4 dark:border-neutral-700 dark:bg-neutral-900"
+>
+	<h1 class="flex items-end justify-center">
+		<span class="text-4xl font-medium leading-none text-red-600">failbondi.fail</span>
+	</h1>
 
-<main class="mx-auto max-w-[1000px]">
-	<nav class="mb-4 flex items-center justify-between gap-4 text-center">
+	<div class="mx-auto flex max-w-[600px] items-center justify-between gap-4">
 		{#if hasYesterdayData}
 			<Button
 				variant="outline"
 				size="icon"
-				href="/?date={dayjs(date).subtract(1, 'day').format('YYYY-MM-DD')}"
+				class="size-8"
+				href="/?date={dayjs(date)
+					.tz('America/Argentina/Buenos_Aires')
+					.subtract(1, 'day')
+					.format('YYYY-MM-DD')}{aerolineaSeleccionada !== 'FO'
+					? '&aerolinea=' + aerolineaSeleccionada
+					: ''}"
+				aria-label="Ir al día anterior"
 			>
 				<ArrowLeftIcon class="h-4 w-4" />
 			</Button>
 		{:else}
 			<div></div>
 		{/if}
-		<h3 class="text-brand flex flex-col items-center justify-center">
-			<span class="leading-tight">viendo datos de</span>
-			<span class="text-2xl font-bold leading-tight"
-				>{longDateFormatter.format(dayjs(date).toDate())}</span
+		<div class="flex items-center gap-4">
+			<span
+				class="flex w-full flex-col items-center justify-center text-neutral-700 dark:text-neutral-300"
 			>
-		</h3>
+				<span class="text-xs leading-tight">viendo datos de</span>
+				<span class=" font-bold leading-tight"
+					>{longDateFormatter.format(dayjs(date).toDate()).replace(',', '')}</span
+				>
+			</span>
+			<Select.Root
+				selected={{ value: aerolineaSeleccionada, label: AEROLINEAS[aerolineaSeleccionada] }}
+				onSelectedChange={(e) => (aerolineaSeleccionada = e?.value as keyof typeof AEROLINEAS)}
+			>
+				<Select.Trigger class="w-[150px] sm:w-[200px]">
+					<Select.Value placeholder="Seleccionar aerolínea" />
+				</Select.Trigger>
+				<Select.Content>
+					{#each aerolineasConVuelos as aerolinea}
+						<Select.Item value={aerolinea}>
+							{AEROLINEAS[aerolinea as keyof typeof AEROLINEAS]}
+						</Select.Item>
+					{/each}
+				</Select.Content>
+			</Select.Root>
+		</div>
 		{#if hasTomorrowData}
 			<Button
 				variant="outline"
 				size="icon"
-				href="/?date={dayjs(date).add(1, 'day').format('YYYY-MM-DD')}"
+				class="size-8"
+				href="/?date={dayjs(date)
+					.tz('America/Argentina/Buenos_Aires')
+					.add(1, 'day')
+					.format('YYYY-MM-DD')}"
+				aria-label="Ir al día siguiente"
 			>
 				<ArrowRightIcon class="h-4 w-4" />
 			</Button>
 		{:else}
 			<div></div>
 		{/if}
-	</nav>
+	</div>
+</nav>
 
+<main class="mx-auto max-w-[1000px] p-4">
 	{#if vuelos.length > 0}
-		<div class="mb-4 grid grid-rows-3 gap-4 text-balance md:grid-cols-2">
+		<div class="mb-4 grid grid-rows-4 gap-4 text-balance md:grid-cols-2">
 			<div
-				class="row-span-3 flex flex-col items-center justify-center gap-4 rounded-lg border bg-neutral-50 p-4 text-xl dark:border-neutral-700 dark:bg-neutral-800"
+				class="row-span-4 flex flex-col items-center justify-center gap-4 rounded-lg border bg-neutral-50 p-4 text-xl dark:border-neutral-700 dark:bg-neutral-800"
 			>
 				<div class="grid grid-cols-9 gap-2">
 					{#each vuelos as vuelo}
-						<button on:click={goToVuelo} data-id={vuelo.aerolineas_flight_id}>
-							{#if vuelo.atda}
-								<Icon class="h-8 w-8 {getDelayColor(vuelo.delta)}" icon="fa-solid:plane" />
-							{:else if vuelo.json.estes === 'Cancelado'}
-								<Icon
-									class="h-8 w-8 text-neutral-700 dark:text-neutral-300"
-									icon="fa-solid:plane-slash"
-								/>
-							{/if}
-						</button>
+						{#if vuelo.atda}
+							<Icon
+								class="h-8 w-8 {getDelayColor(vuelo.delta)}"
+								icon="fa6-solid-plane"
+								aria-label="Vuelo {vuelo.json.nro} con {vuelo.delta / 60} minutos de retraso"
+							/>
+						{:else if vuelo.json.estes === 'Cancelado'}
+							<Icon
+								class="h-8 w-8 text-neutral-700 dark:text-neutral-300"
+								icon="fa6-solid-plane-slash"
+								aria-label="Vuelo {vuelo.json.nro} cancelado"
+							/>
+						{/if}
 					{/each}
 				</div>
 				<p class="text-center">
@@ -269,67 +344,142 @@
 					<div class="flex items-center gap-1">
 						<Icon
 							class="size-4 text-neutral-700 dark:text-neutral-300"
-							icon="fa-solid:plane-slash"
+							icon="fa6-solid-plane-slash"
 						/>
 						<span>Cancelado</span>
 					</div>
 					<div class="flex items-center gap-1">
-						<Icon class="size-4 text-[#b10000]" icon="fa-solid:plane" />
+						<Icon class="size-4 text-[#b10000]" icon="fa6-solid-plane" />
 						<span>mas de 45min</span>
 					</div>
 					<div class="flex items-center gap-1">
-						<Icon class="size-4 {colors[45 * 60]}" icon="fa-solid:plane" />
+						<Icon class="size-4 {COLOR_CLASSES[45 * 60]}" icon="fa6-solid-plane" />
 						<span>45-30min</span>
 					</div>
 					<div class="flex items-center gap-1">
-						<Icon class="size-4 {colors[30 * 60]}" icon="fa-solid:plane" />
+						<Icon class="size-4 {COLOR_CLASSES[30 * 60]}" icon="fa6-solid-plane" />
 						<span>30-15min</span>
 					</div>
 					<div class="flex items-center gap-1">
-						<Icon class="size-4 {colors[15 * 60]}" icon="fa-solid:plane" />
+						<Icon class="size-4 {COLOR_CLASSES[15 * 60]}" icon="fa6-solid-plane" />
 						<span>15-0min</span>
 					</div>
 				</div>
 			</div>
 			<div
-				class="flex flex-col gap-2 rounded-lg border bg-neutral-50 p-4 text-xl dark:border-neutral-700 dark:bg-neutral-800"
+				class="row-span-2 flex flex-col items-center justify-center gap-2 rounded-lg border bg-neutral-50 text-xl dark:border-neutral-700 dark:bg-neutral-800"
 			>
-				<p>
-					En promedio, los vuelos de Flybondi de hoy se atrasaron por
-					<span class={`font-bold ${getDelayColor(promedioDelta, true)}`}>
-						{formatDurationWithoutSeconds(getDurationFromSeconds(promedioDelta))}
-					</span>.
-				</p>
-				<p>
-					Para comparar, los vuelos de Aerolineas Argentinas se atrasaron en promedio
-					<span class={`font-bold ${getDelayColor(promedioDeltaAerolineas, true)}`}>
-						{formatDurationWithoutSeconds(getDurationFromSeconds(promedioDeltaAerolineas))}
-					</span>.
-				</p>
+				<figure class="mb-3 mt-1 w-full px-4">
+					<figcaption class="my-2 flex justify-between text-xl">
+						Promedio de retraso en el despegue
+
+						<AlertDialog.Root>
+							<AlertDialog.Trigger
+								class="{buttonVariants({ size: 'icon', variant: 'outline' })} !size-7"
+								aria-label="Ver metodología"
+							>
+								<Icon icon="grommet-icons-info" class="size-4" />
+							</AlertDialog.Trigger>
+							<AlertDialog.Content>
+								<AlertDialog.Header>
+									<AlertDialog.Title>Metodología</AlertDialog.Title>
+									<AlertDialog.Description class="prose prose-neutral dark:prose-invert">
+										Para calcular el promedio, se toman todos los vuelos que aterrizaron y se
+										calcula la diferencia entre la hora programada y la hora real de despegue. Solo
+										se incluyen vuelos que:
+										<ul>
+											<li>Ya despegaron (tienen hora real de despegue)</li>
+											<li>vuelan entre aeropuertos donde también opera Flybondi</li>
+										</ul>
+										Los vuelos cancelados no se incluyen en este cálculo.
+										<a href="/acerca">Mas info</a>
+									</AlertDialog.Description>
+								</AlertDialog.Header>
+								<AlertDialog.Footer>
+									<AlertDialog.Cancel>oka</AlertDialog.Cancel>
+								</AlertDialog.Footer>
+							</AlertDialog.Content>
+						</AlertDialog.Root>
+					</figcaption>
+					<AverageVis
+						airlineData={[
+							{
+								name: AEROLINEAS[aerolineaSeleccionada],
+								avgDelay: promedioDelta / 60,
+								nVuelos: vuelosAterrizados.length
+							},
+							{
+								name: 'Aerolineas Argentinas',
+								avgDelay: promedioDeltaAerolineas / 60,
+								nVuelos: aerolineasVuelosAterrizados.length
+							},
+							{
+								name: 'Otros',
+								avgDelay: promedioDeltaOtros / 60,
+								nVuelos: otrosVuelosAterrizados.length,
+								otherAerolineas: [...new Set(otrosVuelosAterrizados.map((v) => v.json.idaerolinea))]
+							}
+						]}
+					/>
+				</figure>
 			</div>
 
-			<div
-				class="flex flex-col justify-center rounded-lg border bg-neutral-50 p-4 text-xl dark:border-neutral-700 dark:bg-neutral-800"
-			>
-				<p>
-					En total, Flybondi desperdició aproximadamente
-					<span class="font-bold">
-						{formatDurationWithoutSeconds({
-							...getDurationFromSeconds(totalSegundosDesperdiciados),
-							minutes: 0,
-							hours: 0
-						})}
-					</span>
-					de vida entre todos sus pasajeros.
-				</p>
-			</div>
+			{#if totalSegundosDesperdiciados > 60 * 60 * 24}
+				<div
+					class="relative flex flex-col items-center justify-center rounded-lg border bg-neutral-50 p-4 pr-8 text-xl dark:border-neutral-700 dark:bg-neutral-800"
+				>
+					<p>
+						En total, {AEROLINEAS[aerolineaSeleccionada]} desperdició aproximadamente
+						<span class="font-bold">
+							{formatDurationWithoutSeconds({
+								...getDurationFromSeconds(totalSegundosDesperdiciados),
+								minutes: 0,
+								hours: 0
+							})}
+						</span>
+						de vida entre todos sus pasajeros.
+					</p>
+
+					<AlertDialog.Root>
+						<AlertDialog.Trigger
+							class="absolute right-4 top-4 !size-7 {buttonVariants({
+								size: 'icon',
+								variant: 'outline'
+							})}"
+							aria-label="Ver metodología"
+						>
+							<Icon icon="grommet-icons-info" class="size-4" />
+						</AlertDialog.Trigger>
+						<AlertDialog.Content>
+							<AlertDialog.Header>
+								<AlertDialog.Title>Metodología</AlertDialog.Title>
+								<AlertDialog.Description class="prose prose-neutral dark:prose-invert">
+									Para calcular el tiempo total desperdiciado, se:
+									<ul>
+										<li>Toma cada vuelo que ya despegó</li>
+										<li>Multiplica el retraso por la cantidad de asientos del avión</li>
+										<li>Asume una ocupación del 75% en cada vuelo</li>
+									</ul>
+									Por ejemplo, si un avión de 180 asientos se atrasa 1 hora, se calcula: 60 minutos ×
+									180 asientos × 0.75 = 8.100 minutos-persona desperdiciados.
+									<p>Los vuelos cancelados no se incluyen en este cálculo.</p>
+									<a href="/acerca">Mas info</a>
+								</AlertDialog.Description>
+							</AlertDialog.Header>
+							<AlertDialog.Footer>
+								<AlertDialog.Cancel>oka</AlertDialog.Cancel>
+							</AlertDialog.Footer>
+						</AlertDialog.Content>
+					</AlertDialog.Root>
+				</div>
+			{/if}
 
 			<div
 				class="flex flex-col justify-center rounded-lg border bg-neutral-50 p-4 text-xl dark:border-neutral-700 dark:bg-neutral-800"
 			>
 				<p>
 					El vuelo más atrasado fue el
-					<a href={flightradar24(vueloMasAtrasado)} class="underline">
+					<a href={flightradar24(vueloMasAtrasado)} class="hover:underline">
 						{vueloMasAtrasado.json.nro}
 					</a>
 					de {getAirport(vueloMasAtrasado.json.arpt)} a {getAirport(
@@ -337,10 +487,21 @@
 					)}, que salió
 					<span class={`font-bold ${getDelayColor(vueloMasAtrasado.delta, true)}`}>
 						{delayString(vueloMasAtrasado, false)}
-					</span>. ¡Que bodrio!
+					</span>. {genPhrase()}
 				</p>
 			</div>
 		</div>
+		{#if (dayjs(date).date() === 31 && dayjs(date).month() === 11) || (dayjs(date).date() === 1 && dayjs(date).month() === 0)}
+			<Alert class="mb-4">
+				<AlertCircleIcon class="size-4" />
+
+				<AlertTitle>Problema con los datos</AlertTitle>
+				<AlertDescription>
+					Los datos de vuelos pueden ser inexactos debido al cambio de año. Vamos a arreglarlo
+					eventualmente.
+				</AlertDescription>
+			</Alert>
+		{/if}
 	{:else}
 		<p class="mb-4 text-lg">No hay datos de vuelos para mostrar</p>
 	{/if}
@@ -357,21 +518,21 @@
 					<th class="px-4 py-2 text-left text-neutral-700 dark:text-neutral-300">Hora Programada</th
 					>
 					<th class="px-4 py-2 text-left text-neutral-700 dark:text-neutral-300">Hora Real</th>
-					<th class="px-4 py-2 text-left text-neutral-700 dark:text-neutral-300">Diferencia</th>
+					<th class="flex items-center px-4 py-2 text-left text-neutral-700 dark:text-neutral-300">
+						Demora en despegar
+						<ArrowDownIcon class="size-4" />
+					</th>
 				</tr>
 			</thead>
 			<tbody>
 				{#each vuelos as vuelo}
-					<tr
-						class="hidden border-b border-neutral-200 sm:table-row dark:border-neutral-700"
-						data-id={vuelo.aerolineas_flight_id}
-					>
+					<tr class="border-b border-neutral-200 dark:border-neutral-700">
 						<td class="whitespace-nowrap px-4 py-2 text-neutral-900 dark:text-neutral-100">
 							<a
 								href={flightradar24(vuelo)}
 								rel="noreferrer noopener"
 								target="_blank"
-								class="underline"
+								class="hover:underline"
 							>
 								{vuelo.json.nro}
 							</a>
@@ -380,18 +541,20 @@
 							{getAirport(vuelo.json.arpt)} → {getAirport(vuelo.json.IATAdestorig)}
 						</td>
 						<td class="px-4 py-2 text-neutral-900 dark:text-neutral-100">
-							{formatDateTime(vuelo.stda)}
+							<DateTime date={vuelo.stda} baseDate={date} />
 						</td>
 						<td class="px-4 py-2 text-neutral-900 dark:text-neutral-100">
 							{#if vuelo.atda}
-								{formatDateTime(vuelo.atda)}
+								<DateTime date={vuelo.atda} baseDate={date} />
 							{/if}
 						</td>
 						<td class={`px-4 py-2 font-bold ${getDelayColor(vuelo.delta, true)}`}>
 							{#if vuelo.atda}
 								{delayString(vuelo)}
+
+								<TimeBar maxSeconds={vueloMasAtrasado.delta} seconds={vuelo.delta} />
 							{:else if vuelo.json.estes === 'Cancelado'}
-								<span class="text-red-500">Cancelado</span>
+								<span class="font-black text-black dark:text-neutral-100">Cancelado</span>
 							{/if}
 						</td>
 					</tr>
@@ -400,44 +563,48 @@
 		</table>
 
 		<!-- Mobile Card View -->
-		<div class="grid grid-cols-2 gap-4 sm:hidden">
+		<div class="grid grid-cols-1 gap-2 sm:hidden">
+			<div class="my-1 flex items-center gap-2">
+				<h2 class="text-xl font-bold leading-none text-neutral-900 dark:text-neutral-100">
+					Detalle de los vuelos
+				</h2>
+				<hr class="flex-1 border-neutral-200 dark:border-neutral-700" />
+			</div>
 			{#each vuelos as vuelo}
-				<div
-					class="rounded-lg border bg-neutral-50 px-2 py-1 focus:bg-neutral-100 dark:border-neutral-700 dark:bg-neutral-800"
-					data-id={vuelo.aerolineas_flight_id}
-				>
-					<div class="mb-2 flex flex-col items-center justify-between">
-						<a
-							href={flightradar24(vuelo)}
-							target="_blank"
-							rel="noreferrer noopener"
-							class="text-lg font-bold text-neutral-900 underline dark:text-neutral-100"
-						>
-							{vuelo.json.nro}
-						</a>
-						<span
-							class={`font-bold ${vuelo.json.estes === 'Cancelado' ? 'text-red-500' : getDelayColor(vuelo.delta, true)} flex items-center text-sm leading-none`}
-						>
-							<ClockIcon class="mr-1 h-4 w-4" />
-							{#if vuelo.atda}
-								{delayString(vuelo)}
-							{:else if vuelo.json.estes === 'Cancelado'}
-								Cancelado
-							{/if}
-						</span>
-					</div>
-					<div class="text-sm">
-						<div class="text-neutral-900 dark:text-neutral-100">
+				<div class="rounded-lg bg-neutral-100 px-2 py-1 dark:bg-neutral-800">
+					<div class="flex flex-col justify-between">
+						<span class="text-sm text-neutral-900 dark:text-neutral-100">
+							<a
+								class="hover:underline"
+								href={flightradar24(vuelo)}
+								target="_blank"
+								rel="noreferrer noopener"
+							>
+								{vuelo.json.nro}</a
+							>
+							-
 							{getAirport(vuelo.json.arpt)} → {getAirport(vuelo.json.IATAdestorig)}
-						</div>
-						<div class="text-neutral-900 dark:text-neutral-100">
-							<del>{formatDateTime(vuelo.stda)}</del>
+						</span>
+						<div class="flex flex-row gap-2 text-sm text-neutral-900 dark:text-neutral-100">
+							<del><DateTime date={vuelo.stda} baseDate={date} /></del>
 							{#if vuelo.atda}
-								{formatDateTime(vuelo.atda)}
+								<DateTime date={vuelo.atda} baseDate={date} />
 							{:else if vuelo.json.estes === 'Cancelado'}
-								<span class="text-red-500">Cancelado</span>
+								<span class="font-black text-black dark:text-neutral-100">Cancelado</span>
 							{/if}
+							<span
+								class={`font-bold ${vuelo.json.estes === 'Cancelado' ? 'font-black text-black dark:text-neutral-100' : getDelayColor(vuelo.delta, true)} flex items-center text-sm leading-none`}
+							>
+								{#if vuelo.atda}
+									<Icon icon="lucide-plane-takeoff" class="mr-1 size-4" />
+									{delayString(vuelo)}
+								{:else if vuelo.json.estes === 'Cancelado'}{/if}
+							</span>
 						</div>
+
+						{#if vuelo.atda}
+							<TimeBar maxSeconds={vueloMasAtrasado.delta} seconds={vuelo.delta} />
+						{:else if vuelo.json.estes === 'Cancelado'}{/if}
 					</div>
 				</div>
 			{/each}
@@ -446,25 +613,23 @@
 </main>
 
 <footer
-	class="mt-10 flex flex-col items-center justify-center text-center text-sm text-neutral-600 dark:text-neutral-400"
+	class="mt-10 flex flex-col items-center justify-center px-4 text-center text-sm text-neutral-600 dark:text-neutral-400"
 >
-	<p class="prose mb-4 max-w-[800px]">
-		Flybondi.fail no está afiliado con Flybondi. La información presentada es meramente informativa.
-		No nos hacemos responsables de los errores que puedan haber en la información presentada.
+	<p class="prose prose-neutral dark:prose-invert mb-4 max-w-[800px]">
+		La marca Flybondi es de FB Líneas Aéreas S.A. Este sitio web no está afiliado, respaldado ni
+		patrocinado por FB Líneas Aéreas S.A. Todos los derechos asociados a la marca y su uso están
+		reservados a su propietario legítimo. El uso de la marca en este sitio es únicamente
+		informativo. No nos hacemos responsables de los errores que puedan haber en la información
+		presentada.
 	</p>
 
-	<div class="mb-4 flex flex-col flex-wrap items-center justify-center gap-4 text-xl sm:flex-row">
-		<span>Flybondi.fail es un experimento de</span>
-		<a href="https://nulo.lol">
-			<img src={NuloScienceSvg} alt="Nulo Science Inc" class="w-30 h-16 dark:invert" />
-		</a>
-		<span>&</span>
-		<a href="https://visualizando.ar" class="bg-[#FF666C] px-4 py-2 font-bold text-[#28FFD7]"
-			>visualizando.ar</a
-		>
+	<div class="prose prose-neutral dark:prose-invert mb-4 flex max-w-[800px] flex-col gap-2">
+		<p class="my-0">
+			Failbondi.fail es un experimento de <a href="https://nulo.lol">Nulo Science Inc™</a>.
+		</p>
+
+		<a href="/acerca">Acerca del sitio, sus datos, etc</a>
+
+		<a href="https://x.com/esoesnulo">@esoesnulo</a>
 	</div>
-
-	<p class="text-brand text-lg underline">
-		<a href="mailto:hola@nulo.lol">hola@nulo.lol</a>
-	</p>
 </footer>

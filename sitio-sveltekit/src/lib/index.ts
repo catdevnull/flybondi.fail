@@ -22,12 +22,12 @@ export interface Flight {
 		estes?: string;
 	};
 	matricula: string;
-	aeronave: string;
-	msn: string;
-	compania_aerea: string;
-	situacion: string;
-	detail_url: string;
-	edad_del_avion: number;
+	// aeronave: string;
+	// msn: string;
+	// compania_aerea: string;
+	// situacion: string;
+	// detail_url: string;
+	// edad_del_avion: number;
 	config_de_asientos: string;
 }
 

@@ -3,6 +3,7 @@ import type { Config } from 'tailwindcss';
 
 const config: Config = {
 	content: ['./src/**/*.{html,js,svelte,ts}'],
+	plugins: [require('@tailwindcss/typography')],
 	theme: {
 		container: {
 			center: true,
@@ -45,10 +46,6 @@ const config: Config = {
 				card: {
 					DEFAULT: 'hsl(var(--card) / <alpha-value>)',
 					foreground: 'hsl(var(--card-foreground) / <alpha-value>)'
-				},
-				brand: {
-					DEFAULT: '#FEBE11',
-					foreground: '#000'
 				}
 			},
 			borderRadius: {

@@ -1,9 +1,9 @@
-# fly.toml app configuration file generated for flybondi-fail-sveltekit on 2025-01-01T19:23:16-03:00
+# fly.toml app configuration file generated for failbondi-fail-sveltekit on 2025-01-08T19:26:35-03:00
 #
 # See https://fly.io/docs/reference/configuration/ for information about how to use this file.
 #
 
-app = 'flybondi-fail-sveltekit'
+app = 'failbondi-fail-sveltekit'
 primary_region = 'gru'
 
 [build]
@@ -11,7 +11,7 @@ primary_region = 'gru'
 [http_service]
   internal_port = 3000
   force_https = true
-  auto_stop_machines = 'suspend'
+  auto_stop_machines = 'stop'
   auto_start_machines = true
   min_machines_running = 0
   processes = ['app']
