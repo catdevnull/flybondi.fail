@@ -96,8 +96,6 @@ export const processLatestFlightDataTask = schedules.task({
         })
         .flat();
 
-      console.log(allEntries);
-
       await sql`
       INSERT INTO aerolineas_latest_flight_status (aerolineas_flight_id, last_updated, json)
       SELECT DISTINCT ON(aerolineas_flight_id) value->>'id' as aerolineas_flight_id, ${key.fetchedAt} as last_updated, value as json
