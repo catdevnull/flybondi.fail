@@ -424,6 +424,7 @@
 				</figure>
 			</div>
 
+			{#if totalSegundosDesperdiciados > 60 * 60 *24}
 			<div
 				class="relative flex flex-col items-center justify-center rounded-lg border bg-neutral-50 p-4 pr-8 text-xl dark:border-neutral-700 dark:bg-neutral-800"
 			>
@@ -471,6 +472,7 @@
 					</AlertDialog.Content>
 				</AlertDialog.Root>
 			</div>
+			{/if}
 
 			<div
 				class="flex flex-col justify-center rounded-lg border bg-neutral-50 p-4 text-xl dark:border-neutral-700 dark:bg-neutral-800"
