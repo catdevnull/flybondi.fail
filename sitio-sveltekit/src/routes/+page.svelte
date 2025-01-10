@@ -92,7 +92,7 @@
 			AEROPUERTOS_FLYBONDI.includes(vuelo.json.IATAdestorig) &&
 			AEROPUERTOS_FLYBONDI.includes(vuelo.json.arpt)
 	);
-	$: vuelosAtrasados = vuelos.filter((vuelo) => vuelo.delta > 60 * 30);
+	$: vuelosAtrasados = vuelos.filter((vuelo) => vuelo.delta >= 60 * 30);
 
 	$: otrosVuelosAterrizados = todosLosVuelos.filter(
 		(vuelo) =>
@@ -424,54 +424,54 @@
 				</figure>
 			</div>
 
-			{#if totalSegundosDesperdiciados > 60 * 60 *24}
-			<div
-				class="relative flex flex-col items-center justify-center rounded-lg border bg-neutral-50 p-4 pr-8 text-xl dark:border-neutral-700 dark:bg-neutral-800"
-			>
-				<p>
-					En total, {AEROLINEAS[aerolineaSeleccionada]} desperdició aproximadamente
-					<span class="font-bold">
-						{formatDurationWithoutSeconds({
-							...getDurationFromSeconds(totalSegundosDesperdiciados),
-							minutes: 0,
-							hours: 0
-						})}
-					</span>
-					de vida entre todos sus pasajeros.
-				</p>
+			{#if totalSegundosDesperdiciados > 60 * 60 * 24}
+				<div
+					class="relative flex flex-col items-center justify-center rounded-lg border bg-neutral-50 p-4 pr-8 text-xl dark:border-neutral-700 dark:bg-neutral-800"
+				>
+					<p>
+						En total, {AEROLINEAS[aerolineaSeleccionada]} desperdició aproximadamente
+						<span class="font-bold">
+							{formatDurationWithoutSeconds({
+								...getDurationFromSeconds(totalSegundosDesperdiciados),
+								minutes: 0,
+								hours: 0
+							})}
+						</span>
+						de vida entre todos sus pasajeros.
+					</p>
 
-				<AlertDialog.Root>
-					<AlertDialog.Trigger
-						class="absolute right-4 top-4 !size-7 {buttonVariants({
-							size: 'icon',
-							variant: 'outline'
-						})}"
-						aria-label="Ver metodología"
-					>
-						<Icon icon="grommet-icons-info" class="size-4" />
-					</AlertDialog.Trigger>
-					<AlertDialog.Content>
-						<AlertDialog.Header>
-							<AlertDialog.Title>Metodología</AlertDialog.Title>
-							<AlertDialog.Description class="prose prose-neutral dark:prose-invert">
-								Para calcular el tiempo total desperdiciado, se:
-								<ul>
-									<li>Toma cada vuelo que ya despegó</li>
-									<li>Multiplica el retraso por la cantidad de asientos del avión</li>
-									<li>Asume una ocupación del 75% en cada vuelo</li>
-								</ul>
-								Por ejemplo, si un avión de 180 asientos se atrasa 1 hora, se calcula: 60 minutos × 180
-								asientos × 0.75 = 8.100 minutos-persona desperdiciados.
-								<p>Los vuelos cancelados no se incluyen en este cálculo.</p>
-								<a href="/acerca">Mas info</a>
-							</AlertDialog.Description>
-						</AlertDialog.Header>
-						<AlertDialog.Footer>
-							<AlertDialog.Cancel>oka</AlertDialog.Cancel>
-						</AlertDialog.Footer>
-					</AlertDialog.Content>
-				</AlertDialog.Root>
-			</div>
+					<AlertDialog.Root>
+						<AlertDialog.Trigger
+							class="absolute right-4 top-4 !size-7 {buttonVariants({
+								size: 'icon',
+								variant: 'outline'
+							})}"
+							aria-label="Ver metodología"
+						>
+							<Icon icon="grommet-icons-info" class="size-4" />
+						</AlertDialog.Trigger>
+						<AlertDialog.Content>
+							<AlertDialog.Header>
+								<AlertDialog.Title>Metodología</AlertDialog.Title>
+								<AlertDialog.Description class="prose prose-neutral dark:prose-invert">
+									Para calcular el tiempo total desperdiciado, se:
+									<ul>
+										<li>Toma cada vuelo que ya despegó</li>
+										<li>Multiplica el retraso por la cantidad de asientos del avión</li>
+										<li>Asume una ocupación del 75% en cada vuelo</li>
+									</ul>
+									Por ejemplo, si un avión de 180 asientos se atrasa 1 hora, se calcula: 60 minutos ×
+									180 asientos × 0.75 = 8.100 minutos-persona desperdiciados.
+									<p>Los vuelos cancelados no se incluyen en este cálculo.</p>
+									<a href="/acerca">Mas info</a>
+								</AlertDialog.Description>
+							</AlertDialog.Header>
+							<AlertDialog.Footer>
+								<AlertDialog.Cancel>oka</AlertDialog.Cancel>
+							</AlertDialog.Footer>
+						</AlertDialog.Content>
+					</AlertDialog.Root>
+				</div>
 			{/if}
 
 			<div
