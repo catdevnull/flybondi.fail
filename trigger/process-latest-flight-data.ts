@@ -12,7 +12,7 @@ import { basename } from "path";
 export const processLatestFlightDataTask = schedules.task({
   id: "process-latest-flight-data",
   cron: "2 * * * *",
-  maxDuration: 6000,
+  maxDuration: 18000,
   run: async (payload, { ctx }) => {
     const sql = sqlBuilder();
 
