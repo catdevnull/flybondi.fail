@@ -29,6 +29,7 @@
 	import * as Select from '@/components/ui/select';
 	import { browser } from '$app/environment';
 	import Footer from '@/components/footer.svelte';
+	import cardPath from '$lib/assets/twitter-card.png';
 
 	export let data;
 	$: ({ vuelos: todosLosVuelos, date, hasTomorrowData, hasYesterdayData } = data);
@@ -229,12 +230,33 @@
 		];
 		return frases[Math.floor(Math.random() * frases.length)];
 	}
+
+	$: aerolineaActual = AEROLINEAS[aerolineaSeleccionada];
+
+	$: metaTitle = `${aerolineaSeleccionada !== 'FO' ? `${aerolineaActual} - ` : ''}${vuelosAtrasados.length} vuelos demorados y ${vuelosCancelados.length} cancelados`;
+	$: metaDescription = `Hoy ${aerolineaActual} tuvo ${vuelosAtrasados.length} vuelos con más de 30 minutos de retraso${vuelosCancelados.length > 0 ? ` y ${vuelosCancelados.length} vuelos cancelados` : ''}.`;
+	$: dateStr = dayjs(date).format('DD/MM/YYYY');
 </script>
 
 <svelte:head>
 	{#if data.hasCustomDate}
 		<meta name="robots" content="noindex" />
 	{/if}
+	<title>{metaTitle} - failbondi.fail</title>
+	<meta name="description" content={metaDescription} />
+
+	<meta property="og:type" content="website" />
+	<meta property="og:title" content={metaTitle} />
+	<meta property="og:description" content={metaDescription} />
+	<meta property="og:url" content="https://failbondi.fail" />
+	<meta property="og:image" content={'https://failbondi.fail' + cardPath} />
+
+	<meta name="twitter:card" content="summary_large_image" />
+	<meta name="twitter:site" content="@esoesnulo" />
+	<meta name="twitter:title" content={metaTitle} />
+	<meta name="twitter:description" content={metaDescription} />
+	<meta name="twitter:url" content="https://failbondi.fail" />
+	<meta name="twitter:image" content={'https://failbondi.fail' + cardPath} />
 </svelte:head>
 
 <nav

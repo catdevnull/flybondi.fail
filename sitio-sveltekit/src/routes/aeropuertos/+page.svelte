@@ -14,6 +14,7 @@
 	import { Button } from '@/components/ui/button';
 	import Footer from '$lib/components/footer.svelte';
 	import TimeBar from '../time-bar.svelte';
+	import cardPath from '$lib/assets/twitter-card.png';
 
 	type AirlineStats = {
 		total_flights: number;
@@ -87,10 +88,31 @@
 			sortDirection = 'desc';
 		}
 	}
+
+	$: worstAirport = [...airports].sort((a, b) => b.delay_rate - a.delay_rate)[0];
+	$: bestAirport = [...airports].sort((a, b) => a.delay_rate - b.delay_rate)[0];
+
+	$: metaTitle = `Ranking de Aeropuertos por Puntualidad - failbondi.fail`;
+	$: metaDescription = `${getAirport(worstAirport.iata)} es el aeropuerto con más demoras (${worstAirport.delay_rate.toFixed(1)}%) y ${getAirport(bestAirport.iata)} el más puntual (${bestAirport.delay_rate.toFixed(1)}%) en los últimos 30 días.`;
+	$: dateRangeStr = `${dayjs(dateRange.start).format('DD/MM/YYYY')} al ${dayjs(dateRange.end).format('DD/MM/YYYY')}`;
 </script>
 
 <svelte:head>
-	<title>Puntualidad por Aeropuerto - failbondi.fail</title>
+	<title>{metaTitle}</title>
+	<meta name="description" content={metaDescription} />
+
+	<meta property="og:type" content="website" />
+	<meta property="og:title" content={metaTitle} />
+	<meta property="og:description" content={metaDescription} />
+	<meta property="og:url" content="https://failbondi.fail/aeropuertos" />
+	<meta property="og:image" content={'https://failbondi.fail' + cardPath} />
+
+	<meta name="twitter:card" content="summary_large_image" />
+	<meta name="twitter:site" content="@esoesnulo" />
+	<meta name="twitter:title" content={metaTitle} />
+	<meta name="twitter:description" content={metaDescription} />
+	<meta name="twitter:url" content="https://failbondi.fail/aeropuertos" />
+	<meta name="twitter:image" content={'https://failbondi.fail' + cardPath} />
 </svelte:head>
 
 <div
