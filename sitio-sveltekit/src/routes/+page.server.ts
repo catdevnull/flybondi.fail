@@ -22,9 +22,17 @@ export const load: PageServerLoad = async ({ url, platform, setHeaders }) => {
 	const vuelos = await sql<Vuelo[]>`
     WITH flight_data AS (
       SELECT *,
-        (to_timestamp(json->>'stda' || ' ' || to_char(last_updated, 'YYYY'), 'DD/MM HH24:MI YYYY')::timestamp without time zone AT TIME ZONE 'America/Buenos_Aires') AS stda,
+        (to_timestamp(
+          json->>'stda' || ' ' || 
+          CASE 
+            WHEN json->>'stda' LIKE '31/12%' AND split_part(json->>'x_date', '-', 2) = '01' 
+            THEN (split_part(json->>'x_date', '-', 1)::int - 1)::text
+            ELSE split_part(json->>'x_date', '-', 1)
+          END,
+          'DD/MM HH24:MI YYYY'
+        )::timestamp without time zone AT TIME ZONE 'America/Buenos_Aires') AS stda,
         CASE 
-          WHEN LENGTH(json->>'atda') > 0 THEN (to_timestamp(json->>'atda' || ' ' || to_char(last_updated, 'YYYY'), 'DD/MM HH24:MI YYYY')::timestamp without time zone AT TIME ZONE 'America/Buenos_Aires')
+          WHEN LENGTH(json->>'atda') > 0 THEN (to_timestamp(json->>'atda' || ' ' || split_part(json->>'x_date', '-', 1), 'DD/MM HH24:MI YYYY')::timestamp without time zone AT TIME ZONE 'America/Buenos_Aires')
         END AS atda
       FROM aerolineas_latest_flight_status
       left join airfleets_matriculas

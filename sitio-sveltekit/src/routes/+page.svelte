@@ -491,17 +491,6 @@
 				</p>
 			</div>
 		</div>
-		{#if (dayjs(date).date() === 31 && dayjs(date).month() === 11) || (dayjs(date).date() === 1 && dayjs(date).month() === 0)}
-			<Alert class="mb-4">
-				<AlertCircleIcon class="size-4" />
-
-				<AlertTitle>Problema con los datos</AlertTitle>
-				<AlertDescription>
-					Los datos de vuelos pueden ser inexactos debido al cambio de año. Vamos a arreglarlo
-					eventualmente.
-				</AlertDescription>
-			</Alert>
-		{/if}
 	{:else}
 		<p class="mb-4 text-lg">No hay datos de vuelos para mostrar</p>
 	{/if}
