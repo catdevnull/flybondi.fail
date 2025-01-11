@@ -613,6 +613,8 @@
 	</p>
 
 	<div class="prose prose-neutral dark:prose-invert mb-4 flex max-w-[800px] flex-col gap-2">
+		<Button variant="link" href="/aeropuertos">Ver estadísticas por aeropuerto</Button>
+
 		<p class="my-0">
 			Failbondi.fail es un experimento de <a href="https://nulo.lol">Nulo Science Inc™</a>.
 		</p>
