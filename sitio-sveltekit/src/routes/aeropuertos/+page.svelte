@@ -13,7 +13,7 @@
 	import { ArrowUpDown } from 'lucide-svelte';
 	import { Button } from '@/components/ui/button';
 	import Footer from '$lib/components/footer.svelte';
-	import AverageVis from '../average-vis.svelte';
+	import TimeBar from '../time-bar.svelte';
 
 	type AirlineStats = {
 		total_flights: number;
@@ -150,24 +150,25 @@
 								</div>
 							</div>
 						</Table.Cell>
-						<Table.Cell class="py-0">
-							<AverageVis
-								airlineData={[
-									{
-										name: 'Con Flybondi',
-										avgDelay: airport.avg_delay / 60,
-										nVuelos: airport.departed_flights
-									},
-									{
-										name: 'Sin Flybondi',
-										avgDelay: airport.withoutFlybondi.avg_delay / 60,
-										nVuelos: airport.withoutFlybondi.departed_flights
-									}
-								]}
-								maxMinutes={60}
-								height={100}
-								showTicks={false}
-							/>
+						<Table.Cell class="py-2">
+							<div class="space-y-2">
+								<div>
+									Con FB: <span class="font-medium">{airport.delay_rate.toFixed(1)}%</span>
+									<span class="text-xs {getDelayColor(airport.avg_delay, true)}">
+										({formatDelayMinutes(airport.avg_delay)})
+									</span>
+									<TimeBar maxSeconds={3600} seconds={airport.avg_delay} />
+								</div>
+								<div>
+									Sin FB: <span class="font-medium"
+										>{airport.delay_rate_without_flybondi.toFixed(1)}%</span
+									>
+									<span class="text-xs {getDelayColor(airport.withoutFlybondi.avg_delay, true)}">
+										({formatDelayMinutes(airport.withoutFlybondi.avg_delay)})
+									</span>
+									<TimeBar maxSeconds={3600} seconds={airport.withoutFlybondi.avg_delay} />
+								</div>
+							</div>
 						</Table.Cell>
 						<Table.Cell>
 							<div class="space-y-0.5">
@@ -205,24 +206,23 @@
 				<div class="mt-2 space-y-2">
 					<div>
 						<div class="text-sm font-medium">Retrasos:</div>
-						<div class="space-y-0.5">
-							<AverageVis
-								airlineData={[
-									{
-										name: 'Con Flybondi',
-										avgDelay: airport.avg_delay / 60,
-										nVuelos: airport.departed_flights
-									},
-									{
-										name: 'Sin Flybondi',
-										avgDelay: airport.withoutFlybondi.avg_delay / 60,
-										nVuelos: airport.withoutFlybondi.departed_flights
-									}
-								]}
-								maxMinutes={60}
-								height={100}
-								showTicks={false}
-							/>
+						<div class="space-y-2">
+							<div>
+								Con FB: <span class="font-medium">{airport.delay_rate.toFixed(1)}%</span>
+								<span class="text-xs {getDelayColor(airport.avg_delay, true)}">
+									({formatDelayMinutes(airport.avg_delay)})
+								</span>
+								<TimeBar maxSeconds={3600} seconds={airport.avg_delay} />
+							</div>
+							<div>
+								Sin FB: <span class="font-medium"
+									>{airport.delay_rate_without_flybondi.toFixed(1)}%</span
+								>
+								<span class="text-xs {getDelayColor(airport.withoutFlybondi.avg_delay, true)}">
+									({formatDelayMinutes(airport.withoutFlybondi.avg_delay)})
+								</span>
+								<TimeBar maxSeconds={3600} seconds={airport.withoutFlybondi.avg_delay} />
+							</div>
 						</div>
 					</div>
 
