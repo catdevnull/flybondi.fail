@@ -267,6 +267,15 @@
 	</div>
 </main>
 
+<div class="prose prose-neutral dark:prose-invert mx-auto max-w-[1200px] p-4">
+	<h2>Metodología</h2>
+	<p>
+		Para cada aeropuerto se muestran las estadísticas incluyendo y excluyendo los vuelos de Flybondi
+		(código FO), permitiendo comparar el desempeño entre aerolíneas. Solo se consideran los vuelos
+		entre aeropuertos en los que opera Flybondi.
+	</p>
+</div>
+
 <Footer>
 	<a href="/">Ver datos de hoy</a>
 </Footer>
