@@ -12,6 +12,8 @@
 	import * as Table from '@/components/ui/table';
 	import { ArrowUpDown } from 'lucide-svelte';
 	import { Button } from '@/components/ui/button';
+	import Footer from '$lib/components/footer.svelte';
+	import AverageVis from '../average-vis.svelte';
 
 	type AirlineStats = {
 		total_flights: number;
@@ -56,12 +58,16 @@
 	}
 
 	function formatDelayMinutes(seconds: number) {
+		// Round down to minutes
+		seconds = Math.floor(seconds / 60) * 60;
 		const duration = intervalToDuration({ start: 0, end: seconds * 1000 });
 		return formatDuration(duration, { locale: es })
-			.replace(' horas', 'hs')
+			.replace(' horas', 'h')
 			.replace(' hora', 'h')
 			.replace(' minutos', 'min')
-			.replace(' minuto', 'min');
+			.replace(' minuto', 'min')
+			.replace(' segundos', 's')
+			.replace(' segundo', 's');
 	}
 
 	let sortColumn: keyof Airport = 'total_flights';
@@ -101,116 +107,144 @@
 </div>
 
 <main class="mx-auto max-w-[1200px] p-4">
-	<Table.Root class="w-full">
-		<Table.Header>
-			<Table.Row>
-				<Table.Head>Aeropuerto</Table.Head>
-				<Table.Head>
-					<Button variant="ghost" class="h-8 px-2" on:click={() => toggleSort('total_flights')}>
-						<span>Vuelos</span>
-						<ArrowUpDown class="ml-2 h-4 w-4" />
-					</Button>
-				</Table.Head>
-				<Table.Head>
-					<Button variant="ghost" class="h-8 px-2" on:click={() => toggleSort('delay_improvement')}>
-						<span>Mejora en retrasos</span>
-						<ArrowUpDown class="ml-2 h-4 w-4" />
-					</Button>
-				</Table.Head>
-				<Table.Head>
-					<Button variant="ghost" class="h-8 px-2" on:click={() => toggleSort('avg_delay')}>
-						<span>Retraso promedio</span>
-						<ArrowUpDown class="ml-2 h-4 w-4" />
-					</Button>
-				</Table.Head>
-				<Table.Head>
-					<Button variant="ghost" class="h-8 px-2" on:click={() => toggleSort('delay_rate')}>
-						<span>% Vuelos retrasados</span>
-						<ArrowUpDown class="ml-2 h-4 w-4" />
-					</Button>
-				</Table.Head>
-				<Table.Head>
-					<Button variant="ghost" class="h-8 px-2" on:click={() => toggleSort('cancellation_rate')}>
-						<span>% Vuelos cancelados</span>
-						<ArrowUpDown class="ml-2 h-4 w-4" />
-					</Button>
-				</Table.Head>
-				<Table.Head>Destinos</Table.Head>
-			</Table.Row>
-		</Table.Header>
-		<Table.Body>
-			{#each sortedAirports as airport}
+	<!-- Desktop Table View -->
+	<div class="hidden sm:block">
+		<Table.Root class="w-full">
+			<Table.Header>
 				<Table.Row>
-					<Table.Cell class="font-medium">{getAirport(airport.iata)}</Table.Cell>
-					<Table.Cell>
-						<div class="space-y-1">
-							<div>Total: {airport.total_flights}</div>
-							<div class="text-sm text-neutral-500">
-								FB: {airport.total_flights - airport.withoutFlybondi.total_flights} | Otros: {airport
-									.withoutFlybondi.total_flights}
-							</div>
-						</div>
-					</Table.Cell>
-					<Table.Cell>
-						<span class={getDelayColor(airport.delay_improvement, true)}>
-							{airport.delay_improvement > 0
-								? `${formatDelayMinutes(airport.delay_improvement)} peor`
-								: `${formatDelayMinutes(Math.abs(airport.delay_improvement))} mejor`}
-						</span>
-					</Table.Cell>
-					<Table.Cell>
-						<div class="space-y-1">
-							<div>
-								Con FB: <span class={getDelayColor(airport.avg_delay, true)}
-									>{formatDelayMinutes(airport.avg_delay)}</span
-								>
-							</div>
-							<div>
-								Sin FB: <span class={getDelayColor(airport.withoutFlybondi.avg_delay, true)}
-									>{formatDelayMinutes(airport.withoutFlybondi.avg_delay)}</span
-								>
-							</div>
-						</div>
-					</Table.Cell>
-					<Table.Cell>
-						<div class="space-y-1">
-							<div>Con FB: {airport.delay_rate.toFixed(1)}%</div>
-							<div>Sin FB: {airport.delay_rate_without_flybondi.toFixed(1)}%</div>
-						</div>
-					</Table.Cell>
-					<Table.Cell>
-						<div class="space-y-1">
-							<div>Con FB: {airport.cancellation_rate.toFixed(1)}%</div>
-							<div>Sin FB: {airport.cancellation_rate_without_flybondi.toFixed(1)}%</div>
-						</div>
-					</Table.Cell>
-					<Table.Cell class="max-w-[200px] truncate">
-						{airport.destinations.map((d: string) => getAirport(d)).join(', ')}
-					</Table.Cell>
+					<Table.Head>Aeropuerto</Table.Head>
+					<Table.Head>
+						<Button variant="ghost" class="h-8 px-2" on:click={() => toggleSort('total_flights')}>
+							<span>Vuelos (30d)</span>
+							<ArrowUpDown class="ml-2 h-4 w-4" />
+						</Button>
+					</Table.Head>
+					<Table.Head>
+						<Button variant="ghost" class="h-8 px-2" on:click={() => toggleSort('delay_rate')}>
+							<span>Retrasos</span>
+							<ArrowUpDown class="ml-2 h-4 w-4" />
+						</Button>
+					</Table.Head>
+					<Table.Head>
+						<Button
+							variant="ghost"
+							class="h-8 px-2"
+							on:click={() => toggleSort('cancellation_rate')}
+						>
+							<span>Cancelaciones</span>
+							<ArrowUpDown class="ml-2 h-4 w-4" />
+						</Button>
+					</Table.Head>
 				</Table.Row>
-			{/each}
-		</Table.Body>
-	</Table.Root>
+			</Table.Header>
+			<Table.Body>
+				{#each sortedAirports as airport}
+					<Table.Row>
+						<Table.Cell class="font-medium">{getAirport(airport.iata)}</Table.Cell>
+						<Table.Cell>
+							<div class="space-y-0.5">
+								<div class="font-medium">{airport.total_flights}</div>
+								<div class="text-xs text-neutral-500">
+									FB: {airport.total_flights - airport.withoutFlybondi.total_flights} | Otros: {airport
+										.withoutFlybondi.total_flights}
+								</div>
+							</div>
+						</Table.Cell>
+						<Table.Cell class="py-0">
+							<AverageVis
+								airlineData={[
+									{
+										name: 'Con Flybondi',
+										avgDelay: airport.avg_delay / 60,
+										nVuelos: airport.departed_flights
+									},
+									{
+										name: 'Sin Flybondi',
+										avgDelay: airport.withoutFlybondi.avg_delay / 60,
+										nVuelos: airport.withoutFlybondi.departed_flights
+									}
+								]}
+								maxMinutes={60}
+								height={100}
+								showTicks={false}
+							/>
+						</Table.Cell>
+						<Table.Cell>
+							<div class="space-y-0.5">
+								<div>
+									Con FB: <span class="font-medium">{airport.cancellation_rate.toFixed(1)}%</span>
+								</div>
+								<div class="text-sm">
+									Sin FB: <span class="font-medium"
+										>{airport.cancellation_rate_without_flybondi.toFixed(1)}%</span
+									>
+								</div>
+							</div>
+						</Table.Cell>
+					</Table.Row>
+				{/each}
+			</Table.Body>
+		</Table.Root>
+	</div>
+
+	<!-- Mobile Card View -->
+	<div class="grid grid-cols-1 gap-2 sm:hidden">
+		{#each sortedAirports as airport}
+			<div class="rounded-lg border bg-white p-3 dark:border-neutral-700 dark:bg-neutral-800">
+				<div class="flex items-center justify-between">
+					<h3 class="text-lg font-medium">{getAirport(airport.iata)}</h3>
+					<div class="text-right">
+						<div class="font-medium">{airport.total_flights} vuelos</div>
+						<div class="text-xs text-neutral-500">
+							FB: {airport.total_flights - airport.withoutFlybondi.total_flights} | Otros: {airport
+								.withoutFlybondi.total_flights}
+						</div>
+					</div>
+				</div>
+
+				<div class="mt-2 space-y-2">
+					<div>
+						<div class="text-sm font-medium">Retrasos:</div>
+						<div class="space-y-0.5">
+							<AverageVis
+								airlineData={[
+									{
+										name: 'Con Flybondi',
+										avgDelay: airport.avg_delay / 60,
+										nVuelos: airport.departed_flights
+									},
+									{
+										name: 'Sin Flybondi',
+										avgDelay: airport.withoutFlybondi.avg_delay / 60,
+										nVuelos: airport.withoutFlybondi.departed_flights
+									}
+								]}
+								maxMinutes={60}
+								height={100}
+								showTicks={false}
+							/>
+						</div>
+					</div>
+
+					<div>
+						<div class="text-sm font-medium">Cancelaciones:</div>
+						<div class="space-y-0.5">
+							<div>
+								Con FB: <span class="font-medium">{airport.cancellation_rate.toFixed(1)}%</span>
+							</div>
+							<div class="text-sm">
+								Sin FB: <span class="font-medium"
+									>{airport.cancellation_rate_without_flybondi.toFixed(1)}%</span
+								>
+							</div>
+						</div>
+					</div>
+				</div>
+			</div>
+		{/each}
+	</div>
 </main>
 
-<footer
-	class="mt-10 flex flex-col items-center justify-center px-4 text-center text-sm text-neutral-600 dark:text-neutral-400"
->
-	<p class="prose prose-neutral dark:prose-invert mb-4 max-w-[800px]">
-		La marca Flybondi es de FB Líneas Aéreas S.A. Este sitio web no está afiliado, respaldado ni
-		patrocinado por FB Líneas Aéreas S.A. Todos los derechos asociados a la marca y su uso están
-		reservados a su propietario legítimo. El uso de la marca en este sitio es únicamente
-		informativo. No nos hacemos responsables de los errores que puedan haber en la información
-		presentada.
-	</p>
-
-	<div class="prose prose-neutral dark:prose-invert mb-4 flex max-w-[800px] flex-col gap-2">
-		<p class="my-0">
-			Failbondi.fail es un experimento de <a href="https://nulo.lol">Nulo Science Inc™</a>.
-		</p>
-
-		<a href="/acerca">Acerca del sitio, sus datos, etc</a>
-
-		<a href="https://x.com/esoesnulo">@esoesnulo</a>
-	</div>
-</footer>
+<Footer>
+	<a href="/">Ver datos de hoy</a>
+</Footer>

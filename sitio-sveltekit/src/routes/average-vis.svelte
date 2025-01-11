@@ -12,7 +12,9 @@
 		nVuelos: number;
 		otherAerolineas?: string[];
 	}[];
-	const height = 180; // Increased height for taller bars
+	export let maxMinutes = 180;
+	export let height = 180;
+	export let showTicks = true;
 
 	const FONT_STACK = 'system-ui, sans-serif';
 
@@ -28,11 +30,11 @@
 
 	function updateChart() {
 		const svg = d3.select(svgEl);
-		const margin = { top: 10, right: 0, bottom: 5, left: 0 }; // Increased top margin for labels
+		const margin = { top: 10, right: 0, bottom: showTicks ? 5 : 0, left: 0 }; // Increased top margin for labels
 
 		const x = d3
 			.scaleLinear()
-			.domain([0, 180]) // 3 hours in minutes
+			.domain([0, maxMinutes]) // Use maxMinutes instead of hardcoded 180
 			.range([margin.left, width - margin.right]);
 
 		const y = d3
@@ -53,7 +55,7 @@
 			.attr('class', 'bar-bg')
 			.attr('x', x(0))
 			.attr('y', (d) => y(d.name)!)
-			.attr('width', x(180) - x(0))
+			.attr('width', x(maxMinutes) - x(0))
 			.attr('height', y.bandwidth());
 
 		svg
@@ -119,24 +121,26 @@
 			.attr('font-family', FONT_STACK)
 			.attr('font-size', '14px');
 
-		// Add x-axis
-		const xAxis = d3
-			.axisBottom(x)
-			.tickValues([0, 60, 120, 180])
-			.tickSize(0)
-			.tickFormat((d: number) => `${d / 60}hs`);
-		const ejex = svg
-			.append('g')
-			.attr('transform', `translate(0,${height - margin.bottom - 20})`)
-			.call(xAxis);
-		ejex
-			.selectAll('text')
-			.attr('font-family', FONT_STACK)
-			.attr('font-size', '12px')
-			.attr('opacity', '0.7');
-		ejex.select('.domain').remove();
-		ejex.select('.tick').attr('text-anchor', 'start');
-		ejex.select('.tick:last-of-type').attr('text-anchor', 'end');
+		// Add x-axis with explicit types
+		if (showTicks) {
+			const xAxis = d3
+				.axisBottom(x)
+				.tickValues([0, 60, 120, 180])
+				.tickSize(0)
+				.tickFormat((d: number) => `${d / 60}hs`);
+			const ejex = svg
+				.append('g')
+				.attr('transform', `translate(0,${height - margin.bottom - 20})`)
+				.call(xAxis);
+			ejex
+				.selectAll('text')
+				.attr('font-family', FONT_STACK)
+				.attr('font-size', '12px')
+				.attr('opacity', '0.7');
+			ejex.select('.domain').remove();
+			ejex.select('.tick').attr('text-anchor', 'start');
+			ejex.select('.tick:last-of-type').attr('text-anchor', 'end');
+		}
 	}
 
 	$: if (svgEl && width && airlineData) {
