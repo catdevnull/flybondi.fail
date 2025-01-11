@@ -15,7 +15,6 @@ export const load: PageServerLoad = async () => {
 	const end = dayjs().tz(tsz).subtract(1, 'day').endOf('day');
 	const start = end.subtract(30, 'days').startOf('day');
 
-	const condition = sql`json->>'mov' = 'D'`;
 	const vuelos = await sql`
     WITH flight_data AS (
       SELECT *,
@@ -32,7 +31,7 @@ export const load: PageServerLoad = async () => {
           WHEN LENGTH(json->>'atda') > 0 THEN (to_timestamp(json->>'atda' || ' ' || split_part(json->>'x_date', '-', 1), 'DD/MM HH24:MI YYYY')::timestamp without time zone AT TIME ZONE 'America/Buenos_Aires')
         END AS atda
       FROM aerolineas_latest_flight_status
-      WHERE ${condition}
+      WHERE json->>'mov' = 'D'
     )
     SELECT
       json->>'arpt' as airport,
