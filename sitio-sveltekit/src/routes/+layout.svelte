@@ -20,7 +20,11 @@
 	{@render children()}
 </div>
 
-<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
+<svg
+	xmlns="http://www.w3.org/2000/svg"
+	xmlns:xlink="http://www.w3.org/1999/xlink"
+	style="position: absolute; width: 0; height: 0;"
+>
 	<defs>
 		<symbol viewBox="0 0 576 512" id="fa6-solid-plane">
 			<path
