@@ -29,6 +29,7 @@
 	import { today, getLocalTimeZone, CalendarDate } from '@internationalized/date';
 	import type { DateRange } from 'bits-ui';
 	import { onMount, onDestroy } from 'svelte';
+	import cardPath from '$lib/assets/twitter-card.png';
 
 	export let data: {
 		dailyStats: Array<{
@@ -373,14 +374,27 @@
 	$: if (delayChartEl && cancelChartEl && data) {
 		updateCharts();
 	}
+
+	$: metaTitle = `Estadísticas históricas - failbondi.fail`;
+	$: metaDescription = `Estadísticas históricas de retrasos y cancelaciones de vuelos en Argentina del ${formatDate(startDate.toDate(tsz))} al ${formatDate(endDate.toDate(tsz))}`;
 </script>
 
 <svelte:head>
-	<title>Estadísticas históricas - failbondi.fail</title>
-	<meta
-		name="description"
-		content="Estadísticas históricas de retrasos y cancelaciones de vuelos en Argentina"
-	/>
+	<title>{metaTitle}</title>
+	<meta name="description" content={metaDescription} />
+
+	<meta property="og:type" content="website" />
+	<meta property="og:title" content={metaTitle} />
+	<meta property="og:description" content={metaDescription} />
+	<meta property="og:url" content="https://failbondi.fail/historico" />
+	<meta property="og:image" content={'https://failbondi.fail' + cardPath} />
+
+	<meta name="twitter:card" content="summary_large_image" />
+	<meta name="twitter:site" content="@esoesnulo" />
+	<meta name="twitter:title" content={metaTitle} />
+	<meta name="twitter:description" content={metaDescription} />
+	<meta name="twitter:url" content="https://failbondi.fail/historico" />
+	<meta name="twitter:image" content={'https://failbondi.fail' + cardPath} />
 </svelte:head>
 
 <main class="mx-auto max-w-[1000px] p-2 sm:p-4">
