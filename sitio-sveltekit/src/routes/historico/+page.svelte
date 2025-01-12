@@ -28,6 +28,7 @@
 	import { browser } from '$app/environment';
 	import { today, getLocalTimeZone, CalendarDate } from '@internationalized/date';
 	import type { DateRange } from 'bits-ui';
+	import { onMount, onDestroy } from 'svelte';
 
 	export let data: {
 		dailyStats: Array<{
@@ -39,6 +40,29 @@
 		hasCustomDate: boolean;
 		availableDates: string[];
 	};
+
+	let isMobile = false;
+	let mediaQuery: MediaQueryList;
+
+	onMount(() => {
+		if (browser) {
+			mediaQuery = window.matchMedia('(max-width: 639px)');
+			isMobile = mediaQuery.matches;
+
+			const handleChange = (e: MediaQueryListEvent) => {
+				isMobile = e.matches;
+				if (delayChartEl && cancelChartEl) {
+					updateCharts();
+				}
+			};
+
+			mediaQuery.addEventListener('change', handleChange);
+
+			return () => {
+				mediaQuery.removeEventListener('change', handleChange);
+			};
+		}
+	});
 
 	const AEROLINEAS = {
 		FO: 'Flybondi',
@@ -174,12 +198,14 @@
 							size: 16,
 							weight: 'bold'
 						},
-						padding: 20
+						padding: { top: 20, bottom: 10 }
 					},
 					legend: {
-						position: 'right',
+						position: isMobile ? 'bottom' : 'right',
 						labels: {
-							usePointStyle: true
+							usePointStyle: true,
+							boxWidth: 6,
+							padding: isMobile ? 15 : 10
 						}
 					},
 					tooltip: {
@@ -199,7 +225,14 @@
 							unit: 'day'
 						},
 						min: startDate.toDate(tsz).getTime(),
-						max: endDate.toDate(tsz).getTime()
+						max: endDate.toDate(tsz).getTime(),
+						ticks: {
+							maxRotation: 0,
+							autoSkip: true,
+							font: {
+								size: isMobile ? 10 : 12
+							}
+						}
 					},
 					y: {
 						beginAtZero: true,
@@ -212,6 +245,9 @@
 								ticks: Tick[]
 							) {
 								return `${tickValue}min`;
+							},
+							font: {
+								size: isMobile ? 10 : 12
 							}
 						}
 					}
@@ -253,12 +289,14 @@
 							size: 16,
 							weight: 'bold'
 						},
-						padding: 20
+						padding: { top: 20, bottom: 10 }
 					},
 					legend: {
-						position: 'right',
+						position: isMobile ? 'bottom' : 'right',
 						labels: {
-							usePointStyle: true
+							usePointStyle: true,
+							boxWidth: 6,
+							padding: isMobile ? 15 : 10
 						}
 					},
 					tooltip: {
@@ -278,7 +316,14 @@
 							unit: 'day'
 						},
 						min: startDate.toDate(tsz).getTime(),
-						max: endDate.toDate(tsz).getTime()
+						max: endDate.toDate(tsz).getTime(),
+						ticks: {
+							maxRotation: 0,
+							autoSkip: true,
+							font: {
+								size: isMobile ? 10 : 12
+							}
+						}
 					},
 					y: {
 						beginAtZero: true,
@@ -291,6 +336,9 @@
 								ticks: Tick[]
 							) {
 								return `${tickValue}%`;
+							},
+							font: {
+								size: isMobile ? 10 : 12
 							}
 						}
 					}
@@ -335,14 +383,16 @@
 	/>
 </svelte:head>
 
-<main class="mx-auto max-w-[1000px] p-4">
-	<h1 class="mb-4 text-4xl font-medium leading-none text-red-600">Estadísticas históricas</h1>
+<main class="mx-auto max-w-[1000px] p-2 sm:p-4">
+	<h1 class="mb-4 text-3xl font-medium leading-none text-red-600 sm:text-4xl">
+		Estadísticas históricas
+	</h1>
 
-	<div class="mb-8 flex flex-wrap items-center gap-4">
-		<div class="flex items-center gap-2">
+	<div class="mb-6 flex flex-wrap items-center gap-4 sm:mb-8">
+		<div class="flex w-full items-center gap-2 sm:w-auto">
 			<Popover.Root>
 				<Popover.Trigger>
-					<Button variant="outline" class="w-[280px] justify-start text-left font-normal">
+					<Button variant="outline" class="w-full justify-start text-left font-normal sm:w-[280px]">
 						<CalendarIcon class="mr-2 h-4 w-4" />
 						{formatDate(startDate.toDate(tsz))} - {formatDate(endDate.toDate(tsz))}
 					</Button>
@@ -351,10 +401,9 @@
 					<RangeCalendar.RangeCalendar
 						value={dateRange}
 						onValueChange={onDateSelect}
-						numberOfMonths={2}
+						numberOfMonths={isMobile ? 1 : 2}
 						isDateUnavailable={(date) => {
 							const dateStr = dayjs(date.toDate(tsz)).format('YYYY-MM-DD');
-							console.log(data.availableDates);
 							return !data.availableDates.includes(dateStr);
 						}}
 					/>
@@ -363,18 +412,18 @@
 		</div>
 	</div>
 
-	<div class="grid gap-8">
-		<div class="w-full max-w-[1000px] rounded-lg border bg-white p-4 dark:bg-neutral-900">
-			<canvas bind:this={delayChartEl} height="400"></canvas>
+	<div class="grid gap-6 sm:gap-8">
+		<div class="w-full max-w-[1000px] rounded-lg border bg-white p-3 sm:p-4 dark:bg-neutral-900">
+			<canvas bind:this={delayChartEl} height={isMobile ? 300 : 400}></canvas>
 		</div>
 
-		<div class="w-full max-w-[1000px] rounded-lg border bg-white p-4 dark:bg-neutral-900">
-			<canvas bind:this={cancelChartEl} height="400"></canvas>
+		<div class="w-full max-w-[1000px] rounded-lg border bg-white p-3 sm:p-4 dark:bg-neutral-900">
+			<canvas bind:this={cancelChartEl} height={isMobile ? 300 : 400}></canvas>
 		</div>
 	</div>
 </main>
 
-<div class="prose prose-neutral dark:prose-invert mx-auto mt-12 max-w-[600px] p-4">
+<div class="prose prose-neutral dark:prose-invert mx-auto mt-8 max-w-[600px] p-4 sm:mt-12">
 	<h2>Metodología</h2>
 
 	<p>Los datos mostrados en esta página son procesados de la siguiente manera:</p>
