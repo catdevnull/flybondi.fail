@@ -38,6 +38,8 @@
 	"dependencies": {
 		"@sentry/sveltekit": "^8",
 		"@tailwindcss/typography": "^0.5.15",
+		"chart.js": "^4.4.7",
+		"chartjs-adapter-date-fns": "^3.0.0",
 		"d3": "^7.9.0",
 		"date-fns": "^4.1.0",
 		"dayjs": "^1.11.13",

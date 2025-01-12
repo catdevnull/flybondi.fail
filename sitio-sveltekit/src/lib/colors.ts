@@ -26,3 +26,15 @@ export function getDelaySimplified(delay: number) {
 	if (delay < 45 * 60) return 45 * 60;
 	return 60 * 60;
 }
+
+export const AIRLINE_COLORS = {
+	FO: '#FDBF15', // Flybondi red
+	AR: '#75AADB', // Aerolineas Argentinas blue
+	WJ: '#E31837', // JetSmart orange
+	G3: '#00B0B5', // Gol teal
+	JJ: '#E3001B', // LATAM red
+	O4: '#004B8D', // Avianca blue
+	'5U': '#00539B', // Azul blue
+	ZP: '#E31837', // Paranair red
+	H2: '#003876' // Amaszonas blue
+} as const;
