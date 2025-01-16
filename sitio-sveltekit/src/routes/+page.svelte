@@ -244,6 +244,7 @@
 	{/if}
 	<title>{metaTitle} - failbondi.fail</title>
 	<meta name="description" content={metaDescription} />
+	<link rel="canonical" href="https://failbondi.fail" />
 
 	<meta property="og:type" content="website" />
 	<meta property="og:title" content={metaTitle} />
