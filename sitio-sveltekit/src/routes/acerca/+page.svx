@@ -1,5 +1,24 @@
 <script lang="ts">
+import cardPath from '$lib/assets/twitter-card.png';
 </script>
+
+<svelte:head>
+	<title>Acerca de - failbondi.fail</title>
+	<meta name="description" content="Failbondi.fail es una página web homenaje a todos los vuelos atrasados y cancelados de la aerolinea argentina low-cost Flybondi." />
+
+	<meta property="og:type" content="website" />
+	<meta property="og:title" content="Acerca de - failbondi.fail" />
+	<meta property="og:description" content="Failbondi.fail es una página web homenaje a todos los vuelos atrasados y cancelados de la aerolinea argentina low-cost Flybondi." />
+	<meta property="og:url" content="https://failbondi.fail/acerca" />
+	<meta property="og:image" content={'https://failbondi.fail' + cardPath} />
+
+	<meta name="twitter:card" content="summary_large_image" />
+	<meta name="twitter:site" content="@esoesnulo" />
+	<meta name="twitter:title" content="Acerca de - failbondi.fail" />
+	<meta name="twitter:description" content="Failbondi.fail es una página web homenaje a todos los vuelos atrasados y cancelados de la aerolinea argentina low-cost Flybondi." />
+	<meta name="twitter:url" content="https://failbondi.fail/acerca" />
+	<meta name="twitter:image" content={'https://failbondi.fail' + cardPath} />
+</svelte:head>
 
 <div class="prose prose-neutral dark:prose-invert max-w-[600px] mx-auto p-4">
 
