@@ -4,6 +4,7 @@
 ARG NODE_VERSION=23
 FROM node:${NODE_VERSION}-slim as base
 
+
 LABEL fly_launch_runtime="SvelteKit"
 
 # SvelteKit app lives here
@@ -22,7 +23,7 @@ FROM base as build
 
 # Install packages needed to build node modules
 RUN apt-get update -qq && \
-    apt-get install --no-install-recommends -y build-essential node-gyp pkg-config python-is-python3
+    apt-get install --no-install-recommends -y build-essential node-gyp pkg-config python-is-python3 ca-certificates
 
 # Install node modules
 COPY .npmrc package.json pnpm-lock.yaml ./
