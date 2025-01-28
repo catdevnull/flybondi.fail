@@ -104,10 +104,9 @@
 	$: vuelosAterrizados = vuelos.filter((v): v is Vuelo & { atda: Date } => !!v.atda);
 	$: vuelosCancelados = vuelos.filter((v) => v.json.estes === 'Cancelado');
 
-	$: vueloMasAtrasado = vuelosAterrizados.reduce<Vuelo & { atda: Date }>(
-		(acc, v) => (v.delta > acc.delta ? v : acc),
-		vuelosAterrizados[0]
-	);
+	$: vueloMasAtrasado =
+		vuelosAterrizados.length > 0 &&
+		vuelosAterrizados.reduce((acc, v) => (v.delta > acc.delta ? v : acc), vuelosAterrizados[0]);
 
 	function getTotalSeats(vuelo: Vuelo) {
 		const asientos = vuelo.config_de_asientos?.match(/\w(\d+)/);
@@ -484,22 +483,24 @@
 				</div>
 			{/if}
 
-			<div
-				class="flex flex-col justify-center rounded-lg border bg-neutral-50 p-4 text-xl dark:border-neutral-700 dark:bg-neutral-800"
-			>
-				<p>
-					El vuelo más atrasado fue el
-					<a href={flightradar24(vueloMasAtrasado)} class="hover:underline">
-						{vueloMasAtrasado.json.nro}
-					</a>
-					de {getAirport(vueloMasAtrasado.json.arpt)} a {getAirport(
-						vueloMasAtrasado.json.IATAdestorig
-					)}, que salió
-					<span class={`font-bold ${getDelayColor(vueloMasAtrasado.delta, true)}`}>
-						{delayString(vueloMasAtrasado, false)}
-					</span>. {genPhrase()}
-				</p>
-			</div>
+			{#if vueloMasAtrasado}
+				<div
+					class="flex flex-col justify-center rounded-lg border bg-neutral-50 p-4 text-xl dark:border-neutral-700 dark:bg-neutral-800"
+				>
+					<p>
+						El vuelo más atrasado fue el
+						<a href={flightradar24(vueloMasAtrasado)} class="hover:underline">
+							{vueloMasAtrasado.json.nro}
+						</a>
+						de {getAirport(vueloMasAtrasado.json.arpt)} a {getAirport(
+							vueloMasAtrasado.json.IATAdestorig
+						)}, que salió
+						<span class={`font-bold ${getDelayColor(vueloMasAtrasado.delta, true)}`}>
+							{delayString(vueloMasAtrasado, false)}
+						</span>. {genPhrase()}
+					</p>
+				</div>
+			{/if}
 		</div>
 	{:else}
 		<p class="mb-4 text-lg">No hay datos de vuelos para mostrar</p>
@@ -551,7 +552,10 @@
 							{#if vuelo.atda}
 								{delayString(vuelo)}
 
-								<TimeBar maxSeconds={vueloMasAtrasado.delta} seconds={vuelo.delta} />
+								<TimeBar
+									maxSeconds={vueloMasAtrasado ? vueloMasAtrasado.delta : 43200}
+									seconds={vuelo.delta}
+								/>
 							{:else if vuelo.json.estes === 'Cancelado'}
 								<span class="font-black text-black dark:text-neutral-100">Cancelado</span>
 							{/if}
@@ -602,7 +606,10 @@
 						</div>
 
 						{#if vuelo.atda}
-							<TimeBar maxSeconds={vueloMasAtrasado.delta} seconds={vuelo.delta} />
+							<TimeBar
+								maxSeconds={vueloMasAtrasado ? vueloMasAtrasado.delta : 43200}
+								seconds={vuelo.delta}
+							/>
 						{:else if vuelo.json.estes === 'Cancelado'}{/if}
 					</div>
 				</div>
