@@ -11,6 +11,7 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       - uses: superfly/flyctl-actions/setup-flyctl@master
-      - run: cd sitio-sveltekit && flyctl deploy --remote-only
+      - run: cd sitio-sveltekit && flyctl deploy --remote-only --build-secret SENTRY_AUTH_TOKEN="$SENTRY_AUTH_TOKEN"
         env:
           FLY_API_TOKEN: ${{ secrets.FLY_API_TOKEN }}
+          SENTRY_AUTH_TOKEN: ${{ secrets.SENTRY_AUTH_TOKEN }}
