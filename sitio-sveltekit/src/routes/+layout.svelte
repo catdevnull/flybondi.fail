@@ -1,10 +1,17 @@
 <script lang="ts">
+	import { MediaQuery } from 'svelte/reactivity';
 	import '../app.css';
 	let { children } = $props();
-	import { ModeWatcher } from 'mode-watcher';
-</script>
+	const dark = new MediaQuery('prefers-color-scheme: dark');
 
-<ModeWatcher />
+	$effect(() => {
+		if (dark.current) {
+			document.documentElement.classList.add('dark');
+		} else {
+			document.documentElement.classList.remove('dark');
+		}
+	});
+</script>
 
 <svelte:head>
 	{#if import.meta.env.PROD}
