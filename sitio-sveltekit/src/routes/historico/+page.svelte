@@ -31,6 +31,7 @@
 	import type { DateRange } from 'bits-ui';
 	import { onMount, onDestroy } from 'svelte';
 	import cardPath from '$lib/assets/twitter-card.png';
+	import { IATA_NAMES } from '@/aerolineas';
 
 	export let data: {
 		dailyStats: Array<{
@@ -65,18 +66,6 @@
 			};
 		}
 	});
-
-	const AEROLINEAS = {
-		FO: 'Flybondi',
-		AR: 'Aerolíneas Argentinas',
-		WJ: 'JetSmart',
-		G3: 'GOL',
-		JJ: 'TAM',
-		O4: 'Andes L.A.',
-		'5U': 'TAG',
-		ZP: 'Paranair',
-		H2: 'SKY'
-	};
 
 	let startDate =
 		browser && new URLSearchParams(window.location.search).has('start')
@@ -138,7 +127,7 @@
 	function updateCharts() {
 		if (!delayChartEl || !cancelChartEl || !data) return;
 
-		const airlines = Object.keys(AEROLINEAS);
+		const airlines = Object.keys(IATA_NAMES);
 		const datasets = airlines.map((code) => {
 			const airlineData = data.dailyStats
 				.filter((d) => d.airline === code)
@@ -146,7 +135,7 @@
 
 			return {
 				type: 'line' as const,
-				label: AEROLINEAS[code as keyof typeof AEROLINEAS],
+				label: IATA_NAMES[code as keyof typeof IATA_NAMES],
 				data: airlineData.map((d) => ({
 					x: new Date(d.date).getTime(),
 					y: d.avgDelay
@@ -166,7 +155,7 @@
 
 			return {
 				type: 'line' as const,
-				label: AEROLINEAS[code as keyof typeof AEROLINEAS],
+				label: IATA_NAMES[code as keyof typeof IATA_NAMES],
 				data: airlineData.map((d) => ({
 					x: new Date(d.date).getTime(),
 					y: d.cancelPercentage
@@ -259,7 +248,7 @@
 						const element = elements[0];
 						const dataset = datasets[element.datasetIndex];
 						const dataPoint = dataset.data[element.index];
-						const airline = Object.entries(AEROLINEAS).find(
+						const airline = Object.entries(IATA_NAMES).find(
 							([, name]) => name === dataset.label
 						)?.[0];
 						if (airline) {
@@ -350,7 +339,7 @@
 						const element = elements[0];
 						const dataset = cancelDatasets[element.datasetIndex];
 						const dataPoint = dataset.data[element.index];
-						const airline = Object.entries(AEROLINEAS).find(
+						const airline = Object.entries(IATA_NAMES).find(
 							([, name]) => name === dataset.label
 						)?.[0];
 						if (airline) {

@@ -2,6 +2,7 @@
 	import * as d3 from 'd3';
 
 	import { COLORS, getDelaySimplified } from '@/colors';
+	import { IATA_NAMES } from '@/aerolineas';
 
 	let svgEl: SVGSVGElement;
 	let width: number;
@@ -17,16 +18,6 @@
 	export let showTicks = true;
 
 	const FONT_STACK = 'system-ui, sans-serif';
-
-	const IATA_MAP = {
-		WJ: 'JetSmart',
-		G3: 'GOL',
-		JJ: 'TAM',
-		O4: 'Andes L.A.',
-		'5U': 'TAG',
-		ZP: 'Paranair',
-		H2: 'SKY'
-	};
 
 	function updateChart() {
 		const svg = d3.select(svgEl);
@@ -98,7 +89,7 @@
 					.attr('font-weight', 'normal')
 
 					.text(
-						`${d.otherAerolineas ? ` (${d.otherAerolineas.map((a) => (IATA_MAP as any)[a] ?? a).join(', ')})` : ''}`
+						`${d.otherAerolineas ? ` (${d.otherAerolineas.map((a) => (IATA_NAMES as any)[a] ?? a).join(', ')})` : ''}`
 					);
 			});
 

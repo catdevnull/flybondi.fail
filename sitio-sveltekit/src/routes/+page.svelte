@@ -21,30 +21,17 @@
 	import { getDelayColor, COLOR_CLASSES } from '$lib/colors';
 	import { AEROPUERTOS_FLYBONDI } from '@/aeropuertos-flybondi';
 	import TimeBar from './time-bar.svelte';
-	import Alert from '@/components/ui/alert/alert.svelte';
-	import AlertTitle from '@/components/ui/alert/alert-title.svelte';
-	import AlertDescription from '@/components/ui/alert/alert-description.svelte';
 	import DateTime from './date-time.svelte';
 	import * as AlertDialog from '@/components/ui/alert-dialog';
 	import * as Select from '@/components/ui/select';
 	import { browser } from '$app/environment';
 	import Footer from '@/components/footer.svelte';
 	import cardPath from '$lib/assets/twitter-card.png';
+	import { IATA_NAMES } from '@/aerolineas';
 
 	export let data;
 	$: ({ vuelos: todosLosVuelos, date, hasTomorrowData, hasYesterdayData } = data);
 
-	const AEROLINEAS = {
-		FO: 'Flybondi',
-		AR: 'Aerolíneas Argentinas',
-		WJ: 'JetSmart',
-		G3: 'GOL',
-		JJ: 'TAM',
-		O4: 'Andes L.A.',
-		'5U': 'TAG',
-		ZP: 'Paranair',
-		H2: 'SKY'
-	};
 	function getAerolineaSeleccionada() {
 		let aerolinea;
 		if (browser) {
@@ -52,8 +39,8 @@
 		} else {
 			aerolinea = data.aerolineaEnUrl;
 		}
-		if (aerolinea && Object.keys(AEROLINEAS).includes(aerolinea)) {
-			return aerolinea as keyof typeof AEROLINEAS;
+		if (aerolinea && Object.keys(IATA_NAMES).includes(aerolinea)) {
+			return aerolinea as keyof typeof IATA_NAMES;
 		}
 		return 'FO';
 	}
@@ -66,7 +53,7 @@
 		}
 	}
 
-	$: aerolineasConVuelos = Object.keys(AEROLINEAS).filter((a) =>
+	$: aerolineasConVuelos = Object.keys(IATA_NAMES).filter((a) =>
 		todosLosVuelos.some(
 			(v) =>
 				v.json.idaerolinea === a &&
@@ -231,11 +218,10 @@
 		return frases[Math.floor(Math.random() * frases.length)];
 	}
 
-	$: aerolineaActual = AEROLINEAS[aerolineaSeleccionada];
+	$: aerolineaActual = IATA_NAMES[aerolineaSeleccionada];
 
 	$: metaTitle = `${aerolineaSeleccionada !== 'FO' ? `${aerolineaActual} - ` : ''}${vuelosAtrasados.length} vuelos demorados y ${vuelosCancelados.length} cancelados`;
 	$: metaDescription = `Hoy ${aerolineaActual} tuvo ${vuelosAtrasados.length} vuelos con más de 30 minutos de retraso${vuelosCancelados.length > 0 ? ` y ${vuelosCancelados.length} vuelos cancelados` : ''}.`;
-	$: dateStr = dayjs(date).format('DD/MM/YYYY');
 </script>
 
 <svelte:head>
@@ -296,8 +282,8 @@
 				>
 			</span>
 			<Select.Root
-				selected={{ value: aerolineaSeleccionada, label: AEROLINEAS[aerolineaSeleccionada] }}
-				onSelectedChange={(e) => (aerolineaSeleccionada = e?.value as keyof typeof AEROLINEAS)}
+				selected={{ value: aerolineaSeleccionada, label: IATA_NAMES[aerolineaSeleccionada] }}
+				onSelectedChange={(e) => (aerolineaSeleccionada = e?.value as keyof typeof IATA_NAMES)}
 			>
 				<Select.Trigger class="w-[150px] sm:w-[200px]">
 					<Select.Value placeholder="Seleccionar aerolínea" />
@@ -305,7 +291,7 @@
 				<Select.Content>
 					{#each aerolineasConVuelos as aerolinea}
 						<Select.Item value={aerolinea}>
-							{AEROLINEAS[aerolinea as keyof typeof AEROLINEAS]}
+							{IATA_NAMES[aerolinea as keyof typeof IATA_NAMES]}
 						</Select.Item>
 					{/each}
 				</Select.Content>
@@ -428,7 +414,7 @@
 					<AverageVis
 						airlineData={[
 							{
-								name: AEROLINEAS[aerolineaSeleccionada],
+								name: IATA_NAMES[aerolineaSeleccionada],
 								avgDelay: promedioDelta / 60,
 								nVuelos: vuelosAterrizados.length
 							},
@@ -453,7 +439,7 @@
 					class="relative flex flex-col items-center justify-center rounded-lg border bg-neutral-50 p-4 pr-8 text-xl dark:border-neutral-700 dark:bg-neutral-800"
 				>
 					<p>
-						En total, {AEROLINEAS[aerolineaSeleccionada]} desperdició aproximadamente
+						En total, {IATA_NAMES[aerolineaSeleccionada]} desperdició aproximadamente
 						<span class="font-bold">
 							{formatDurationWithoutSeconds({
 								...getDurationFromSeconds(totalSegundosDesperdiciados),
