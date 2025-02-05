@@ -1,6 +1,10 @@
 <script lang="ts">
 	import { MediaQuery } from 'svelte/reactivity';
 	import '../app.css';
+
+	import posthog from 'posthog-js';
+	import { browser } from '$app/environment';
+
 	let { children } = $props();
 	const dark = new MediaQuery('prefers-color-scheme: dark');
 
@@ -10,6 +14,16 @@
 		} else {
 			document.documentElement.classList.remove('dark');
 		}
+	});
+
+	$effect(() => {
+		if (browser) {
+			posthog.init('phc_rZpVo1fOZZutITBd4iAXRbGu4Zpng0y7lpOUgk9Fizk', {
+				api_host: 'https://us.i.posthog.com',
+				person_profiles: 'identified_only' // or 'always' to create profiles for anonymous users as well
+			});
+		}
+		return;
 	});
 </script>
 
