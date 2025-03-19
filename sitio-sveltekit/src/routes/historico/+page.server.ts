@@ -43,8 +43,11 @@ export const load = (async ({ url, setHeaders }) => {
     SELECT 
       DATE(stda) as date,
       json->>'idaerolinea' as airline,
-      AVG(CASE WHEN atda IS NOT NULL THEN EXTRACT(EPOCH FROM (atda - stda))/60 END) as "avgDelay",
-      (COUNT(CASE WHEN json->>'estes' = 'Cancelado' THEN 1 END) * 100.0 / COUNT(*)) as "cancelPercentage",
+      ROUND(CAST(AVG(CASE WHEN atda IS NOT NULL THEN EXTRACT(EPOCH FROM (atda - stda))/60 END) AS NUMERIC), 1) as "avgDelay",
+      CAST(SUM(CASE WHEN json->>'estes' = 'Cancelado' THEN 1 ELSE 0 END) AS INTEGER) as "cancelledFlights",
+      CAST(SUM(CASE WHEN atda IS NOT NULL AND EXTRACT(EPOCH FROM (atda - stda))/60 > 15 THEN 1 ELSE 0 END) AS INTEGER) as "delayed15",
+      CAST(SUM(CASE WHEN atda IS NOT NULL AND EXTRACT(EPOCH FROM (atda - stda))/60 > 30 THEN 1 ELSE 0 END) AS INTEGER) as "delayed30",
+      ROUND(CAST((COUNT(CASE WHEN json->>'estes' = 'Cancelado' THEN 1 END) * 100.0 / NULLIF(COUNT(*), 0)) AS NUMERIC), 1) as "cancelPercentage",
       COUNT(*) as total_flights
     FROM flight_data
     WHERE stda >= ${startDate} 

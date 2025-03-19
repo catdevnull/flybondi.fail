@@ -39,6 +39,9 @@
 			airline: string;
 			avgDelay: number;
 			cancelPercentage: number;
+			cancelledFlights?: number;
+			delayed15?: number;
+			delayed30?: number;
 		}>;
 		hasCustomDate: boolean;
 		availableDates: string[];
@@ -367,6 +370,74 @@
 
 	$: metaTitle = `Estadísticas históricas - failbondi.fail`;
 	$: metaDescription = `Estadísticas históricas de retrasos y cancelaciones de vuelos en Argentina del ${formatDate(startDate.toDate(tsz))} al ${formatDate(endDate.toDate(tsz))}`;
+
+	// Helper function to parse numeric values safely
+	function safeParseInt(value: any): number {
+		if (value === null || value === undefined) return 0;
+		const parsed = parseInt(value);
+		return isNaN(parsed) ? 0 : parsed;
+	}
+
+	function safeParseFloat(value: any): number {
+		if (value === null || value === undefined) return 0;
+		const parsed = parseFloat(value);
+		return isNaN(parsed) ? 0 : parsed;
+	}
+
+	// Add type declaration to match SQL query results
+	type DailyStat = {
+		date: string;
+		airline: string;
+		avgDelay: number;
+		cancelledFlights: number;
+		delayed15: number;
+		delayed30: number;
+		cancelPercentage: number;
+		total_flights: number;
+	};
+
+	$: flybondiStats = data ? {
+		filtered: data.dailyStats.filter(d => d.airline === 'FO') as DailyStat[],
+		totalFlights: data.dailyStats
+			.filter(d => d.airline === 'FO')
+			.reduce((sum, d) => sum + safeParseInt((d as any).total_flights), 0)
+	} : { filtered: [] as DailyStat[], totalFlights: 0 };
+
+	// Calculate the Flybondi totals with proper typing
+	$: flybondiTotals = {
+		// Compute totals
+		cancelled: flybondiStats.filtered
+			.reduce((sum, d) => sum + safeParseInt(d.cancelledFlights), 0),
+		
+		delayed15: flybondiStats.filtered
+			.reduce((sum, d) => sum + safeParseInt(d.delayed15), 0),
+		
+		delayed30: flybondiStats.filtered
+			.reduce((sum, d) => sum + safeParseInt(d.delayed30), 0),
+		
+		avgDelay: (() => {
+			if (flybondiStats.filtered.length === 0) return 0;
+			const sum = flybondiStats.filtered.reduce((acc, d) => acc + safeParseFloat(d.avgDelay), 0);
+			const avg = sum / flybondiStats.filtered.length;
+			return isNaN(avg) ? 0 : avg;
+		})(),
+
+		// Calculate percentages
+		cancelledPercent: (() => {
+			if (flybondiStats.totalFlights <= 0) return 0;
+			return (flybondiStats.filtered.reduce((sum, d) => sum + safeParseInt(d.cancelledFlights), 0) / flybondiStats.totalFlights) * 100;
+		})(),
+		
+		delayed15Percent: (() => {
+			if (flybondiStats.totalFlights <= 0) return 0;
+			return (flybondiStats.filtered.reduce((sum, d) => sum + safeParseInt(d.delayed15), 0) / flybondiStats.totalFlights) * 100;
+		})(),
+		
+		delayed30Percent: (() => {
+			if (flybondiStats.totalFlights <= 0) return 0;
+			return (flybondiStats.filtered.reduce((sum, d) => sum + safeParseInt(d.delayed30), 0) / flybondiStats.totalFlights) * 100;
+		})()
+	};
 </script>
 
 <svelte:head>
@@ -415,6 +486,31 @@
 			</Popover.Root>
 		</div>
 	</div>
+
+		<div class="grid grid-cols-1 sm:grid-cols-4 gap-4 mb-8">
+			<div class="bg-card p-4 rounded-lg shadow dark:border dark:border-border">
+				<h3 class="text-sm font-semibold text-muted-foreground">Vuelos cancelados</h3>
+				<p class="text-2xl font-bold text-rose-500 dark:text-rose-400">{flybondiTotals.cancelled}</p>
+				<span class="text-xs text-muted-foreground">{flybondiTotals.cancelledPercent.toFixed(1)}% del total</span>
+			</div>
+			
+			<div class="bg-card p-4 rounded-lg shadow dark:border dark:border-border">
+				<h3 class="text-sm font-semibold text-muted-foreground">Retrasos >15min</h3>
+				<p class="text-2xl font-bold text-amber-500 dark:text-amber-400">{flybondiTotals.delayed15}</p>
+				<span class="text-xs text-muted-foreground">{flybondiTotals.delayed15Percent.toFixed(1)}% del total</span>
+			</div>
+			
+			<div class="bg-card p-4 rounded-lg shadow dark:border dark:border-border">
+				<h3 class="text-sm font-semibold text-muted-foreground">Retrasos >30min</h3>
+				<p class="text-2xl font-bold text-orange-500 dark:text-orange-400">{flybondiTotals.delayed30}</p>
+				<span class="text-xs text-muted-foreground">{flybondiTotals.delayed30Percent.toFixed(1)}% del total</span>
+			</div>
+			
+			<div class="bg-card p-4 rounded-lg shadow dark:border dark:border-border">
+				<h3 class="text-sm font-semibold text-muted-foreground">Retraso promedio</h3>
+				<p class="text-2xl font-bold text-blue-500 dark:text-blue-400">{isNaN(flybondiTotals.avgDelay) ? '0.0' : flybondiTotals.avgDelay.toFixed(1)} min</p>
+			</div>
+		</div>
 
 	<div class="grid gap-6 sm:gap-8">
 		<div class="w-full max-w-[1000px] rounded-lg border bg-white p-3 sm:p-4 dark:bg-neutral-900">
