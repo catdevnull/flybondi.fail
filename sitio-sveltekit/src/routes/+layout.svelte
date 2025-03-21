@@ -31,7 +31,7 @@
 	{#if import.meta.env.PROD}
 		<script
 			defer
-			src="https://umami.experimentos.nulo.ar/script.js"
+			src="https://umami.nulo.lol/script.js"
 			data-website-id="e919c6b5-169d-4679-bfcc-f28de2da1b44"
 		></script>
 	{/if}
