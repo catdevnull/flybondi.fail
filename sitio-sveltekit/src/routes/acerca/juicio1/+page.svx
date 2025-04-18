@@ -13,7 +13,7 @@ import screenFooter from './screenshot-footer.png?enhanced'
 Jueves 17 de abril, 2025<br>
 Ciudad de Buenos Aires, Argentina
 
-Failbondi.fail fue citada en un juicio en el que FB Líneas Aéreas S.A. (Flybondi) figura como defensor. Este artículo explica la fuente de los datos del sitio, su metodología, como replicar sus calculos y otros detalles relevantes.
+Failbondi.fail fue citada en una demanda en el que FB Líneas Aéreas S.A. (Flybondi) figura como defensor. Este artículo explica la fuente de los datos del sitio, su metodología, como replicar sus calculos y otros detalles relevantes.
 
 ## Sobre mi
 
