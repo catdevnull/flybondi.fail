@@ -1,0 +1,107 @@
+<script lang="ts">
+import screenFooter from './screenshot-footer.png?enhanced'
+</script>
+
+<svelte:head>
+	<title>failbondi.fail</title>
+</svelte:head>
+
+<div class="prose prose-neutral dark:prose-invert max-w-[600px] mx-auto p-4">
+
+# Sobre Failbondi
+
+Jueves 17 de abril, 2025<br>
+Ciudad de Buenos Aires, Argentina
+
+Failbondi.fail fue citada en un juicio en el que FB Líneas Aéreas S.A. (Flybondi) figura como defensor. Este artículo explica la fuente de los datos del sitio, su metodología, como replicar sus calculos y otros detalles relevantes.
+
+## Sobre mi
+
+Me hago llamar Nulo. Soy anónimo por las posibilidades de amenazas que he recibido por otros proyectos que hago en internet. "Nulo Science Inc." es mi empresa ficticia en la que desarrollo mis proyectos. Soy el principal desarrollador de Failbondi.fail, antes conocido como Flybondi.fail (no confundirse con la aerolínea Flybondi).
+
+## Sobre Failbondi
+
+Failbondi es una página web que fue desarrollada de forma desinteresada, y hasta el momento no recibí ninguna retribución (aparte de capital social) por su desarrollo. De hecho, la página cuesta un poco de $ en hospedar, y mucho tiempo que me tomó desarrollarla en su moomento. Todo el código fuente de la página, junto a su historial, está disponible [en GitHub](https://github.com/catdevnull/flybondi.fail).
+
+Los datos salen de la página web de estados de vuelos de [Aeropuertos Argentina](https://www.aeropuertosargentina.com/es/AEP), ya que administran la mayoría de los aeropuertos en Argentina. Alguna información complementaria, como la configuración de asientos de los aviones, es accedida de [Airfleets](https://www.airfleets.es).
+
+Los datos de Aeropuertos Argentina son accedidos a través de una API (Application Programming Interface) interna de AA2000. Esta es la misma utilizada en [su página web](https://www.aeropuertosargentina.com/es/AEP) oficial, que permite acceder a los estados de vuelo de un determinado aeropuerto en un determinado día.
+
+El código que se utiliza para acceder a esta API está disponible en GitHub ([`trigger/scrap-aerolineas.ts`]((https://github.com/catdevnull/flybondi.fail/blob/9958c94da9c6c064aa214b946a27868daf97ecab/trigger/scrap-aerolineas.ts))). Este código itera por cada aeropuerto conocido de AA2000 y descarga todos los estados de vuelo, incluyendo los de partidas y los de arribos. Esto se hace cada aproximadamente 3 horas, así es posible obtener la información más actualizada posible de todos los vuelos. Cada respuesta del servidor de AA2000 es almacenada en un "bucket", que es como una carpeta de archivos en la nube.
+
+Luego, [otra pieza de código](https://github.com/catdevnull/flybondi.fail/blob/8975775ae3a1b96c54452db5dd14cdc45e9d23ff/trigger/process-latest-flight-data.ts) se ejecuta para procesar todos los datos descargados previamente y guardar el estado más nuevo de cada vuelo en una base de datos Postgres.
+
+Finalmente, al cargar una página de Failbondi como por ejemplo [failbondi.fail/historico](https://failbondi.fail/historico) que compara las demoras y cancelaciones de Flybondi a otras aerolineas, se genera una agregación de datos a partir de los estados de vuelos almacenados en la base de datos. Esto se puede ver en los archivos [+page.svelte](https://github.com/catdevnull/flybondi.fail/blob/7e6e3b29e0ea2ba662ca43a8fed839c038f813b9/sitio-sveltekit/src/routes/historico/%2Bpage.svelte) y [+page.server.ts](https://github.com/catdevnull/flybondi.fail/blob/7e6e3b29e0ea2ba662ca43a8fed839c038f813b9/sitio-sveltekit/src/routes/historico/%2Bpage.server.ts). Acá es donde se hace el análisis de datos.
+
+Es posible descargar una copia de *todos* los estados de vuelo guardados por Failbondi accediendo a la URL `https://failbondi.fail/api/dump`, que a la fecha genera un archivo en formato JSON de 85MB. Esto debería ser suficiente como para replicar el análisis de datos. También [subí todas las respuestas](https://drive.google.com/file/d/18sAPrIjdJY-Xgmr3HsSi0fh53izrY_Zo/view?usp=sharing) de la API de Aeropuertos Argentina, que deberían incluir todos los estados de vuelo capturados desde que empecé a fines de diciembre 2024. Si es necesario obtener los datos en algún otro formato, estan bienvenidos a contactarme al correo electronico hola@nulo.lol.
+
+Vale mencionar que Failbondi utiliza datos históricos que almacenamos nosotros mismos, pero la API de Aeropuertos Argentina no permite acceder a información de hace más de una semana. Por está razón creemos que se debería oficiar a Aeropuertos Argentina, si es que se quiere probar la vericidad de los datos.
+
+### Metodología de análisis de datos
+
+Utilizamos la hora estimada y real de despegue y arribo de los vuelos que provee Aeropuertos Argentina. Entendemos que este no siempre es del todo preciso, pero suele serlo y es la mejor fuente de datos gratuita a la que pudimos acceder de forma automatizada. De hecho, hemos notado que a veces tiene mejores datos que otras fuentes populares como FlightAware.
+
+Notese que al ser los mismos datos que se muestran en los aeropuertos, no incluyen vuelos que fueron cancelados días antes del vuelo. Entendemos (sin evidencia definitiva) que Flybondi tiene una práctica común de juntar varios vuelos con pocos pasajeros en un mismo vuelo, cancelando los que iban en horarios anteriores. Por esta razón, creemos que por la naturalidad de los datos a los que podemos acceder, estamos _subestimando_ la cantidad de vuelos verdaderamente cancelados o demorados por Flybondi.
+
+Para calcular el promedio de retraso en el despegue, se toman todos los vuelos que aterrizaron y se calcula la diferencia entre la hora programada y la hora real de despegue. Solo se incluyen vuelos que ya despegaron y vuelan entre aeropuertos donde operan Flybondi.
+
+Solo incluimos vuelos entre aeropuertos donde opera Flybondi para hacer una comparación justa entre aerolíneas. Por ejemplo, si incluyéramos vuelos de Aerolíneas Argentinas a destinos donde Flybondi no opera, estaríamos comparando rutas con condiciones climáticas y operativas muy diferentes. Al limitar el análisis a rutas donde ambas aerolíneas operan, podemos hacer una comparación más equitativa de su desempeño operacional.
+
+Para calcular el tiempo total desperdiciado por los pasajeros debido a las demoras, tomamos cada vuelo que ya despegó y multiplicamos su retraso (en minutos) por la cantidad de asientos del avión, asumiendo una ocupación promedio del 75% que es conservadora para vuelos de bajo costo - por ejemplo, si un avión de 180 asientos se retrasa 1 hora, serían 60 minutos × 180 asientos × 0.75 = 8,100 minutos-persona desperdiciados, sin incluir vuelos cancelados ya que no podemos saber cuánto tiempo adicional les tomó a los pasajeros llegar a destino por medios alternativos.
+
+### Disponibilidad de datos y metodología oficial 
+
+Vale la pena mencionar que por más que fue solicitada en [multiples](https://x.com/esoesnulo/status/1877398109375922440) [ocasiones](https://x.com/esoesnulo/status/1890480808474849396), Flybondi no provee la fuente de datos ni la metodología utilizada para la publicación de sus propios números de sus operaciones. Nos encantaría poder hacer un análisis con sus datos, o entender a que se refieren con "regularidad", ya que nuestros datos muestran [una realidad muy distinta](https://x.com/esoesnulo/status/1902170338336641360).
+
+## Intento de censura/supresión de acceso al sitio
+
+El demandante solicitó saber:
+
+>si recibieron intimaciones por parte de la empresa que haya intentado suprimir el acceso a esta información, y acompañen en su caso copia de la misma.
+
+Por más que no recibimos un pedido explicito de supresión de la información en sí, si recibimos una amenaza por la utilización de su marca en nuestro nombre anterior, "Flybondi.fail":
+
+>Estimados,
+>Nos dirigimos a Uds. en nombre y representación de Flybondi S.A.U. y de FB Líneas Aéreas S.>A. (en adelante, “Flybondi”) con motivo del sitio web alojado en la URL flybondi.fail
+>
+>Hemos advertido que en dicho sitio web reproducen algunas de nuestras marcas debidamente >registradas en Argentina y otros países, entre ellas: FLYBONDI (denominativa) registrada >bajo el No. 2918873, 2918872 y 2918874, FLYBONDI & LOGO, Reg. Nos. 2918875, 2934385 y >2918876 en clases 25, 39 y 43 y LA LIBERTAD DE VOLAR, Reg. No. 2982709, 2982710, 2982711 y >3029048 en clases 16, 25, 39 y 43 (en adelante, las “Marcas de Flybondi”).
+>Al respecto, les informamos que sólo el titular marcario de un signo debidamente registrado es quien tiene el derecho a usarla y cualquier uso efectuado por terceros sin autorización de su titular resulta ser una infracción a los derechos marcarios y un acto susceptible de ser considerado como competencia desleal.
+>
+>Es por ello que, aun cuando su sitio web proporciona información sobre los vuelos de esta >compañía, ello no debe realizarse haciendo uso de las Marcas de Flybondi, sin que medie su >autorización expresa y por escrito. Al día de la fecha, ustedes no cuentan con dicha >autorización para hacer uso de las Marcas de Flybondi.
+>
+>En este sentido, los intimamos a que -en un plazo de 24 horas de recibida la presente- >cesen en el uso de las Marcas de Flybondi, removiéndolas de la URL o dominio flybondi.fail >como también en el encabezado de dicho sitio web y en su favicon y de cualquier otra parte >o sección en la cual sea visible para el público en general.
+>
+>En caso de no realizar dicha acción en el plazo anteriormente mencionado, nos reservamos el >derecho de iniciar las acciones legales correspondientes.
+>
+>Los saludamos muy atentamente,
+>
+>Noetar
+
+Por esta razón, cambiamos el nombre del sitio web a failbondi.fail. Creemos que nuestra utilización del nombre "Flybondi" era puramente informativa y con fines comédicos, y no creemos que nuestra página se pueda considerar "competencia desleal" de ninguna manera porque no ejercemos ninguna de las actividades económias de las que hace Flybondi. De todas maneras, decidimos cambiar el nombre para prevenir problemas legales.
+
+## Etcétera
+
+Creemos que lo que hacemos, idealmente, califica como periodismo de datos. Interpretamos las reacciones de Flybondi como la amenaza por la utilización de marca y [la incorrecta representación](https://x.com/mauriciosanaok/status/1876768320860410286) de nuestro sitio por parte de su CEO como un desinterés en la transparencia de sus operaciones.
+
+En esta demanda, la defensa mantiene la línea de la falta de veracidad de nuestro sitio:
+
+> 14\. Niego la veracidad del sitio FAILBONDI.FAIL<br>
+> 15\. Niego que mi mandante haya desperdiciado 1 año, 8 meses y 17 días entre todos sus pasajeros
+
+>Que esta parte se opone expresamente a la prueba informativa dirigida a FAILBONDI.FAIL en virtud de no resultar la misma una entidad oficial desconociendo de qué fuente obtienen la información que dan sustento a los reportes que distribuyen.
+
+Nota nuestra: es gracioso que digan que desconocen la fuente de información, ya que figura en [failbondi.fail/acerca](https://failbondi.fail/acerca). Sabemos que vieron este enlace, ya que la misma defensa publica una captura de pantalla del _footer_ de nuestro sitio mostrando ese mismo enlace:
+
+<img src={screenFooter} />
+
+>En segundo lugar, funda tal petición en información (de dudosa procedencia) obtenida de un sitio web FAILBONDI.FAIL que carece de rigor formal y no es una entidad privada ni mucho menos oficial que pueda proveer información fidedigna.[...]
+>
+>No cabe duda alguna que la información allí volcada adolece de toda veracidad y no puede utilizarse como fundamento para justificar una sanción en concepto de daño punitivo tal como pretende el actor.
+>
+>No puede soslayarse la falta de credibilidad que tiene dicho sitio web, razón por la cual está sellada la suerte de lo intentado por el accionante.
+>
+>En consecuencia, solicito a V.S. tenga presente la oposición aquí formulada y proceda a desestimar el pedido de informes pretendido por el accionante y dirigido a FAILBONDI.FAIL.
+
+Les invitamos con ansias a que publiquen sus propios datos, datasets y metodologías o al menos den una refutación real sobre los datos de nuestra página web. **No descarto que haya errores leves en la metodología o en la fuente de datos que utilizamos, pero nunca se manipuló intencionalmente los datos de Failbondi con el fin de hacer quedar mal a Flybondi. Creemos que la metodología que utilizamos es justa para todas las aerolíneas, y que los malos números que figuran en nuestra página se deben al mal funcionamiento de la aerolínea**.
+
+</div>
