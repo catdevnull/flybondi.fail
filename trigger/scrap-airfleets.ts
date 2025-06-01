@@ -17,12 +17,12 @@ function genDispatcher() {
     bodyTimeout: 15e3,
   });
 }
+const sql = sqlBuilder();
 
 export const scrapMatriculasTask = schemaTask({
   id: "scrap-matriculas",
   maxDuration: 6000,
   run: async (payload, { ctx }) => {
-    const sql = sqlBuilder();
     const matriculas = await sql<{ matricula: string }[]>`
     select distinct json->>'matricula' as matricula
     from aerolineas_latest_flight_status 
@@ -34,70 +34,11 @@ export const scrapMatriculasTask = schemaTask({
     logger.info(`Trying to fetch ${matriculas.length} matriculas`);
 
     for (const { matricula } of matriculas) {
-      const searchUrl = "https://www.airfleets.es/recherche/?key=" + matricula;
-      const searchHtml = await fetchAirfleets(searchUrl);
-      if (searchHtml === 404) {
-        logger.warn(`404 encontrado para ${matricula}, skipping`);
-        continue;
+      try {
+        await scrapMatricula(matricula, fetched_at);
+      } catch (e) {
+        logger.error("Error scraping matricula", { matricula, error: e });
       }
-      await saveRawIntoB2({ body: searchHtml, fetched_at, url: searchUrl });
-      const $ = cheerio.load(searchHtml);
-      const table = $("div.ten.columns.padgauche > table:nth-of-type(1)");
-      const aeronave = table.find(".tabcontent > td:nth-of-type(1)").text();
-      const msn = table.find(".tabcontent > td:nth-of-type(3)").text();
-      const compania_aerea = table
-        .find(".tabcontent > td:nth-of-type(4)")
-        .text();
-      const situacion = table.find(".tabcontent > td:nth-of-type(5)").text();
-
-      const detail_url = new URL(
-        $(".tabcontent > td:nth-of-type(1) .lien").attr("href")!,
-        searchUrl
-      ).toString();
-
-      const detailHtml = await fetchAirfleets(detail_url);
-      if (detailHtml === 404) {
-        logger.warn(`404 encontrado para ${matricula}, skipping`);
-        continue;
-      }
-      await saveRawIntoB2({ body: detailHtml, fetched_at, url: detail_url });
-      const detail$ = cheerio.load(detailHtml);
-
-      const edad_del_avion_str = detail$("tr")
-        .filter(function () {
-          return $(this).text().includes("Edad del");
-        })
-        .find(".texten:nth-of-type(2)")
-        .text()
-        .trim();
-      const edad_del_avion = parseFloat(
-        edad_del_avion_str.match(/[\d.]+/)?.[0] ?? "0"
-      );
-
-      const config_de_asientosEl = detail$("tr")
-        .filter(function () {
-          return $(this).text().includes("Config de asientos");
-        })
-        .find(".texten:nth-of-type(2)");
-      config_de_asientosEl.find("span").remove();
-      const config_de_asientos = config_de_asientosEl.text().trim();
-
-      await sql`
-      insert into airfleets_matriculas
-      (fetched_at, matricula, aeronave, msn, compania_aerea, situacion, detail_url, edad_del_avion, config_de_asientos)
-      values (${fetched_at}, ${matricula}, ${aeronave}, ${msn}, ${compania_aerea}, ${situacion}, ${detail_url}, ${edad_del_avion}, ${config_de_asientos})
-      `;
-      logger.info(`Inserted ${matricula}`, {
-        fetched_at,
-        matricula,
-        aeronave,
-        msn,
-        compania_aerea,
-        situacion,
-        detail_url,
-        edad_del_avion,
-        config_de_asientos,
-      });
     }
   },
 });
@@ -105,7 +46,87 @@ export const scrapMatriculasTask = schemaTask({
 const headers = {
   "User-Agent":
     "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/131.0.0.0 Safari/537.36",
+  Accept:
+    "text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8",
+  "Accept-Language": "en-US,en;q=0.9",
+  "Accept-Encoding": "gzip, deflate, br",
+  Connection: "keep-alive",
+  "Upgrade-Insecure-Requests": "1",
+  "Sec-Fetch-Dest": "document",
+  "Sec-Fetch-Mode": "navigate",
+  "Sec-Fetch-Site": "none",
+  "Sec-Fetch-User": "?1",
+  "Cache-Control": "max-age=0",
 };
+
+async function scrapMatricula(matricula: string, fetched_at: Date) {
+  logger.info(`Searching for ${matricula}`);
+  const searchUrl =
+    "https://www.airfleets.es/recherche/?key=" + matricula.trim();
+  const searchHtml = await fetchAirfleets(searchUrl);
+  if (searchHtml === 404) {
+    logger.warn(`404 encontrado para ${matricula}, skipping`);
+    return;
+  }
+  await saveRawIntoB2({ body: searchHtml, fetched_at, url: searchUrl });
+  const $ = cheerio.load(searchHtml);
+  const table = $("div.ten.columns.padgauche > table:nth-of-type(1)");
+  const aeronave = table.find(".tabcontent > td:nth-of-type(1)").text();
+  const msn = table.find(".tabcontent > td:nth-of-type(3)").text();
+  const compania_aerea = table.find(".tabcontent > td:nth-of-type(4)").text();
+  const situacion = table.find(".tabcontent > td:nth-of-type(5)").text();
+
+  let detail_url = new URL(
+    $(".tabcontent > td:nth-of-type(1) .lien").attr("href")!,
+    searchUrl
+  ).toString();
+  // inexplicablemente a veces tienen urls mal
+  detail_url = detail_url.replace(" ", "").replace("%20", "");
+
+  const detailHtml = await fetchAirfleets(detail_url);
+  if (detailHtml === 404) {
+    logger.warn(`404 encontrado para ${matricula}, skipping`);
+    return;
+  }
+  await saveRawIntoB2({ body: detailHtml, fetched_at, url: detail_url });
+  const detail$ = cheerio.load(detailHtml);
+
+  const edad_del_avion_str = detail$("tr")
+    .filter(function () {
+      return $(this).text().includes("Edad del");
+    })
+    .find(".texten:nth-of-type(2)")
+    .text()
+    .trim();
+  const edad_del_avion = parseFloat(
+    edad_del_avion_str.match(/[\d.]+/)?.[0] ?? "0"
+  );
+
+  const config_de_asientosEl = detail$("tr")
+    .filter(function () {
+      return $(this).text().includes("Config de asientos");
+    })
+    .find(".texten:nth-of-type(2)");
+  config_de_asientosEl.find("span").remove();
+  const config_de_asientos = config_de_asientosEl.text().trim();
+
+  await sql`
+      insert into airfleets_matriculas
+      (fetched_at, matricula, aeronave, msn, compania_aerea, situacion, detail_url, edad_del_avion, config_de_asientos)
+      values (${fetched_at}, ${matricula}, ${aeronave}, ${msn}, ${compania_aerea}, ${situacion}, ${detail_url}, ${edad_del_avion}, ${config_de_asientos})
+      `;
+  logger.info(`Inserted ${matricula}`, {
+    fetched_at,
+    matricula,
+    aeronave,
+    msn,
+    compania_aerea,
+    situacion,
+    detail_url,
+    edad_del_avion,
+    config_de_asientos,
+  });
+}
 
 async function fetchAirfleets(url: string | URL, captchaAttempts = 0) {
   const res = await fetch(url, {
@@ -158,7 +179,7 @@ async function fetchAirfleets(url: string | URL, captchaAttempts = 0) {
     if (res.status === 429) {
       logger.debug("Got ratelimited, changing proxy...", {
         url,
-        headers: Object.entries(res.headers.entries()),
+        headers: Array.from(res.headers.entries()),
       });
       await dispatcher?.destroy();
       dispatcher = genDispatcher();
@@ -167,7 +188,8 @@ async function fetchAirfleets(url: string | URL, captchaAttempts = 0) {
     if (res.status === 404) return 404;
     logger.error("Debug data", {
       status: res.status,
-      headers: Object.entries(res.headers.entries()),
+      headers: Array.from(res.headers.entries()),
+      url,
     });
     throw new Error(`got status ${res.status}`);
   }
