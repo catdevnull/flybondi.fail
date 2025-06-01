@@ -140,7 +140,7 @@
 </script>
 
 <div class="chart-container" bind:clientWidth={width}>
-	<svg bind:this={svgEl} width="100%" {height}></svg>
+	<svg bind:this={svgEl} width="100%" {height} class="overflow-visible"></svg>
 </div>
 
 <style>
