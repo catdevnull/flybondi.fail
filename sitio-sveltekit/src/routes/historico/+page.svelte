@@ -230,7 +230,7 @@
 					},
 					y: {
 						beginAtZero: true,
-						max: 180,
+						max: 300,
 						ticks: {
 							callback: function (
 								this: Scale<CoreScaleOptions>,
@@ -396,25 +396,24 @@
 		total_flights: number;
 	};
 
-	$: flybondiStats = data ? {
-		filtered: data.dailyStats.filter(d => d.airline === 'FO') as DailyStat[],
-		totalFlights: data.dailyStats
-			.filter(d => d.airline === 'FO')
-			.reduce((sum, d) => sum + safeParseInt((d as any).total_flights), 0)
-	} : { filtered: [] as DailyStat[], totalFlights: 0 };
+	$: flybondiStats = data
+		? {
+				filtered: data.dailyStats.filter((d) => d.airline === 'FO') as DailyStat[],
+				totalFlights: data.dailyStats
+					.filter((d) => d.airline === 'FO')
+					.reduce((sum, d) => sum + safeParseInt((d as any).total_flights), 0)
+			}
+		: { filtered: [] as DailyStat[], totalFlights: 0 };
 
 	// Calculate the Flybondi totals with proper typing
 	$: flybondiTotals = {
 		// Compute totals
-		cancelled: flybondiStats.filtered
-			.reduce((sum, d) => sum + safeParseInt(d.cancelledFlights), 0),
-		
-		delayed15: flybondiStats.filtered
-			.reduce((sum, d) => sum + safeParseInt(d.delayed15), 0),
-		
-		delayed30: flybondiStats.filtered
-			.reduce((sum, d) => sum + safeParseInt(d.delayed30), 0),
-		
+		cancelled: flybondiStats.filtered.reduce((sum, d) => sum + safeParseInt(d.cancelledFlights), 0),
+
+		delayed15: flybondiStats.filtered.reduce((sum, d) => sum + safeParseInt(d.delayed15), 0),
+
+		delayed30: flybondiStats.filtered.reduce((sum, d) => sum + safeParseInt(d.delayed30), 0),
+
 		avgDelay: (() => {
 			if (flybondiStats.filtered.length === 0) return 0;
 			const sum = flybondiStats.filtered.reduce((acc, d) => acc + safeParseFloat(d.avgDelay), 0);
@@ -425,17 +424,29 @@
 		// Calculate percentages
 		cancelledPercent: (() => {
 			if (flybondiStats.totalFlights <= 0) return 0;
-			return (flybondiStats.filtered.reduce((sum, d) => sum + safeParseInt(d.cancelledFlights), 0) / flybondiStats.totalFlights) * 100;
+			return (
+				(flybondiStats.filtered.reduce((sum, d) => sum + safeParseInt(d.cancelledFlights), 0) /
+					flybondiStats.totalFlights) *
+				100
+			);
 		})(),
-		
+
 		delayed15Percent: (() => {
 			if (flybondiStats.totalFlights <= 0) return 0;
-			return (flybondiStats.filtered.reduce((sum, d) => sum + safeParseInt(d.delayed15), 0) / flybondiStats.totalFlights) * 100;
+			return (
+				(flybondiStats.filtered.reduce((sum, d) => sum + safeParseInt(d.delayed15), 0) /
+					flybondiStats.totalFlights) *
+				100
+			);
 		})(),
-		
+
 		delayed30Percent: (() => {
 			if (flybondiStats.totalFlights <= 0) return 0;
-			return (flybondiStats.filtered.reduce((sum, d) => sum + safeParseInt(d.delayed30), 0) / flybondiStats.totalFlights) * 100;
+			return (
+				(flybondiStats.filtered.reduce((sum, d) => sum + safeParseInt(d.delayed30), 0) /
+					flybondiStats.totalFlights) *
+				100
+			);
 		})()
 	};
 </script>
@@ -487,30 +498,42 @@
 		</div>
 	</div>
 
-		<div class="grid grid-cols-1 sm:grid-cols-4 gap-4 mb-8">
-			<div class="bg-card p-4 rounded-lg shadow dark:border dark:border-border">
-				<h3 class="text-sm font-semibold text-muted-foreground">Vuelos cancelados</h3>
-				<p class="text-2xl font-bold text-rose-500 dark:text-rose-400">{flybondiTotals.cancelled}</p>
-				<span class="text-xs text-muted-foreground">{flybondiTotals.cancelledPercent.toFixed(1)}% del total</span>
-			</div>
-			
-			<div class="bg-card p-4 rounded-lg shadow dark:border dark:border-border">
-				<h3 class="text-sm font-semibold text-muted-foreground">Retrasos >15min</h3>
-				<p class="text-2xl font-bold text-amber-500 dark:text-amber-400">{flybondiTotals.delayed15}</p>
-				<span class="text-xs text-muted-foreground">{flybondiTotals.delayed15Percent.toFixed(1)}% del total</span>
-			</div>
-			
-			<div class="bg-card p-4 rounded-lg shadow dark:border dark:border-border">
-				<h3 class="text-sm font-semibold text-muted-foreground">Retrasos >30min</h3>
-				<p class="text-2xl font-bold text-orange-500 dark:text-orange-400">{flybondiTotals.delayed30}</p>
-				<span class="text-xs text-muted-foreground">{flybondiTotals.delayed30Percent.toFixed(1)}% del total</span>
-			</div>
-			
-			<div class="bg-card p-4 rounded-lg shadow dark:border dark:border-border">
-				<h3 class="text-sm font-semibold text-muted-foreground">Retraso promedio</h3>
-				<p class="text-2xl font-bold text-blue-500 dark:text-blue-400">{isNaN(flybondiTotals.avgDelay) ? '0.0' : flybondiTotals.avgDelay.toFixed(1)} min</p>
-			</div>
+	<div class="mb-8 grid grid-cols-1 gap-4 sm:grid-cols-4">
+		<div class="bg-card dark:border-border rounded-lg p-4 shadow dark:border">
+			<h3 class="text-muted-foreground text-sm font-semibold">Vuelos cancelados</h3>
+			<p class="text-2xl font-bold text-rose-500 dark:text-rose-400">{flybondiTotals.cancelled}</p>
+			<span class="text-muted-foreground text-xs"
+				>{flybondiTotals.cancelledPercent.toFixed(1)}% del total</span
+			>
 		</div>
+
+		<div class="bg-card dark:border-border rounded-lg p-4 shadow dark:border">
+			<h3 class="text-muted-foreground text-sm font-semibold">Retrasos >15min</h3>
+			<p class="text-2xl font-bold text-amber-500 dark:text-amber-400">
+				{flybondiTotals.delayed15}
+			</p>
+			<span class="text-muted-foreground text-xs"
+				>{flybondiTotals.delayed15Percent.toFixed(1)}% del total</span
+			>
+		</div>
+
+		<div class="bg-card dark:border-border rounded-lg p-4 shadow dark:border">
+			<h3 class="text-muted-foreground text-sm font-semibold">Retrasos >30min</h3>
+			<p class="text-2xl font-bold text-orange-500 dark:text-orange-400">
+				{flybondiTotals.delayed30}
+			</p>
+			<span class="text-muted-foreground text-xs"
+				>{flybondiTotals.delayed30Percent.toFixed(1)}% del total</span
+			>
+		</div>
+
+		<div class="bg-card dark:border-border rounded-lg p-4 shadow dark:border">
+			<h3 class="text-muted-foreground text-sm font-semibold">Retraso promedio</h3>
+			<p class="text-2xl font-bold text-blue-500 dark:text-blue-400">
+				{isNaN(flybondiTotals.avgDelay) ? '0.0' : flybondiTotals.avgDelay.toFixed(1)} min
+			</p>
+		</div>
+	</div>
 
 	<div class="grid gap-6 sm:gap-8">
 		<div class="w-full max-w-[1000px] rounded-lg border bg-white p-3 sm:p-4 dark:bg-neutral-900">
