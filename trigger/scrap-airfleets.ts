@@ -3,20 +3,8 @@ import { sqlBuilder } from "../consts";
 import fetchBuilder from "fetch-retry";
 import { saveRawIntoB2 } from "../trigger-utils";
 import * as cheerio from "cheerio";
-import { ProxyAgent, fetch as undiciFetch, FormData } from "undici";
-import fetchCookie from "fetch-cookie";
 
-const fetch = fetchBuilder(fetchCookie(undiciFetch));
-let dispatcher = (process.env.PROXY_URL && genDispatcher()) || undefined;
-
-function genDispatcher() {
-  return new ProxyAgent({
-    uri: process.env.PROXY_URL!,
-    keepAliveTimeout: 180e3,
-    connectTimeout: 10e3,
-    bodyTimeout: 15e3,
-  });
-}
+const fetch = fetchBuilder(globalThis.fetch);
 const sql = sqlBuilder();
 
 export const scrapMatriculasTask = schemaTask({
@@ -42,22 +30,6 @@ export const scrapMatriculasTask = schemaTask({
     }
   },
 });
-
-const headers = {
-  "User-Agent":
-    "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/131.0.0.0 Safari/537.36",
-  Accept:
-    "text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8",
-  "Accept-Language": "en-US,en;q=0.9",
-  "Accept-Encoding": "gzip, deflate, br",
-  Connection: "keep-alive",
-  "Upgrade-Insecure-Requests": "1",
-  "Sec-Fetch-Dest": "document",
-  "Sec-Fetch-Mode": "navigate",
-  "Sec-Fetch-Site": "none",
-  "Sec-Fetch-User": "?1",
-  "Cache-Control": "max-age=0",
-};
 
 async function scrapMatricula(matricula: string, fetched_at: Date) {
   logger.info(`Searching for ${matricula}`);
@@ -110,6 +82,17 @@ async function scrapMatricula(matricula: string, fetched_at: Date) {
   config_de_asientosEl.find("span").remove();
   const config_de_asientos = config_de_asientosEl.text().trim();
 
+  if (!config_de_asientos && !compania_aerea) {
+    logger.warn(`No data found for ${matricula}, skipping`, {
+      matricula,
+      aeronave,
+      msn,
+      compania_aerea,
+      situacion,
+    });
+    return;
+  }
+
   await sql`
       insert into airfleets_matriculas
       (fetched_at, matricula, aeronave, msn, compania_aerea, situacion, detail_url, edad_del_avion, config_de_asientos)
@@ -128,109 +111,44 @@ async function scrapMatricula(matricula: string, fetched_at: Date) {
   });
 }
 
-async function fetchAirfleets(url: string | URL, captchaAttempts = 0) {
-  const res = await fetch(url, {
-    headers,
-    redirect: "manual",
-    dispatcher,
-  });
-  if (res.status === 302) {
-    if (res.headers.get("location")?.includes("captcha.php")) {
-      if (captchaAttempts > 3) {
-        logger.info("too many captchas, cambiando proxy...", { url });
-        dispatcher = genDispatcher();
-        return await fetchAirfleets(url);
-      }
-      logger.info("Captcha detectado, resolviendo...", { url });
-      const captchaUrl = "https://www.airfleets.es/home/captcha.php";
-      const res = await fetch(captchaUrl, {
-        headers,
-        dispatcher,
-      });
-      const html = await res.text();
-      const $ = cheerio.load(html);
-      const websiteKey = $(".g-recaptcha").attr("data-sitekey");
-      if (!websiteKey) {
-        console.log(html);
-        logger.debug("Debug info", {
-          html,
-          status: res.status,
-          headers: Array.from(res.headers.entries()),
-        });
-        throw new Error("No websiteKey found");
-      }
-      const code = await solveRecaptchaV2({
-        websiteKey,
-        websiteURL: captchaUrl,
-      });
-      const form = new FormData();
-      form.append("g-recaptcha-response", code);
-      form.append("org", url.toString());
-      await fetch("https://www.airfleets.es/home/captcha2.php", {
-        method: "POST",
-        body: form,
-        headers,
-        dispatcher,
-      });
-      return await fetchAirfleets(url, captchaAttempts + 1);
-    }
-  }
-  if (res.status !== 200) {
-    if (res.status === 429) {
-      logger.debug("Got ratelimited, changing proxy...", {
-        url,
-        headers: Array.from(res.headers.entries()),
-      });
-      await dispatcher?.destroy();
-      dispatcher = genDispatcher();
-      return await fetchAirfleets(url);
-    }
-    if (res.status === 404) return 404;
-    logger.error("Debug data", {
-      status: res.status,
-      headers: Array.from(res.headers.entries()),
-      url,
-    });
-    throw new Error(`got status ${res.status}`);
-  }
-  const html = await res.text();
-  return html;
-}
-
-async function solveRecaptchaV2({
-  websiteURL,
-  websiteKey,
-}: {
-  websiteURL: string;
-  websiteKey: string;
-}) {
-  const res = await fetch("https://api.2captcha.com/createTask", {
-    method: "POST",
-    body: JSON.stringify({
-      clientKey: process.env.TWOCAPTCHA_API_KEY,
-      task: {
-        type: "RecaptchaV2TaskProxyless",
-        websiteURL,
-        websiteKey,
-        isInvisible: false,
-      },
-    }),
-  });
-  const task: any = await res.json();
-
-  while (true) {
-    const res = await fetch("https://api.2captcha.com/getTaskResult", {
+async function fetchAirfleets(url: string | URL): Promise<string | 404> {
+  try {
+    const response = await fetch("https://api.brightdata.com/request", {
       method: "POST",
+      headers: {
+        Authorization: `Bearer ${process.env.BRIGHTDATA_API_KEY}`,
+        "Content-Type": "application/json",
+      },
       body: JSON.stringify({
-        clientKey: process.env.TWOCAPTCHA_API_KEY,
-        taskId: task.taskId,
+        zone: process.env.BRIGHTDATA_ZONE || "web_unlocker1",
+        url: url.toString(),
+        format: "raw",
       }),
     });
-    const taskResult: any = await res.json();
-    if (taskResult.status === "ready") {
-      logger.debug("Got solved recaptcha", { taskResult });
-      return taskResult.solution.gRecaptchaResponse;
+
+    if (!response.ok) {
+      if (response.status === 404) {
+        return 404;
+      }
+      const errorText = await response.text();
+      logger.error("Bright Data API error", {
+        status: response.status,
+        statusText: response.statusText,
+        error: errorText,
+        url: url.toString(),
+      });
+      throw new Error(
+        `Bright Data API error: ${response.status} ${response.statusText}`
+      );
     }
-    await new Promise((r) => setTimeout(r, 5000));
+
+    const data = await response.text();
+    return data;
+  } catch (error) {
+    logger.error("Error fetching with Bright Data", {
+      url: url.toString(),
+      error: error.message,
+    });
+    throw error;
   }
 }
