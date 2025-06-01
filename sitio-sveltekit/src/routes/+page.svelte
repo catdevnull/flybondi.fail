@@ -618,7 +618,4 @@
 	</div>
 </main>
 
-<Footer>
-	<a href="/aeropuertos">Ver estadísticas por aeropuerto</a>
-	<a href="/historico">Ver estadísticas históricas</a>
-</Footer>
+<Footer />

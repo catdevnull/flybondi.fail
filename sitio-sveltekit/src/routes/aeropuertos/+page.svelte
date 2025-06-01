@@ -276,6 +276,4 @@
 	</p>
 </div>
 
-<Footer>
-	<a href="/">Ver datos de hoy</a>
-</Footer>
+<Footer />

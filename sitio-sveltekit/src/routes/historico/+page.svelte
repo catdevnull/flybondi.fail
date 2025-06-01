@@ -577,6 +577,4 @@
 	<p>Los datos son actualizados cada minuto y provienen de la API de Aeropuertos Argentina 2000.</p>
 </div>
 
-<Footer>
-	<a href="/">Ver datos de hoy</a>
-</Footer>
+<Footer />

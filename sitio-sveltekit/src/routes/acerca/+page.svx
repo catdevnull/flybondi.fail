@@ -1,5 +1,6 @@
 <script lang="ts">
 import cardPath from '$lib/assets/twitter-card.png';
+import Footer from '$lib/components/footer.svelte';
 </script>
 
 <svelte:head>
@@ -42,6 +43,6 @@ Failbondi.fail es desarrollada en el tiempo libre de los empleados y colaborador
 
 [hola@nulo.lol](mailto:hola@nulo.lol)
 
-## [Volver a la civilización](/)
-
 </div>
+
+<Footer />
