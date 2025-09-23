@@ -30,9 +30,9 @@ export const load: PageServerLoad = async ({ url, platform, setHeaders }) => {
             ELSE split_part(json->>'x_date', '-', 1)
           END,
           'DD/MM HH24:MI YYYY'
-        )::timestamp without time zone AT TIME ZONE 'America/Buenos_Aires') AS stda,
+        )::timestamp without time zone AT TIME ZONE 'America/Argentina/Buenos_Aires') AS stda,
         CASE 
-          WHEN LENGTH(json->>'atda') > 0 THEN (to_timestamp(json->>'atda' || ' ' || split_part(json->>'x_date', '-', 1), 'DD/MM HH24:MI YYYY')::timestamp without time zone AT TIME ZONE 'America/Buenos_Aires')
+          WHEN LENGTH(json->>'atda') > 0 THEN (to_timestamp(json->>'atda' || ' ' || split_part(json->>'x_date', '-', 1), 'DD/MM HH24:MI YYYY')::timestamp without time zone AT TIME ZONE 'America/Argentina/Buenos_Aires')
         END AS atda
       FROM aerolineas_latest_flight_status
       left join airfleets_matriculas

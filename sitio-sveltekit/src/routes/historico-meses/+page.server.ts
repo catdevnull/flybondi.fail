@@ -33,9 +33,9 @@ export const load = (async ({ url, setHeaders }) => {
             ELSE split_part(json->>'x_date', '-', 1)
           END,
           'DD/MM HH24:MI YYYY'
-        )::timestamp without time zone AT TIME ZONE 'America/Buenos_Aires') AS stda,
+        )::timestamp without time zone AT TIME ZONE 'America/Argentina/Buenos_Aires') AS stda,
         CASE 
-          WHEN LENGTH(json->>'atda') > 0 THEN (to_timestamp(json->>'atda' || ' ' || split_part(json->>'x_date', '-', 1), 'DD/MM HH24:MI YYYY')::timestamp without time zone AT TIME ZONE 'America/Buenos_Aires')
+          WHEN LENGTH(json->>'atda') > 0 THEN (to_timestamp(json->>'atda' || ' ' || split_part(json->>'x_date', '-', 1), 'DD/MM HH24:MI YYYY')::timestamp without time zone AT TIME ZONE 'America/Argentina/Buenos_Aires')
         END AS atda
       FROM aerolineas_latest_flight_status
       WHERE json->>'mov' = 'D'
@@ -70,7 +70,7 @@ export const load = (async ({ url, setHeaders }) => {
             ELSE split_part(json->>'x_date', '-', 1)
           END,
           'DD/MM HH24:MI YYYY'
-        )::timestamp without time zone AT TIME ZONE 'America/Buenos_Aires')
+        )::timestamp without time zone AT TIME ZONE 'America/Argentina/Buenos_Aires')
       ), 'YYYY-MM') as month,
       json->>'idaerolinea' as airline,
       COUNT(*) as total_flights
@@ -87,7 +87,7 @@ export const load = (async ({ url, setHeaders }) => {
             ELSE split_part(json->>'x_date', '-', 1)
           END,
           'DD/MM HH24:MI YYYY'
-        )::timestamp without time zone AT TIME ZONE 'America/Buenos_Aires')
+        )::timestamp without time zone AT TIME ZONE 'America/Argentina/Buenos_Aires')
       ), json->>'idaerolinea'
       HAVING COUNT(*) >= 50
     ) 
