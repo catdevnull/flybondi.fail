@@ -3,7 +3,7 @@
 import { env } from '$env/dynamic/private';
 import postgres from 'postgres';
 
-export const sql = postgres(env.PG_URL, { idle_timeout: 5 });
+export const sql = postgres(env.DATABASE_URL!, { idle_timeout: 5 });
 
 export interface Flight {
 	aerolineas_flight_id: string;

@@ -49,5 +49,6 @@ COPY --from=build /app/node_modules /app/node_modules
 COPY --from=build /app/package.json /app
 
 # Start the server by default, this can be overwritten at runtime
-EXPOSE 3000
+EXPOSE 80
+ENV PORT=80
 CMD [ "node", "./build/index.js" ]
