@@ -15,7 +15,6 @@
 	import cardPath from '$lib/assets/twitter-card.png';
 	import { IATA_NAMES } from '@/aerolineas';
 	import { onMount } from 'svelte';
-	import { MIN_LEADERBOARD_FLIGHTS } from './config';
 
 	dayjs.extend(utc);
 	dayjs.extend(timezone);
@@ -36,6 +35,8 @@
 		leaderboard: LeaderboardEntry[];
 		period: { start: string; end: string };
 		hasCustomDate: boolean;
+		minFlightsRequired: number;
+		windowDays: number;
 	};
 
 	const tz = 'America/Argentina/Buenos_Aires';
@@ -231,8 +232,8 @@
 	</div>
 	<div class="mt-3 flex flex-wrap items-center justify-center gap-3">
 		<Popover.Root>
-			<Popover.Trigger asChild>
-				<Button variant="outline" class="flex items-center gap-2">
+			<Popover.Trigger asChild let:builder>
+				<Button variant="outline" class="flex items-center gap-2" builders={[builder]}>
 					<CalendarIcon class="h-4 w-4" />
 					<span
 						>{dayjs(startDate.toDate(tz)).format('DD/MM/YYYY')} - {dayjs(endDate.toDate(tz)).format(
@@ -404,12 +405,20 @@
 		</div>
 	</section>
 
-	<p
-		class="mt-6 rounded-md border border-amber-200 bg-amber-50 p-3 text-xs text-amber-900 dark:border-amber-400/40 dark:bg-amber-900/20 dark:text-amber-200"
-	>
-		Mostramos únicamente aerolíneas con más de {MIN_LEADERBOARD_FLIGHTS.toLocaleString('es-AR')} vuelos
-		en el período seleccionado para asegurar comparaciones justas.
-	</p>
+	{#if data.minFlightsRequired > 0}
+		<p
+			class="mt-6 rounded-md border border-amber-200 bg-amber-50 p-3 text-xs text-amber-900 dark:border-amber-400/40 dark:bg-amber-900/20 dark:text-amber-200"
+		>
+			Mostramos únicamente aerolíneas con más de {data.minFlightsRequired.toLocaleString('es-AR')} vuelos
+			en el período seleccionado para asegurar comparaciones justas.
+		</p>
+	{:else}
+		<p
+			class="mt-6 rounded-md border border-amber-200 bg-amber-50 p-3 text-xs text-amber-900 dark:border-amber-400/40 dark:bg-amber-900/20 dark:text-amber-200"
+		>
+			Para períodos menores a 14 días mostramos todas las aerolíneas con vuelos en el rango seleccionado.
+		</p>
+	{/if}
 </main>
 
 <Footer />

@@ -26,6 +26,9 @@ export const load = (async ({ url, setHeaders }) => {
 		? dayjs(startDateParam).tz(TIMEZONE).startOf('day')
 		: defaultStart;
 
+	const windowDays = endDate.diff(startDate, 'day') + 1;
+	const minFlightsRequired = windowDays < 14 ? 0 : MIN_LEADERBOARD_FLIGHTS;
+
 	const leaderboard = await sql`
     WITH flight_data AS (
       SELECT 
@@ -76,7 +79,7 @@ export const load = (async ({ url, setHeaders }) => {
       AND origin = ANY(${AEROPUERTOS_FLYBONDI})
       AND destination = ANY(${AEROPUERTOS_FLYBONDI})
     GROUP BY airline
-    HAVING COUNT(*) > ${MIN_LEADERBOARD_FLIGHTS}
+    HAVING COUNT(*) > ${minFlightsRequired}
     ORDER BY avg_delay_minutes DESC NULLS LAST, cancel_percentage DESC NULLS LAST;
   `;
 
@@ -90,6 +93,8 @@ export const load = (async ({ url, setHeaders }) => {
 			start: startDate.toISOString(),
 			end: endDate.toISOString()
 		},
-		hasCustomDate: Boolean(startDateParam || endDateParam)
+		hasCustomDate: Boolean(startDateParam || endDateParam),
+		minFlightsRequired,
+		windowDays
 	};
 }) satisfies PageServerLoad;
