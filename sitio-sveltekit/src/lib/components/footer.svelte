@@ -36,19 +36,17 @@
 		<div class="flex flex-col gap-3">
 			<h3 class="font-semibold text-neutral-900 dark:text-neutral-100">Datos</h3>
 			<div class="flex flex-col gap-2">
-				<a href="/" class={getLinkClass('/')}> Ver datos de hoy </a>
+				<a href="/" class={getLinkClass('/')}> Datos de hoy </a>
 				<a href="/historico" class={getLinkClass('/historico')}>
-					Ver estadísticas históricas diarias
+					Estadísticas históricas diarias
 				</a>
 				<a href="/historico-meses" class={getLinkClass('/historico-meses')}>
-					Ver estadísticas históricas mensuales
+					Estadísticas históricas mensuales
 				</a>
 				<a href="/aeropuertos" class={getLinkClass('/aeropuertos')}>
-					Ver estadísticas por aeropuerto
+					Estadísticas por aeropuerto
 				</a>
-				<a href="/leaderboard" class={getLinkClass('/leaderboard')}>
-					Ver ranking de aerolíneas
-				</a>
+				<a href="/leaderboard" class={getLinkClass('/leaderboard')}> Ranking de aerolíneas </a>
 			</div>
 		</div>
 
