@@ -1,0 +1,1 @@
+export const MIN_LEADERBOARD_FLIGHTS = 1000;

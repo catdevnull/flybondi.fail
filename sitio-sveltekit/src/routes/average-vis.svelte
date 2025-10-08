@@ -88,9 +88,9 @@
 					.attr('font-size', '14px')
 					.attr('font-weight', 'normal')
 
-					.text(
-						`${d.otherAerolineas ? ` (${d.otherAerolineas.map((a) => (IATA_NAMES as any)[a] ?? a).join(', ')})` : ''}`
-					);
+		.text(
+			`${d.otherAerolineas ? ` (${d.otherAerolineas.map((a) => (IATA_NAMES as any)[a] ?? a).join(', ')})` : ''}`
+		);
 			});
 
 		// Add time labels
@@ -98,10 +98,10 @@
 			.selectAll('.label')
 			.data(airlineData)
 			.enter()
-			.append('text')
-			.attr('class', 'label')
-			.attr('x', (d) => d3.min([x(d.avgDelay) + 5, x(180) - 50]))
-			.attr('y', (d) => y(d.name)! + y.bandwidth() / 2)
+		.append('text')
+		.attr('class', 'label')
+		.attr('x', (datum) => Math.min((x(datum.avgDelay) ?? 0) + 5, (x(180) ?? 0) - 50))
+		.attr('y', (datum) => (y(datum.name) ?? 0) + y.bandwidth() / 2)
 			.attr('dy', '0.35em')
 			.text((d) => {
 				const hours = Math.floor(d.avgDelay / 60);
@@ -118,7 +118,7 @@
 				.axisBottom(x)
 				.tickValues([0, 60, 120, 180])
 				.tickSize(0)
-				.tickFormat((d: number) => `${d / 60}hs`);
+				.tickFormat((domainValue) => `${Number(domainValue) / 60}hs`);
 			const ejex = svg
 				.append('g')
 				.attr('transform', `translate(0,${height - margin.bottom - 20})`)

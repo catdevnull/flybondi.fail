@@ -46,6 +46,9 @@
 				<a href="/aeropuertos" class={getLinkClass('/aeropuertos')}>
 					Ver estadísticas por aeropuerto
 				</a>
+				<a href="/leaderboard" class={getLinkClass('/leaderboard')}>
+					Ver ranking de aerolíneas
+				</a>
 			</div>
 		</div>
 
