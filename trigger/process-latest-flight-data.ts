@@ -49,57 +49,28 @@ export const processLatestFlightDataTask = schedules.task({
       const path = `${B2_PATH}/${key.fetchedAt.toISOString()}/raw/`;
       logger.info("Processing", { path, urls: keys.map(getPublicB2Url) });
 
-      // const allJsonAlreadyExists =
-      //   false && list.find((item) => item.Key === `${path}all-keys.json`);
-      let allEntriesWithKeys;
-      // if (allJsonAlreadyExists) {
-      //   const existingFile = b2.file(`${path}all-keys.json`);
-      //   allEntriesWithKeys = JSON.parse(await existingFile.text());
-      // } else {
-      allEntriesWithKeys =
-        // Object.fromEntries(
+      const allEntries = (
         await Promise.all(
           keys.map(async (key) => {
-            // key = key.replaceAll("&amp;", "&");
-            try {
-              const file = b2.file(key);
-              return [key, JSON.parse(await file.text())];
-            } catch (error) {
-              try {
-                const test = b2.file(key.replaceAll("&amp;", "&"));
-                return [key, JSON.parse(await test.text())];
-              } catch (error) {
-                logger.error("Error parsing file twice", { key, error });
-              }
-              logger.error("Error parsing file", { key, error });
-
-              throw error;
-            }
+            const response = await b2.send(
+              new GetObjectCommand({
+                Bucket: B2_BUCKET,
+                Key: key,
+              })
+            );
+            const text = await response.Body?.transformToString();
+            return [key, JSON.parse(text!)];
           })
-        );
-      // );
-      //   await b2.write(
-      //     `${path}all-keys.json`,
-      //     JSON.stringify(allEntriesWithKeys),
-      //     { type: "application/json" }
-      //   );
-      //   logger.info("Stored all-keys.json", {
-      //     path,
-      //     url: getPublicB2Url(`${path}all-keys.json`),
-      //   });
-      // }
-
-      const allEntries =
-        // Object.entries(allEntriesWithKeys)
-        allEntriesWithKeys
-          .map(([key, value]) => {
-            const { flightDate } = parsePath(key);
-            return (value as any).map((v) => ({
-              ...v,
-              x_date: flightDate,
-            }));
-          })
-          .flat();
+        )
+      )
+        .map(([key, value]) => {
+          const { flightDate } = parsePath(key);
+          return (value as any).map((v) => ({
+            ...v,
+            x_date: flightDate,
+          }));
+        })
+        .flat();
 
       await sql`
       INSERT INTO aerolineas_latest_flight_status (aerolineas_flight_id, last_updated, json)
