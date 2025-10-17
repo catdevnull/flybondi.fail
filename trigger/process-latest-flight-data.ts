@@ -20,7 +20,8 @@ export const processLatestFlightDataTask = schedules.task({
     const sql = sqlBuilder();
 
     const list = await getAllObjectsFromS3Bucket(B2_BUCKET, B2_PATH);
-    const queue = new PQueue({ concurrency: 4 });
+    console.log(list.length);
+    const queue = new PQueue({ concurrency: 16 });
     const tasks = Array.from(
       list
         .filter((item) => item.Size && item.Size > 2) // filter out empty JSON arrays
@@ -43,61 +44,62 @@ export const processLatestFlightDataTask = schedules.task({
           return acc;
         }, new Map<number, string[]>())
         .entries()
-    ).map(([_timestamp, keys]) => async () => {
+    ).map(([, keys]) => async () => {
       const key = parsePath(keys[0]);
       const path = `${B2_PATH}/${key.fetchedAt.toISOString()}/raw/`;
       logger.info("Processing", { path, urls: keys.map(getPublicB2Url) });
 
-      const allJsonAlreadyExists = list.find(
-        (item) => item.Key === `${path}all-keys.json`
-      );
+      // const allJsonAlreadyExists =
+      //   false && list.find((item) => item.Key === `${path}all-keys.json`);
       let allEntriesWithKeys;
-      if (allJsonAlreadyExists) {
-        const { Body } = await b2.send(
-          new GetObjectCommand({
-            Bucket: B2_BUCKET,
-            Key: `${path}all-keys.json`,
-          })
-        );
-        if (!Body) throw new Error("No body");
-        allEntriesWithKeys = JSON.parse(await Body.transformToString());
-      } else {
-        allEntriesWithKeys = Object.fromEntries(
-          await Promise.all(
-            keys.map(async (key) => {
-              const { Body } = await b2.send(
-                new GetObjectCommand({
-                  Bucket: B2_BUCKET,
-                  Key: key,
-                })
-              );
-              if (!Body) throw new Error("No body");
-              return [key, JSON.parse(await Body.transformToString())];
-            })
-          )
-        );
-        await b2.send(
-          new PutObjectCommand({
-            Bucket: B2_BUCKET,
-            Key: `${path}all-keys.json`,
-            Body: JSON.stringify(allEntriesWithKeys),
-          })
-        );
-        logger.info("Stored all-keys.json", {
-          path,
-          url: getPublicB2Url(`${path}all-keys.json`),
-        });
-      }
+      // if (allJsonAlreadyExists) {
+      //   const existingFile = b2.file(`${path}all-keys.json`);
+      //   allEntriesWithKeys = JSON.parse(await existingFile.text());
+      // } else {
+      allEntriesWithKeys =
+        // Object.fromEntries(
+        await Promise.all(
+          keys.map(async (key) => {
+            // key = key.replaceAll("&amp;", "&");
+            try {
+              const file = b2.file(key);
+              return [key, JSON.parse(await file.text())];
+            } catch (error) {
+              try {
+                const test = b2.file(key.replaceAll("&amp;", "&"));
+                return [key, JSON.parse(await test.text())];
+              } catch (error) {
+                logger.error("Error parsing file twice", { key, error });
+              }
+              logger.error("Error parsing file", { key, error });
 
-      const allEntries = Object.entries(allEntriesWithKeys)
-        .map(([key, value]) => {
-          const { flightDate } = parsePath(key);
-          return (value as any).map((v) => ({
-            ...v,
-            x_date: flightDate,
-          }));
-        })
-        .flat();
+              throw error;
+            }
+          })
+        );
+      // );
+      //   await b2.write(
+      //     `${path}all-keys.json`,
+      //     JSON.stringify(allEntriesWithKeys),
+      //     { type: "application/json" }
+      //   );
+      //   logger.info("Stored all-keys.json", {
+      //     path,
+      //     url: getPublicB2Url(`${path}all-keys.json`),
+      //   });
+      // }
+
+      const allEntries =
+        // Object.entries(allEntriesWithKeys)
+        allEntriesWithKeys
+          .map(([key, value]) => {
+            const { flightDate } = parsePath(key);
+            return (value as any).map((v) => ({
+              ...v,
+              x_date: flightDate,
+            }));
+          })
+          .flat();
 
       await sql`
       INSERT INTO aerolineas_latest_flight_status (aerolineas_flight_id, last_updated, json)

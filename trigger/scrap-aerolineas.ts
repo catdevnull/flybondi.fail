@@ -1,4 +1,4 @@
-import { logger, schedules, schemaTask } from "@trigger.dev/sdk/v3";
+import { logger, schedules, schemaTask } from "@trigger.dev/sdk";
 import {
   AerolineasSnapshot,
   FlightstatsSnapshot,

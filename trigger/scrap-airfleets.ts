@@ -1,4 +1,4 @@
-import { logger, schemaTask } from "@trigger.dev/sdk/v3";
+import { logger, schemaTask } from "@trigger.dev/sdk";
 import { sqlBuilder } from "../consts";
 import fetchBuilder from "fetch-retry";
 import { saveRawIntoB2 } from "../trigger-utils";

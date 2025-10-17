@@ -1,8 +1,8 @@
-import { defineConfig } from "@trigger.dev/sdk/v3";
+import { defineConfig } from "@trigger.dev/sdk";
 
 export default defineConfig({
   project: "proj_gybqwphyhogmifyynunh",
-  runtime: "node",
+  runtime: "bun",
   logLevel: "log",
   // Set the maxDuration to 300 seconds for all tasks. See https://trigger.dev/docs/runs/max-duration
   maxDuration: 300,
@@ -18,11 +18,5 @@ export default defineConfig({
     },
   },
   dirs: ["./trigger"],
-  build: {
-    // external: [
-    //   "@duckdb/node-bindings-linux-x64",
-    //   "@duckdb/node-api",
-    //   "@duckdb/node-bindings-darwin-arm64",
-    // ],
-  },
+  build: { external: ["bun"] },
 });
