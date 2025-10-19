@@ -27,16 +27,6 @@
 	});
 </script>
 
-<svelte:head>
-	{#if import.meta.env.PROD}
-		<script
-			defer
-			src="https://umami.nulo.lol/script.js"
-			data-website-id="e919c6b5-169d-4679-bfcc-f28de2da1b44"
-		></script>
-	{/if}
-</svelte:head>
-
 <div class="min-h-screen bg-white dark:bg-neutral-900 dark:text-neutral-200">
 	{@render children()}
 </div>
