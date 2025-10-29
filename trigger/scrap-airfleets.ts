@@ -30,7 +30,7 @@ export const scrapMatriculasTask = schemaTask({
     }
   },
 });
-
+//console.log(await scrapMatricula("CCBFB", new Date()));
 async function scrapMatricula(matricula: string, fetched_at: Date) {
   logger.info(`Searching for ${matricula}`);
   const searchUrl =
@@ -141,8 +141,16 @@ async function fetchAirfleets(url: string | URL): Promise<string | 404> {
         `Bright Data API error: ${response.status} ${response.statusText}`
       );
     }
-
+    if (response.headers.get("x-brd-err-code"))
+      throw new Error(
+        `Bright Data API error: ${response.headers.get(
+          "x-brd-err-code"
+        )} ${response.headers.get("x-brd-err-msg")}`
+      );
     const data = await response.text();
+    if (data.trim().length === 0) {
+      throw new Error("Empty response from Bright Data");
+    }
     return data;
   } catch (error) {
     logger.error("Error fetching with Bright Data", {
