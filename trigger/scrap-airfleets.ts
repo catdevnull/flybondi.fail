@@ -9,7 +9,7 @@ const sql = sqlBuilder();
 
 export const scrapMatriculasTask = schemaTask({
   id: "scrap-matriculas",
-  maxDuration: 6000,
+  maxDuration: 600,
   run: async (payload, { ctx }) => {
     const matriculas = await sql<{ matricula: string }[]>`
     select distinct json->>'matricula' as matricula

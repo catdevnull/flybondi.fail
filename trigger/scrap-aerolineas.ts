@@ -21,7 +21,7 @@ const fetch = fetchBuilder(globalThis.fetch);
 
 export const scrapAerolineasTask = schemaTask({
   id: "scrap-aerolineas",
-  maxDuration: 6000,
+  maxDuration: 600,
   schema: z.object({
     date: z.coerce.date(),
   }),

@@ -12,7 +12,7 @@ import { basename } from "path";
 export const processLatestFlightDataTask = schedules.task({
   id: "process-latest-flight-data",
   cron: "2 * * * *",
-  maxDuration: 18000,
+  maxDuration: 1800,
   machine: {
     preset: "small-2x",
   },
