@@ -12,7 +12,7 @@ export const GET: RequestHandler = async () => {
 
 	const missingCount = parseInt(row?.missing_count ?? '0', 10);
 
-	if (missingCount > 10) {
+	if (missingCount > 100) {
 		return new Response(`too many missing matriculas: ${missingCount}`, { status: 500 });
 	}
 
