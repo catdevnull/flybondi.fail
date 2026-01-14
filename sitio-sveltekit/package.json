@@ -36,6 +36,7 @@
 		"vite": "^6.0.0"
 	},
 	"dependencies": {
+		"@resvg/resvg-js": "^2.6.2",
 		"@sentry/sveltekit": "^8",
 		"@tailwindcss/typography": "^0.5.15",
 		"chart.js": "^4.4.7",
@@ -45,6 +46,7 @@
 		"dayjs": "^1.11.13",
 		"mode-watcher": "^0.5.0",
 		"postgres": "^3.4.5",
-		"posthog-js": "^1.215.3"
+		"posthog-js": "^1.215.3",
+		"satori": "^0.18.3"
 	}
 }
