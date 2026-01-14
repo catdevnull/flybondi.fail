@@ -317,6 +317,12 @@
 </nav>
 
 <main class="mx-auto max-w-[1000px] p-4">
+	<a
+		href="/wrapped-2025"
+		class="mx-auto mb-4 block w-fit items-center justify-center gap-2 rounded-full bg-[#FDBE11] px-5 py-2 text-sm font-bold text-black transition-colors hover:bg-[#e5ab0f]"
+	>
+		🎁 ¡Mirá el Failbondi Wrapped 2025!<span class="ml-2">→</span>
+	</a>
 	{#if vuelos.length > 0}
 		<div class="mb-4 grid grid-rows-4 gap-4 text-balance md:grid-cols-2">
 			<div
