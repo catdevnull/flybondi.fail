@@ -202,12 +202,6 @@
 					{/each}
 				</div>
 			</div>
-
-			<div class="p-6 pt-0">
-				<div class="rounded-full bg-black px-3 py-3 text-center text-sm font-bold text-white">
-					Promedio: {formatMinutes(data.worstAirports[0]?.avg_delay_minutes || 0)} de demora
-				</div>
-			</div>
 		</div>
 
 		<!-- Card 4: Cancellations -->
