@@ -179,7 +179,8 @@
 		FLN: 'Florianopolis',
 		FTE: 'El Calafate',
 		NQN: 'Neuquen',
-		ASU: 'Asunción'
+		ASU: 'Asunción',
+		MCZ: 'Maceió'
 	};
 	const getAirport = (iata: string) => {
 		const airport = AIRPORTS_ALIAS[iata as keyof typeof AIRPORTS_ALIAS];
