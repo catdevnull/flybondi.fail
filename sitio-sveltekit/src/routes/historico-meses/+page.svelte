@@ -25,6 +25,7 @@
 	import * as Popover from '@/components/ui/popover';
 	import { CalendarIcon } from 'lucide-svelte';
 	import Footer from '@/components/footer.svelte';
+	import PageHeader from '$lib/components/page-header.svelte';
 	import { goto } from '$app/navigation';
 	import { browser } from '$app/environment';
 	import { today, getLocalTimeZone, CalendarDate } from '@internationalized/date';
@@ -497,34 +498,31 @@
 	<meta name="twitter:image" content={'https://failbondi.fail' + cardPath} />
 </svelte:head>
 
-<main class="mx-auto max-w-[1000px] p-2 sm:p-4">
-	<h1 class="mb-4 text-3xl font-medium leading-none text-red-600 sm:text-4xl">
-		Estadísticas históricas mensuales
-	</h1>
-
-	<div class="mb-6 flex flex-wrap items-center gap-4 sm:mb-8">
-		<div class="flex w-full items-center gap-2 sm:w-auto">
-			<Popover.Root>
-				<Popover.Trigger>
-					<Button variant="outline" class="w-full justify-start text-left font-normal sm:w-[280px]">
-						<CalendarIcon class="mr-2 h-4 w-4" />
-						{formatDate(startDate.toDate(tsz))} - {formatDate(endDate.toDate(tsz))}
-					</Button>
-				</Popover.Trigger>
-				<Popover.Content class="w-auto p-0">
-					<RangeCalendar.RangeCalendar
-						value={dateRange}
-						onValueChange={onDateSelect}
-						numberOfMonths={isMobile ? 1 : 2}
-						isDateUnavailable={(date) => {
-							const monthStr = dayjs(date.toDate(tsz)).format('YYYY-MM');
-							return !data.availableMonths.includes(monthStr);
-						}}
-					/>
-				</Popover.Content>
-			</Popover.Root>
-		</div>
+<PageHeader subtitle="Estadísticas históricas mensuales">
+	<div class="mt-3 flex flex-wrap items-center justify-center gap-3">
+		<Popover.Root>
+			<Popover.Trigger>
+				<Button variant="outline" class="flex items-center gap-2">
+					<CalendarIcon class="h-4 w-4" />
+					<span>{formatDate(startDate.toDate(tsz))} - {formatDate(endDate.toDate(tsz))}</span>
+				</Button>
+			</Popover.Trigger>
+			<Popover.Content class="w-auto p-0">
+				<RangeCalendar.RangeCalendar
+					value={dateRange}
+					onValueChange={onDateSelect}
+					numberOfMonths={isMobile ? 1 : 2}
+					isDateUnavailable={(date) => {
+						const monthStr = dayjs(date.toDate(tsz)).format('YYYY-MM');
+						return !data.availableMonths.includes(monthStr);
+					}}
+				/>
+			</Popover.Content>
+		</Popover.Root>
 	</div>
+</PageHeader>
+
+<main class="mx-auto max-w-[1000px] p-2 sm:p-4">
 
 	<div class="mb-8 grid grid-cols-1 gap-4 sm:grid-cols-4">
 		<div class="bg-card dark:border-border rounded-lg p-4 shadow dark:border">

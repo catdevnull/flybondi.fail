@@ -12,6 +12,7 @@
 	import { Button } from '@/components/ui/button';
 	import * as Table from '@/components/ui/table';
 	import Footer from '@/components/footer.svelte';
+	import PageHeader from '$lib/components/page-header.svelte';
 	import cardPath from '$lib/assets/twitter-card.png';
 	import { IATA_NAMES } from '@/aerolineas';
 	import { onMount } from 'svelte';
@@ -220,16 +221,7 @@
 	<meta name="twitter:image" content={'https://failbondi.fail' + cardPath} />
 </svelte:head>
 
-<div
-	class="sticky top-0 z-10 mb-4 flex flex-col border-b bg-white px-1 pb-3 text-center sm:px-4 dark:border-neutral-700 dark:bg-neutral-900"
->
-	<h1 class="flex items-end justify-center">
-		<span class="text-4xl font-medium leading-none text-red-600">failbondi.fail</span>
-	</h1>
-	<div class="mt-2 text-sm text-neutral-600 dark:text-neutral-400">
-		Ranking de aerolíneas del {dayjs(data.period.start).tz(tz).format('DD/MM/YYYY')} al
-		{dayjs(data.period.end).tz(tz).format('DD/MM/YYYY')}
-	</div>
+<PageHeader subtitle="Ranking de aerolíneas del {dayjs(data.period.start).tz(tz).format('DD/MM/YYYY')} al {dayjs(data.period.end).tz(tz).format('DD/MM/YYYY')}">
 	<div class="mt-3 flex flex-wrap items-center justify-center gap-3">
 		<Popover.Root>
 			<Popover.Trigger asChild let:builder>
@@ -256,7 +248,7 @@
 			<Button variant="ghost" class="text-sm" on:click={resetRange}>Últimos 180 días</Button>
 		{/if}
 	</div>
-</div>
+</PageHeader>
 
 <main class="mx-auto flex max-w-5xl flex-col gap-4 p-3 sm:p-4">
 	<section class="grid grid-cols-1 gap-3 sm:grid-cols-2">

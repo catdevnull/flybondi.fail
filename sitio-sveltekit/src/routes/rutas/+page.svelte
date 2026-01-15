@@ -12,6 +12,7 @@
 	import { ArrowUpDown, Search } from 'lucide-svelte';
 	import { Button } from '@/components/ui/button';
 	import Footer from '$lib/components/footer.svelte';
+	import PageHeader from '$lib/components/page-header.svelte';
 	import TimeBar from '../time-bar.svelte';
 	import cardPath from '$lib/assets/twitter-card.png';
 
@@ -135,15 +136,7 @@
 	<meta name="twitter:image" content={'https://failbondi.fail' + cardPath} />
 </svelte:head>
 
-<div
-	class="sticky top-0 z-10 mb-4 flex flex-col border-b bg-white px-1 pb-1 text-center sm:px-4 dark:border-neutral-700 dark:bg-neutral-900"
->
-	<h1 class="flex items-end justify-center">
-		<span class="text-4xl font-medium leading-none text-red-600">failbondi.fail</span>
-	</h1>
-	<div class="mt-2 text-sm text-neutral-600 dark:text-neutral-400">
-		Estadísticas por ruta del {dayjs(dateRange.start).format('DD/MM/YYYY')} al {dayjs(dateRange.end).format('DD/MM/YYYY')}
-	</div>
+<PageHeader subtitle="Estadísticas por ruta del {dayjs(dateRange.start).format('DD/MM/YYYY')} al {dayjs(dateRange.end).format('DD/MM/YYYY')}">
 	<div class="mt-2 flex justify-center">
 		<div class="relative w-full max-w-xs">
 			<Search class="absolute left-2 top-1/2 h-4 w-4 -translate-y-1/2 text-neutral-400" />
@@ -155,7 +148,7 @@
 			/>
 		</div>
 	</div>
-</div>
+</PageHeader>
 
 <main class="mx-auto max-w-[1200px] p-4">
 	<!-- Desktop Table View -->
