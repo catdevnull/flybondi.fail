@@ -9,13 +9,7 @@
 	import AIRPORTS_ALIAS from '$lib/aerolineas-airports-subset-alias.json';
 	import { Button, buttonVariants } from '@/components/ui/button';
 	import type { Vuelo } from '$lib';
-	import {
-		AlertCircleIcon,
-		ArrowDownIcon,
-		ArrowLeftIcon,
-		ArrowRightIcon,
-		PlaneTakeoffIcon
-	} from 'lucide-svelte';
+	import { ArrowDownIcon, ArrowLeftIcon, ArrowRightIcon, CalendarIcon } from 'lucide-svelte';
 	import Icon from '$lib/components/icon.svelte';
 	import AverageVis from './average-vis.svelte';
 	import { getDelayColor, COLOR_CLASSES } from '$lib/colors';
@@ -24,13 +18,49 @@
 	import DateTime from './date-time.svelte';
 	import * as AlertDialog from '@/components/ui/alert-dialog';
 	import * as Select from '@/components/ui/select';
+	import * as Popover from '@/components/ui/popover';
+	import { Calendar } from '@/components/ui/calendar';
 	import { browser } from '$app/environment';
 	import Footer from '@/components/footer.svelte';
 	import cardPath from '$lib/assets/twitter-card.png';
 	import { IATA_NAMES } from '@/aerolineas';
+	import { CalendarDate, type DateValue } from '@internationalized/date';
+	import { goto } from '$app/navigation';
 
 	export let data;
-	$: ({ vuelos: todosLosVuelos, date, hasTomorrowData, hasYesterdayData } = data);
+	$: ({ vuelos: todosLosVuelos, date, hasTomorrowData, hasYesterdayData, availableDates } = data);
+
+	$: availableDateSet = new Set(
+		availableDates.map((d) => {
+			const djs = dayjs(d).tz('America/Argentina/Buenos_Aires');
+			return `${djs.year()}-${String(djs.month() + 1).padStart(2, '0')}-${String(djs.date()).padStart(2, '0')}`;
+		})
+	);
+
+	function isDateAvailable(dateValue: DateValue): boolean {
+		const dateStr = `${dateValue.year}-${String(dateValue.month).padStart(2, '0')}-${String(dateValue.day).padStart(2, '0')}`;
+		return availableDateSet.has(dateStr);
+	}
+
+	function dateToCalendarDate(d: Date): CalendarDate {
+		const djs = dayjs(d).tz('America/Argentina/Buenos_Aires');
+		return new CalendarDate(djs.year(), djs.month() + 1, djs.date());
+	}
+
+	$: selectedDate = dateToCalendarDate(date);
+
+	function handleDateSelect(newDate: DateValue | undefined) {
+		if (!newDate) return;
+		const dateStr = `${newDate.year}-${String(newDate.month).padStart(2, '0')}-${String(newDate.day).padStart(2, '0')}`;
+		const params = new URLSearchParams();
+		params.set('date', dateStr);
+		if (aerolineaSeleccionada !== 'FO') {
+			params.set('aerolinea', aerolineaSeleccionada);
+		}
+		goto(`/?${params.toString()}`);
+	}
+
+	let calendarOpen = false;
 
 	function getAerolineaSeleccionada() {
 		let aerolinea;
@@ -258,7 +288,7 @@
 			<Button
 				variant="outline"
 				size="icon"
-				class="size-8"
+				class="hidden size-8 md:flex"
 				href="/?date={dayjs(date)
 					.tz('America/Argentina/Buenos_Aires')
 					.subtract(1, 'day')
@@ -270,17 +300,37 @@
 				<ArrowLeftIcon class="h-4 w-4" />
 			</Button>
 		{:else}
-			<div></div>
+			<div class="size-8"></div>
 		{/if}
-		<div class="flex items-center gap-4">
-			<span
-				class="flex w-full flex-col items-center justify-center text-neutral-700 dark:text-neutral-300"
-			>
-				<span class="text-xs leading-tight">viendo datos de</span>
-				<span class=" font-bold leading-tight"
-					>{longDateFormatter.format(dayjs(date).toDate()).replace(',', '')}</span
-				>
-			</span>
+		<div class="flex flex-col gap-2 md:flex-row md:items-stretch md:gap-4">
+			<Popover.Root bind:open={calendarOpen}>
+				<Popover.Trigger asChild let:builder>
+					<Button
+						variant="outline"
+						builders={[builder]}
+						class="flex h-auto flex-col items-center gap-0 px-3 py-0"
+					>
+						<span class="text-xs leading-tight text-neutral-500 dark:text-neutral-400"
+							>viendo datos de</span
+						>
+						<span class="flex items-center gap-1 font-bold leading-tight">
+							<CalendarIcon class="size-3" />
+							{longDateFormatter.format(dayjs(date).toDate()).replace(',', '')}
+						</span>
+					</Button>
+				</Popover.Trigger>
+				<Popover.Content class="w-auto p-0">
+					<Calendar
+						value={selectedDate}
+						onValueChange={(v) => {
+							handleDateSelect(v);
+							calendarOpen = false;
+						}}
+						isDateDisabled={(d) => !isDateAvailable(d)}
+						locale="es"
+					/>
+				</Popover.Content>
+			</Popover.Root>
 			<Select.Root
 				selected={{ value: aerolineaSeleccionada, label: IATA_NAMES[aerolineaSeleccionada] }}
 				onSelectedChange={(e) => (aerolineaSeleccionada = e?.value as keyof typeof IATA_NAMES)}
@@ -301,7 +351,7 @@
 			<Button
 				variant="outline"
 				size="icon"
-				class="size-8"
+				class="hidden size-8 md:flex"
 				href="/?date={dayjs(date)
 					.tz('America/Argentina/Buenos_Aires')
 					.add(1, 'day')
@@ -311,7 +361,7 @@
 				<ArrowRightIcon class="h-4 w-4" />
 			</Button>
 		{:else}
-			<div></div>
+			<div class="size-8"></div>
 		{/if}
 	</div>
 </nav>
