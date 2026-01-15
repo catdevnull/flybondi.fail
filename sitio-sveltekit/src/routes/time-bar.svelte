@@ -9,6 +9,6 @@
 	<div class="absolute h-full w-full bg-neutral-200 dark:bg-neutral-700"></div>
 	<div
 		class={`absolute h-full`}
-		style={`width: ${(seconds / maxSeconds) * 100}%; background-color: ${COLORS[getDelaySimplified(seconds)]};`}
+		style={`width: ${Math.min((seconds / maxSeconds) * 100, 100)}%; background-color: ${COLORS[getDelaySimplified(seconds)]};`}
 	></div>
 </div>
