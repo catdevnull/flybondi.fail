@@ -247,7 +247,7 @@
 </svelte:head>
 
 <nav
-	class="sticky top-0 z-10 mb-4 flex flex-col border-b bg-white px-1 pb-1 text-center sm:px-4 dark:border-neutral-700 dark:bg-neutral-900"
+	class="sticky top-0 z-10 flex flex-col border-b bg-white px-1 pb-1 text-center sm:px-4 dark:border-neutral-700 dark:bg-neutral-900"
 >
 	<h1 class="flex items-end justify-center">
 		<span class="text-4xl font-medium leading-none text-red-600">failbondi.fail</span>
@@ -316,10 +316,10 @@
 	</div>
 </nav>
 
-<main class="mx-auto max-w-[1000px] p-4">
+<main class="mx-auto max-w-[1000px] px-4 py-2">
 	<a
 		href="/wrapped-2025"
-		class="mx-auto mb-4 block w-fit items-center justify-center gap-2 rounded-full bg-[#FDBE11] px-5 py-2 text-sm font-bold text-black transition-colors hover:bg-[#e5ab0f]"
+		class="mx-auto mb-2 block w-fit items-center justify-center gap-2 rounded-full bg-[#FDBE11] px-5 py-2 text-sm font-bold text-black transition-colors hover:bg-[#e5ab0f]"
 	>
 		🎁 ¡Mirá el Failbondi Wrapped 2025!<span class="ml-2">→</span>
 	</a>
