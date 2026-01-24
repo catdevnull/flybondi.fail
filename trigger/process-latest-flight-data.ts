@@ -8,6 +8,7 @@ import {
 } from "@aws-sdk/client-s3";
 import PQueue from "p-queue";
 import { basename } from "path";
+import pMap from "p-map";
 
 export const processLatestFlightDataTask = schedules.task({
   id: "process-latest-flight-data",
@@ -21,7 +22,7 @@ export const processLatestFlightDataTask = schedules.task({
 
     const list = await getAllObjectsFromS3Bucket(B2_BUCKET, B2_PATH);
     console.log(list.length);
-    const queue = new PQueue({ concurrency: 16 });
+    const queue = new PQueue({ concurrency: 64 });
     const tasks = Array.from(
       list
         .filter((item) => item.Size && item.Size > 2) // filter out empty JSON arrays
@@ -112,31 +113,45 @@ function getPublicB2Url(path: string) {
   }`;
 }
 
-async function getAllObjectsFromS3Bucket(bucket: string, prefix: string) {
-  let isTruncated = true;
-  let continuationToken: string | undefined;
-  const objects: { Key: string; Size?: number }[] = [];
+async function listObjectsPage(
+  bucket: string,
+  prefix: string,
+  continuationToken?: string
+): Promise<{ objects: { Key: string; Size?: number }[]; nextToken?: string }> {
+  const response = await b2.send(
+    new ListObjectsV2Command({
+      Bucket: bucket,
+      Prefix: prefix,
+      ContinuationToken: continuationToken,
+    })
+  );
 
-  while (isTruncated) {
-    const response = await b2.send(
-      new ListObjectsV2Command({
-        Bucket: bucket,
-        Prefix: prefix,
-        ContinuationToken: continuationToken,
-      })
+  const objects = (response.Contents || []).filter(
+    (item): item is { Key: string; Size?: number } => item.Key !== undefined
+  );
+
+  return {
+    objects,
+    nextToken: response.IsTruncated ? response.NextContinuationToken : undefined,
+  };
+}
+
+async function getAllObjectsFromS3Bucket(bucket: string, prefix: string) {
+  const allObjects: { Key: string; Size?: number }[] = [];
+  const activeTokens: (string | undefined)[] = [undefined];
+  
+  while (activeTokens.length > 0) {
+    const results = await pMap(
+      activeTokens.splice(0),
+      (token) => listObjectsPage(bucket, prefix, token),
+      { concurrency: 8 }
     );
 
-    if (response.Contents) {
-      objects.push(
-        ...response.Contents.filter(
-          (item): item is { Key: string } => item.Key !== undefined
-        )
-      );
+    for (const { objects, nextToken } of results) {
+      allObjects.push(...objects);
+      if (nextToken) activeTokens.push(nextToken);
     }
-
-    isTruncated = response.IsTruncated ?? false;
-    continuationToken = response.NextContinuationToken;
   }
 
-  return objects;
+  return allObjects;
 }
