@@ -15,7 +15,7 @@ export const processLatestFlightDataTask = schedules.task({
   cron: "2 * * * *",
   maxDuration: 1800,
   machine: {
-    preset: "small-2x",
+    preset: "small-1x",
   },
   run: async (payload, { ctx }) => {
     const sql = sqlBuilder();
@@ -132,14 +132,16 @@ async function listObjectsPage(
 
   return {
     objects,
-    nextToken: response.IsTruncated ? response.NextContinuationToken : undefined,
+    nextToken: response.IsTruncated
+      ? response.NextContinuationToken
+      : undefined,
   };
 }
 
 async function getAllObjectsFromS3Bucket(bucket: string, prefix: string) {
   const allObjects: { Key: string; Size?: number }[] = [];
   const activeTokens: (string | undefined)[] = [undefined];
-  
+
   while (activeTokens.length > 0) {
     const results = await pMap(
       activeTokens.splice(0),

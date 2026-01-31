@@ -26,7 +26,7 @@ export const scrapAerolineasTask = schemaTask({
     date: z.coerce.date(),
   }),
   run: async (payload, { ctx }) => {
-    const queue = new PQueue({ concurrency: 5 });
+    const queue = new PQueue({ concurrency: 20 });
     const fetched_at = new Date();
 
     for (const airport_iata of AEROLINEAS_AIRPORTS) {
