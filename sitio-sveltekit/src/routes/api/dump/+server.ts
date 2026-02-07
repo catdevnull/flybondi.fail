@@ -37,7 +37,8 @@ export const GET: RequestHandler = async ({ url }) => {
 	return new Response(stream, {
 		headers: {
 			'Access-Control-Allow-Origin': '*',
-			'Content-Type': 'application/json'
+			'Content-Type': 'application/json',
+			'Content-Disposition': `attachment; filename="failbondi-${new Date().toISOString().slice(0, 10)}-dump.json"`
 		}
 	});
 };
