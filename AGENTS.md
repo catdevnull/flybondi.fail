@@ -19,4 +19,8 @@ This prevents "Airport {IATA} not found" warnings when flights reference the air
 
 ## Touching the database
 
-You can call the DB directly by using `psql` and the DATABASE_URL in `grep DATABASE sitio-sveltekit/.env`.
+The database is not directly accessible from outside. To query it, SSH into `absolute-slop` and use dokku:
+
+```bash
+ssh -T absolute-slop "dokku postgres:connect flybondi <<< \"YOUR SQL HERE;\""
+```
