@@ -36,5 +36,6 @@ export const AIRLINE_COLORS = {
 	O4: '#004B8D', // Avianca blue
 	'5U': '#00539B', // Azul blue
 	ZP: '#E31837', // Paranair red
-	H2: '#003876' // Amaszonas blue
+	H2: '#003876', // Amaszonas blue
+	DM: '#E42313' // Arajet red
 } as const;

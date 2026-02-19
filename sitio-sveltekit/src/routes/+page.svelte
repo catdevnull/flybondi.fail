@@ -210,7 +210,9 @@
 		FTE: 'El Calafate',
 		NQN: 'Neuquen',
 		ASU: 'Asunción',
-		MCZ: 'Maceió'
+		MCZ: 'Maceió',
+		SDQ: 'Santo Domingo',
+		PUJ: 'Punta Cana'
 	};
 	const getAirport = (iata: string) => {
 		const airport = AIRPORTS_ALIAS[iata as keyof typeof AIRPORTS_ALIAS];

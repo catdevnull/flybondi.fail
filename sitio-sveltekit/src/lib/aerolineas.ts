@@ -7,5 +7,6 @@ export const IATA_NAMES = {
 	O4: 'Andes L.A.',
 	'5U': 'LADE',
 	ZP: 'Paranair',
-	H2: 'SKY'
+	H2: 'SKY',
+	DM: 'Arajet'
 };
