@@ -12,7 +12,7 @@ import pMap from "p-map";
 
 export const processLatestFlightDataTask = schedules.task({
   id: "process-latest-flight-data",
-  cron: "2 * * * *",
+  cron: "2 */3 * * *",
   maxDuration: 1800,
   machine: {
     preset: "small-2x",
