@@ -30,16 +30,27 @@
 	export let data;
 	$: ({ vuelos: todosLosVuelos, date, hasTomorrowData, hasYesterdayData, availableDates } = data);
 
-	$: availableDateSet = new Set(
-		availableDates.map((d) => {
-			const djs = dayjs(d).tz('America/Argentina/Buenos_Aires');
-			return `${djs.year()}-${String(djs.month() + 1).padStart(2, '0')}-${String(djs.date()).padStart(2, '0')}`;
-		})
-	);
+	function toDateKey(year: number, month: number, day: number): string {
+		return `${year}-${String(month).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
+	}
+
+	function normalizeAvailableDateKey(dateValue: string | Date): string {
+		if (dateValue instanceof Date) {
+			return toDateKey(
+				dateValue.getUTCFullYear(),
+				dateValue.getUTCMonth() + 1,
+				dateValue.getUTCDate()
+			);
+		}
+
+		const [year, month, day] = dateValue.split('-').map(Number);
+		return toDateKey(year, month, day);
+	}
+
+	$: availableDateSet = new Set(availableDates.map(normalizeAvailableDateKey));
 
 	function isDateAvailable(dateValue: DateValue): boolean {
-		const dateStr = `${dateValue.year}-${String(dateValue.month).padStart(2, '0')}-${String(dateValue.day).padStart(2, '0')}`;
-		return availableDateSet.has(dateStr);
+		return availableDateSet.has(toDateKey(dateValue.year, dateValue.month, dateValue.day));
 	}
 
 	function dateToCalendarDate(d: Date): CalendarDate {
