@@ -88,10 +88,6 @@
 
 	let startDate = toCalendarDate(data.period.start);
 	let endDate = toCalendarDate(data.period.end);
-	let dateRange: DateRange = {
-		start: startDate,
-		end: endDate
-	};
 	let currentPeriod = { start: data.period.start, end: data.period.end };
 	$: if (
 		data?.period &&
@@ -100,8 +96,8 @@
 		currentPeriod = { start: data.period.start, end: data.period.end };
 		startDate = toCalendarDate(data.period.start);
 		endDate = toCalendarDate(data.period.end);
-		dateRange = { start: startDate, end: endDate };
 	}
+	let calendarOpen = false;
 
 	let calendarMonths = 2;
 
@@ -117,14 +113,14 @@
 
 	function onDateSelect(range: DateRange) {
 		if (range && range.start && range.end) {
-			dateRange = range;
 			startDate = new CalendarDate(range.start.year, range.start.month, range.start.day);
 			endDate = new CalendarDate(range.end.year, range.end.month, range.end.day);
+			calendarOpen = false;
 			if (browser) {
 				const path = window.location.pathname;
 				const params = new URLSearchParams(window.location.search);
-				params.set('start', dayjs(range.start.toDate(tz)).tz(tz).format('YYYY-MM-DD'));
-				params.set('end', dayjs(range.end.toDate(tz)).tz(tz).format('YYYY-MM-DD'));
+				params.set('start', range.start.toString());
+				params.set('end', range.end.toString());
 				const query = params.toString();
 				const target = query ? `${path}?${query}` : path;
 				goto(target, { replaceState: true, keepFocus: true, noScroll: true });
@@ -138,7 +134,7 @@
 			const defaultStart = defaultEnd.clone().subtract(179, 'day').startOf('day');
 			startDate = toCalendarDate(defaultStart.toISOString());
 			endDate = toCalendarDate(defaultEnd.toISOString());
-			dateRange = { start: startDate, end: endDate };
+			calendarOpen = false;
 			currentPeriod = { start: defaultStart.toISOString(), end: defaultEnd.toISOString() };
 			const path = window.location.pathname;
 			const params = new URLSearchParams(window.location.search);
@@ -223,7 +219,7 @@
 
 <PageHeader subtitle="Ranking de aerolíneas del {dayjs(data.period.start).tz(tz).format('DD/MM/YYYY')} al {dayjs(data.period.end).tz(tz).format('DD/MM/YYYY')}">
 	<div class="mt-3 flex flex-wrap items-center justify-center gap-3">
-		<Popover.Root>
+		<Popover.Root bind:open={calendarOpen}>
 			<Popover.Trigger asChild let:builder>
 				<Button variant="outline" class="flex items-center gap-2" builders={[builder]}>
 					<CalendarIcon class="h-4 w-4" />
@@ -236,7 +232,7 @@
 			</Popover.Trigger>
 			<Popover.Content class="w-auto p-0">
 				<RangeCalendar.RangeCalendar
-					value={dateRange}
+					placeholder={startDate}
 					numberOfMonths={calendarMonths}
 					onValueChange={onDateSelect}
 					minValue={today(getLocalTimeZone()).subtract({ years: 2 })}

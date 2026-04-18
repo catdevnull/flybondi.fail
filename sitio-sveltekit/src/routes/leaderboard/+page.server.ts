@@ -12,18 +12,22 @@ dayjs.extend(timezone);
 const TIMEZONE = 'America/Argentina/Buenos_Aires';
 const DEFAULT_WINDOW_DAYS = 180;
 
+function parseDayParam(dateParam: string, timezone: string) {
+	return dayjs.tz(`${dateParam}T00:00:00`, timezone);
+}
+
 export const load = (async ({ url, setHeaders }) => {
 	const endDateParam = url.searchParams.get('end');
 	const startDateParam = url.searchParams.get('start');
 
 	const defaultEnd = dayjs().tz(TIMEZONE).subtract(1, 'day').endOf('day');
 	const endDate = endDateParam
-		? dayjs(endDateParam).tz(TIMEZONE).endOf('day')
+		? parseDayParam(endDateParam, TIMEZONE).endOf('day')
 		: defaultEnd;
 
 	const defaultStart = defaultEnd.clone().subtract(DEFAULT_WINDOW_DAYS - 1, 'day').startOf('day');
 	const startDate = startDateParam
-		? dayjs(startDateParam).tz(TIMEZONE).startOf('day')
+		? parseDayParam(startDateParam, TIMEZONE).startOf('day')
 		: defaultStart;
 
 	const windowDays = endDate.diff(startDate, 'day') + 1;

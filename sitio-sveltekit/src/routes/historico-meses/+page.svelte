@@ -28,7 +28,7 @@
 	import PageHeader from '$lib/components/page-header.svelte';
 	import { goto } from '$app/navigation';
 	import { browser } from '$app/environment';
-	import { today, getLocalTimeZone, CalendarDate } from '@internationalized/date';
+	import { CalendarDate } from '@internationalized/date';
 	import type { DateRange } from 'bits-ui';
 	import { onMount, onDestroy } from 'svelte';
 	import cardPath from '$lib/assets/twitter-card.png';
@@ -44,6 +44,10 @@
 			delayed15?: number;
 			delayed30?: number;
 		}>;
+		period: {
+			start: string;
+			end: string;
+		};
 		hasCustomDate: boolean;
 		availableMonths: string[];
 	};
@@ -71,28 +75,14 @@
 		}
 	});
 
-	let startDate =
-		browser && new URLSearchParams(window.location.search).has('start')
-			? new CalendarDate(
-					...(dayjs(new URLSearchParams(window.location.search).get('start'))
-						.format('YYYY-MM-DD')
-						.split('-')
-						.map(Number) as [number, number, number])
-				)
-			: today(getLocalTimeZone()).subtract({ months: 12 });
-	let endDate =
-		browser && new URLSearchParams(window.location.search).has('end')
-			? new CalendarDate(
-					...(dayjs(new URLSearchParams(window.location.search).get('end'))
-						.format('YYYY-MM-DD')
-						.split('-')
-						.map(Number) as [number, number, number])
-				)
-			: today(getLocalTimeZone()).subtract({ months: 1 });
-	let dateRange = {
-		start: startDate,
-		end: endDate
-	};
+	function toCalendarDate(iso: string) {
+		const [year, month, day] = dayjs(iso).tz(tsz).format('YYYY-M-D').split('-').map(Number) as [
+			number,
+			number,
+			number
+		];
+		return new CalendarDate(year, month, day);
+	}
 
 	let delayChartEl: HTMLCanvasElement;
 	let cancelChartEl: HTMLCanvasElement;
@@ -108,25 +98,28 @@
 	}
 
 	const tsz = 'America/Argentina/Buenos_Aires';
+	let calendarOpen = false;
+	let startDate = toCalendarDate(data.period.start);
+	let endDate = toCalendarDate(data.period.end);
+	let currentPeriod = { start: data.period.start, end: data.period.end };
+	$: if (
+		data?.period &&
+		(currentPeriod.start !== data.period.start || currentPeriod.end !== data.period.end)
+	) {
+		currentPeriod = { start: data.period.start, end: data.period.end };
+		startDate = toCalendarDate(data.period.start);
+		endDate = toCalendarDate(data.period.end);
+	}
 
 	function onDateSelect(range: DateRange) {
 		if (range && range.start && range.end) {
 			startDate = new CalendarDate(range.start.year, range.start.month, range.start.day);
 			endDate = new CalendarDate(range.end.year, range.end.month, range.end.day);
-			dateRange = {
-				start: startDate,
-				end: endDate
-			};
+			calendarOpen = false;
 			if (browser) {
 				const params = new URLSearchParams(window.location.search);
-				params.set(
-					'start',
-					dayjs(range.start.toDate('America/Argentina/Buenos_Aires')).format('YYYY-MM')
-				);
-				params.set(
-					'end',
-					dayjs(range.end.toDate('America/Argentina/Buenos_Aires')).format('YYYY-MM')
-				);
+				params.set('start', range.start.toString().slice(0, 7));
+				params.set('end', range.end.toString().slice(0, 7));
 				goto(`?${params.toString()}`, { replaceState: true });
 			}
 		}
@@ -500,7 +493,7 @@
 
 <PageHeader subtitle="Estadísticas históricas mensuales">
 	<div class="mt-3 flex flex-wrap items-center justify-center gap-3">
-		<Popover.Root>
+		<Popover.Root bind:open={calendarOpen}>
 			<Popover.Trigger>
 				<Button variant="outline" class="flex items-center gap-2">
 					<CalendarIcon class="h-4 w-4" />
@@ -509,7 +502,7 @@
 			</Popover.Trigger>
 			<Popover.Content class="w-auto p-0">
 				<RangeCalendar.RangeCalendar
-					value={dateRange}
+					placeholder={startDate}
 					onValueChange={onDateSelect}
 					numberOfMonths={isMobile ? 1 : 2}
 					isDateUnavailable={(date) => {

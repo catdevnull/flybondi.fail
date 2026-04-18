@@ -9,17 +9,21 @@ import { AEROPUERTOS_FLYBONDI } from '@/aeropuertos-flybondi';
 dayjs.extend(utc);
 dayjs.extend(timezone);
 
+function parseDayParam(dateParam: string, timezone: string) {
+	return dayjs.tz(`${dateParam}T00:00:00`, timezone);
+}
+
 export const load = (async ({ url, setHeaders }) => {
 	const tsz = 'America/Argentina/Buenos_Aires';
-	const defaultStartDate = dayjs().tz(tsz).subtract(30, 'days').startOf('day').toDate();
-	const defaultEndDate = dayjs().tz(tsz).subtract(1, 'day').endOf('day').toDate();
+	const defaultStartDate = dayjs().tz(tsz).subtract(30, 'days').startOf('day');
+	const defaultEndDate = dayjs().tz(tsz).subtract(1, 'day').endOf('day');
 
 	const startDate = url.searchParams.has('start')
-		? dayjs(url.searchParams.get('start')).tz(tsz).startOf('day').toDate()
+		? parseDayParam(url.searchParams.get('start')!, tsz).startOf('day')
 		: defaultStartDate;
 
 	const endDate = url.searchParams.has('end')
-		? dayjs(url.searchParams.get('end')).tz(tsz).endOf('day').toDate()
+		? parseDayParam(url.searchParams.get('end')!, tsz).endOf('day')
 		: defaultEndDate;
 
 	const dailyStats = await sql`
@@ -50,8 +54,8 @@ export const load = (async ({ url, setHeaders }) => {
       ROUND(CAST((COUNT(CASE WHEN json->>'estes' = 'Cancelado' THEN 1 END) * 100.0 / NULLIF(COUNT(*), 0)) AS NUMERIC), 1) as "cancelPercentage",
       COUNT(*) as total_flights
     FROM flight_data
-    WHERE stda >= ${startDate} 
-    AND stda <= ${endDate}
+    WHERE stda >= ${startDate.toDate()} 
+    AND stda <= ${endDate.toDate()}
     AND json->>'arpt' = ANY(${AEROPUERTOS_FLYBONDI})
     AND json->>'IATAdestorig' = ANY(${AEROPUERTOS_FLYBONDI})
     GROUP BY DATE(stda), json->>'idaerolinea'
@@ -101,6 +105,10 @@ export const load = (async ({ url, setHeaders }) => {
 
 	return {
 		dailyStats,
+		period: {
+			start: startDate.toISOString(),
+			end: endDate.toISOString()
+		},
 		hasCustomDate: url.searchParams.has('start') || url.searchParams.has('end'),
 		availableDates: availableDates.map((o) => o.date)
 	};

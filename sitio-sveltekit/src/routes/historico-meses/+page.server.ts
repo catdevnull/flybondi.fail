@@ -9,17 +9,21 @@ import { AEROPUERTOS_FLYBONDI } from '@/aeropuertos-flybondi';
 dayjs.extend(utc);
 dayjs.extend(timezone);
 
+function parseMonthParam(monthParam: string, timezone: string) {
+	return dayjs.tz(`${monthParam}-01T00:00:00`, timezone);
+}
+
 export const load = (async ({ url, setHeaders }) => {
 	const tsz = 'America/Argentina/Buenos_Aires';
-	const defaultStartDate = dayjs().tz(tsz).subtract(12, 'months').startOf('month').toDate();
-	const defaultEndDate = dayjs().tz(tsz).subtract(1, 'month').endOf('month').toDate();
+	const defaultStartDate = dayjs().tz(tsz).subtract(12, 'months').startOf('month');
+	const defaultEndDate = dayjs().tz(tsz).subtract(1, 'month').endOf('month');
 
 	const startDate = url.searchParams.has('start')
-		? dayjs(url.searchParams.get('start')).tz(tsz).startOf('month').toDate()
+		? parseMonthParam(url.searchParams.get('start')!, tsz).startOf('month')
 		: defaultStartDate;
 
 	const endDate = url.searchParams.has('end')
-		? dayjs(url.searchParams.get('end')).tz(tsz).endOf('month').toDate()
+		? parseMonthParam(url.searchParams.get('end')!, tsz).endOf('month')
 		: defaultEndDate;
 
 	const monthlyStats = await sql`
@@ -50,8 +54,8 @@ export const load = (async ({ url, setHeaders }) => {
       ROUND(CAST((COUNT(CASE WHEN json->>'estes' = 'Cancelado' THEN 1 END) * 100.0 / NULLIF(COUNT(*), 0)) AS NUMERIC), 1) as "cancelPercentage",
       COUNT(*) as total_flights
     FROM flight_data
-    WHERE stda >= ${startDate} 
-    AND stda <= ${endDate}
+    WHERE stda >= ${startDate.toDate()} 
+    AND stda <= ${endDate.toDate()}
     AND json->>'arpt' = ANY(${AEROPUERTOS_FLYBONDI})
     AND json->>'IATAdestorig' = ANY(${AEROPUERTOS_FLYBONDI})
     GROUP BY DATE_TRUNC('month', stda), json->>'idaerolinea'
@@ -101,6 +105,10 @@ export const load = (async ({ url, setHeaders }) => {
 
 	return {
 		monthlyStats,
+		period: {
+			start: startDate.toISOString(),
+			end: endDate.toISOString()
+		},
 		hasCustomDate: url.searchParams.has('start') || url.searchParams.has('end'),
 		availableMonths: availableMonths.map((o) => o.month)
 	};
