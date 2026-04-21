@@ -18,6 +18,21 @@ import { saveRawIntoB2 } from "../trigger-utils";
 const AEROLINEAS_AIRPORTS = AEROLINEAS_AIRPORTS_JSON.data.map((a) => a.iata);
 
 const fetch = fetchBuilder(globalThis.fetch);
+const MAX_RETRY_BODY_LOG_LENGTH = 500;
+
+function stringifyRetryError(error: unknown) {
+  if (error instanceof Error) {
+    return `${error.name}: ${error.message}`;
+  }
+  return String(error);
+}
+
+function truncateRetryBody(body: string) {
+  if (body.length <= MAX_RETRY_BODY_LOG_LENGTH) {
+    return body;
+  }
+  return `${body.slice(0, MAX_RETRY_BODY_LOG_LENGTH)}...`;
+}
 
 export const scrapAerolineasTask = schemaTask({
   id: "scrap-aerolineas",
@@ -50,9 +65,29 @@ export const scrapAerolineasTask = schemaTask({
                 "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/131.0.0.0 Safari/537.36",
               "Accept-Language": "es-AR",
             },
-            retryOn: (attempt, error, response) => {
-              if (error !== null || (response?.status ?? 0) >= 400) {
-                logger.warn(`retrying, attempt number ${attempt + 1}`);
+            retryOn: async (attempt, error, response) => {
+              if (error !== null) {
+                logger.warn("Retrying Aerolineas fetch after network error", {
+                  attempt: attempt + 1,
+                  url,
+                  error: stringifyRetryError(error),
+                });
+                return true;
+              }
+
+              if ((response?.status ?? 0) >= 400) {
+                const responseBody = await response!
+                  .clone()
+                  .text()
+                  .catch(() => "<unable to read response body>");
+
+                logger.warn("Retrying Aerolineas fetch after error response", {
+                  attempt: attempt + 1,
+                  url,
+                  status: response!.status,
+                  statusText: response!.statusText,
+                  responseBody: truncateRetryBody(responseBody),
+                });
                 return true;
               }
               return false;
