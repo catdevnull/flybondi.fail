@@ -1,43 +1,35 @@
-import { logger, schedules } from "@trigger.dev/sdk/v3";
+import { logger, schedules, usage } from "@trigger.dev/sdk/v3";
 import { b2, B2_BUCKET, B2_PATH, B2_REGION, sqlBuilder } from "../consts";
-import {
-  _Object,
-  GetObjectCommand,
-  ListObjectsV2Command,
-  PutObjectCommand,
-} from "@aws-sdk/client-s3";
+import { GetObjectCommand, ListObjectsV2Command } from "@aws-sdk/client-s3";
 import PQueue from "p-queue";
-import { basename } from "path";
 import pMap from "p-map";
+
+const COLLECTION_CONCURRENCY = 4;
+const OBJECT_FETCH_CONCURRENCY = 12;
 
 export const processLatestFlightDataTask = schedules.task({
   id: "process-latest-flight-data",
   cron: "2 */3 * * *",
   maxDuration: 1800,
-  machine: {
-    preset: "small-2x",
+  machine: "small-1x",
+  queue: {
+    concurrencyLimit: 1,
   },
-  run: async (payload, { ctx }) => {
+  run: async () => {
     const sql = sqlBuilder();
-
-    const list = await getAllObjectsFromS3Bucket(B2_BUCKET, B2_PATH);
-    console.log(list.length);
-    const queue = new PQueue({ concurrency: 64 });
-    const tasks = Array.from(
+    const lastProcessedAt = await getLatestProcessedAt(sql);
+    const startAfter = buildStartAfterKey(lastProcessedAt);
+    const { result: list, compute: listCompute } = await usage.measure(() =>
+      getAllObjectsFromS3Bucket(B2_BUCKET, `${B2_PATH}/`, startAfter)
+    );
+    const collections = Array.from(
       list
         .filter((item) => item.Size && item.Size > 2) // filter out empty JSON arrays
         .filter(
           (item): item is { Key: string } =>
-            (item.Key?.includes("webaa-api") &&
-              item.Key?.includes("all-flights")) ||
-            false
+            item.Key?.includes("webaa-api") &&
+            item.Key?.includes("all-flights") === true
         )
-        .filter(({ Key }) => {
-          const { fetchedAt } = parsePath(Key);
-          if (payload.lastTimestamp && fetchedAt <= payload.lastTimestamp)
-            return false;
-          return true;
-        })
         .reduce((acc, { Key }) => {
           const { fetchedAt } = parsePath(Key);
           const timestamp = fetchedAt.getTime();
@@ -45,47 +37,91 @@ export const processLatestFlightDataTask = schedules.task({
           return acc;
         }, new Map<number, string[]>())
         .entries()
-    ).map(([, keys]) => async () => {
-      const key = parsePath(keys[0]);
-      const path = `${B2_PATH}/${key.fetchedAt.toISOString()}/raw/`;
-      logger.info("Processing", { path, urls: keys.map(getPublicB2Url) });
+    );
 
-      const allEntries = (
-        await Promise.all(
-          keys.map(async (key) => {
-            const response = await b2.send(
-              new GetObjectCommand({
-                Bucket: B2_BUCKET,
-                Key: key,
-              })
-            );
-            const text = await response.Body?.transformToString();
-            return [key, JSON.parse(text!)];
-          })
-        )
-      )
-        .map(([key, value]) => {
-          const { flightDate } = parsePath(key);
-          return (value as any).map((v) => ({
-            ...v,
-            x_date: flightDate,
-          }));
-        })
-        .flat();
-
-      await sql`
-      INSERT INTO aerolineas_latest_flight_status (aerolineas_flight_id, last_updated, json)
-      SELECT DISTINCT ON(aerolineas_flight_id) value->>'id' as aerolineas_flight_id, ${key.fetchedAt} as last_updated, value as json
-      FROM json_array_elements(${allEntries}) as value
-      ON CONFLICT (aerolineas_flight_id) 
-      DO UPDATE SET last_updated = EXCLUDED.last_updated, json = EXCLUDED.json
-      WHERE EXCLUDED.last_updated >= aerolineas_latest_flight_status.last_updated
-      `;
+    logger.info("Collected raw Aerolineas snapshots to process", {
+      lastProcessedAt: lastProcessedAt?.toISOString() ?? null,
+      startAfter,
+      objectCount: list.length,
+      collectionCount: collections.length,
+      collectionConcurrency: COLLECTION_CONCURRENCY,
+      objectFetchConcurrency: OBJECT_FETCH_CONCURRENCY,
+      listCompute,
     });
 
-    logger.info(`Processing ${tasks.length} collections`);
+    if (collections.length === 0) {
+      logger.info("No new raw Aerolineas snapshots to process", {
+        totalUsage: usage.getCurrent(),
+      });
+      return;
+    }
 
-    await queue.addAll(tasks);
+    const queue = new PQueue({ concurrency: COLLECTION_CONCURRENCY });
+
+    await queue.addAll(
+      collections.map(([, keys]) => async () => {
+        const key = parsePath(keys[0]);
+        const path = `${B2_PATH}/${key.fetchedAt.toISOString()}/raw/`;
+        logger.info("Processing collection", {
+          path,
+          objectCount: keys.length,
+          urls: keys.map(getPublicB2Url),
+        });
+
+        const { result: allEntries, compute: fetchCompute } = await usage.measure(
+          async () => {
+            const values = await pMap(
+              keys,
+              async (key) => {
+                const response = await b2.send(
+                  new GetObjectCommand({
+                    Bucket: B2_BUCKET,
+                    Key: key,
+                  })
+                );
+                const text = await response.Body?.transformToString();
+                return [key, JSON.parse(text!)] as const;
+              },
+              { concurrency: OBJECT_FETCH_CONCURRENCY }
+            );
+
+            return values
+              .map(([key, value]) => {
+                const { flightDate } = parsePath(key);
+                return (value as any[]).map((v) => ({
+                  ...v,
+                  x_date: flightDate,
+                }));
+              })
+              .flat();
+          }
+        );
+
+        const { compute: upsertCompute } = await usage.measure(async () => {
+          await sql`
+          INSERT INTO aerolineas_latest_flight_status (aerolineas_flight_id, last_updated, json)
+          SELECT DISTINCT ON(aerolineas_flight_id) value->>'id' as aerolineas_flight_id, ${key.fetchedAt} as last_updated, value as json
+          FROM json_array_elements(${allEntries}) as value
+          ON CONFLICT (aerolineas_flight_id) 
+          DO UPDATE SET last_updated = EXCLUDED.last_updated, json = EXCLUDED.json
+          WHERE EXCLUDED.last_updated >= aerolineas_latest_flight_status.last_updated
+          `;
+        });
+
+        logger.info("Processed collection", {
+          path,
+          objectCount: keys.length,
+          entryCount: allEntries.length,
+          fetchCompute,
+          upsertCompute,
+        });
+      })
+    );
+
+    logger.info("Finished processing latest flight data", {
+      collectionCount: collections.length,
+      totalUsage: usage.getCurrent(),
+    });
   },
 });
 
@@ -116,13 +152,17 @@ function getPublicB2Url(path: string) {
 async function listObjectsPage(
   bucket: string,
   prefix: string,
-  continuationToken?: string
+  {
+    continuationToken,
+    startAfter,
+  }: { continuationToken?: string; startAfter?: string } = {}
 ): Promise<{ objects: { Key: string; Size?: number }[]; nextToken?: string }> {
   const response = await b2.send(
     new ListObjectsV2Command({
       Bucket: bucket,
       Prefix: prefix,
       ContinuationToken: continuationToken,
+      StartAfter: continuationToken ? undefined : startAfter,
     })
   );
 
@@ -138,22 +178,47 @@ async function listObjectsPage(
   };
 }
 
-async function getAllObjectsFromS3Bucket(bucket: string, prefix: string) {
+async function getAllObjectsFromS3Bucket(
+  bucket: string,
+  prefix: string,
+  startAfter?: string
+) {
   const allObjects: { Key: string; Size?: number }[] = [];
-  const activeTokens: (string | undefined)[] = [undefined];
+  let continuationToken: string | undefined;
 
-  while (activeTokens.length > 0) {
-    const results = await pMap(
-      activeTokens.splice(0),
-      (token) => listObjectsPage(bucket, prefix, token),
-      { concurrency: 8 }
-    );
+  while (true) {
+    const { objects, nextToken } = await listObjectsPage(bucket, prefix, {
+      continuationToken,
+      startAfter,
+    });
+    allObjects.push(...objects);
 
-    for (const { objects, nextToken } of results) {
-      allObjects.push(...objects);
-      if (nextToken) activeTokens.push(nextToken);
+    if (!nextToken) {
+      return allObjects;
     }
+
+    continuationToken = nextToken;
+    startAfter = undefined;
+  }
+}
+
+async function getLatestProcessedAt(sql: ReturnType<typeof sqlBuilder>) {
+  const [row] = await sql<{ last_updated: Date | string | null }[]>`
+    SELECT MAX(last_updated) AS last_updated
+    FROM aerolineas_latest_flight_status
+  `;
+
+  if (!row?.last_updated) {
+    return null;
   }
 
-  return allObjects;
+  return new Date(row.last_updated);
+}
+
+function buildStartAfterKey(lastProcessedAt: Date | null) {
+  if (!lastProcessedAt) {
+    return undefined;
+  }
+
+  return `${B2_PATH}/${new Date(lastProcessedAt.getTime() - 1).toISOString()}`;
 }
