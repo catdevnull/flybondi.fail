@@ -248,7 +248,7 @@
 							([, name]) => name === dataset.label
 						)?.[0];
 						if (airline) {
-							goto(`/?date=${dayjs(dataPoint.x).format('YYYY-MM-DD')}&aerolinea=${airline}`);
+							goto(`/date/${dayjs(dataPoint.x).format('YYYY-MM-DD')}?aerolinea=${airline}`);
 						}
 					}
 				}
@@ -339,7 +339,7 @@
 							([, name]) => name === dataset.label
 						)?.[0];
 						if (airline) {
-							goto(`/?date=${dayjs(dataPoint.x).format('YYYY-MM-DD')}&aerolinea=${airline}`);
+							goto(`/date/${dayjs(dataPoint.x).format('YYYY-MM-DD')}?aerolinea=${airline}`);
 						}
 					}
 				}

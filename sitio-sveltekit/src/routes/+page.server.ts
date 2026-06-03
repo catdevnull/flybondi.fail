@@ -2,108 +2,107 @@ import type { PageServerLoad } from './$types';
 import dayjs from 'dayjs';
 import utc from 'dayjs/plugin/utc';
 import timezone from 'dayjs/plugin/timezone';
-import { sql, type Vuelo } from '$lib';
-import type { MaybeRow, PendingQuery, RowList, Sql } from 'postgres';
+import { redirect } from '@sveltejs/kit';
+import { sql } from '$lib';
 
 dayjs.extend(utc);
 dayjs.extend(timezone);
 
-const analyze: Sql<{}> = (async (...args: Parameters<typeof sql>) => {
-	const described = await sql(...args).describe();
-	console.log(described.string, args.slice(1));
-	return await sql(...args);
-}) as Sql<{}>;
+type WeeklyRow = {
+	week_start: string;
+	total_flights: number | string;
+	cancelled_flights: number | string;
+	avg_aircraft_per_day: number | string;
+	max_aircraft_per_day: number | string;
+	flying_days: number | string;
+};
 
-export const load: PageServerLoad = async ({ url, platform, setHeaders }) => {
+function normalizeDateParam(dateParam: string | null, tsz: string) {
+	if (dateParam) return dayjs(dateParam).tz(tsz, true).format('YYYY-MM-DD');
+	return dayjs().tz(tsz).subtract(1, 'day').format('YYYY-MM-DD');
+}
+
+export const load = (async ({ url, setHeaders }) => {
 	const tsz = 'America/Argentina/Buenos_Aires';
-	const dateQ = url.searchParams.get('date');
-	const date = dateQ ? dayjs(dateQ).tz(tsz, true) : dayjs().tz(tsz).subtract(1, 'day');
 
-	const start = date.startOf('day');
-	const end = date.endOf('day');
-
-	const tomorrowStart = start.add(1, 'day');
-	const tomorrowEnd = end.add(3, 'day');
-
-	const t1 = performance.now();
-	// Recursive CTE for loose index scan — avoids seq scan on large table (303ms → 44ms)
-	const availableDatesQuery = await analyze<{ date: string }[]>`
-		WITH RECURSIVE dates AS (
-			(SELECT DATE(stda_parsed) as date
-			 FROM aerolineas_latest_flight_status
-			 WHERE json->>'mov' = 'D'
-			   AND DATE(stda_parsed) >= '2024-12-24'
-			   AND DATE(stda_parsed) <= CURRENT_DATE
-			 ORDER BY DATE(stda_parsed) DESC
-			 LIMIT 1)
-			UNION ALL
-			SELECT (SELECT DATE(stda_parsed)
-			        FROM aerolineas_latest_flight_status
-			        WHERE json->>'mov' = 'D'
-			          AND DATE(stda_parsed) < d.date
-			          AND DATE(stda_parsed) >= '2024-12-24'
-			        ORDER BY DATE(stda_parsed) DESC
-			        LIMIT 1)
-			FROM dates d
-			WHERE d.date IS NOT NULL
-		)
-		SELECT date FROM dates WHERE date IS NOT NULL ORDER BY date DESC;
-	`;
-	const t2 = performance.now();
-	console.log(`[+page.server.ts] availableDates query: ${(t2 - t1).toFixed(2)}ms`);
-	const availableDates = availableDatesQuery.map((d) => d.date);
-
-	const t3 = performance.now();
-	const vuelos = await analyze<Vuelo[]>`
-    SELECT
-      *,
-      stda_parsed AT TIME ZONE 'America/Argentina/Buenos_Aires' AS stda,
-      CASE 
-        WHEN LENGTH(json->>'atda') > 0 THEN (to_timestamp(json->>'atda' || ' ' || split_part(json->>'x_date', '-', 1), 'DD/MM HH24:MI YYYY')::timestamp without time zone AT TIME ZONE 'America/Argentina/Buenos_Aires')
-      END AS atda,
-      CASE 
-        WHEN LENGTH(json->>'atda') > 0 THEN CAST(EXTRACT(EPOCH FROM (
-          (to_timestamp(json->>'atda' || ' ' || split_part(json->>'x_date', '-', 1), 'DD/MM HH24:MI YYYY')::timestamp without time zone AT TIME ZONE 'America/Argentina/Buenos_Aires')
-          - (stda_parsed AT TIME ZONE 'America/Argentina/Buenos_Aires')
-        )) AS real)
-      END AS delta
-    FROM aerolineas_latest_flight_status
-    LEFT JOIN airfleets_matriculas ON matricula = json->>'matricula'
-    WHERE json->>'mov' = 'D'
-      AND stda_parsed >= ${start.toDate()} AND stda_parsed < ${tomorrowEnd.toDate()};
-    `;
-	sql``;
-	const t4 = performance.now();
-	console.log(`[+page.server.ts] vuelos query: ${(t4 - t3).toFixed(2)}ms`);
-
-	setHeaders({
-		'cache-control': 'public, max-age=60'
-	});
-
-	for (const vuelo of vuelos) {
-		// @ts-ignore
-		delete vuelo.aeronave;
-		// @ts-ignore
-		delete vuelo.msn;
-		// @ts-ignore
-		delete vuelo.compania_aerea;
-		// @ts-ignore
-		delete vuelo.situacion;
-		// @ts-ignore
-		delete vuelo.detail_url;
-		// @ts-ignore
-		delete vuelo.edad_del_avion;
+	if (url.search) {
+		const date = normalizeDateParam(url.searchParams.get('date'), tsz);
+		const params = new URLSearchParams();
+		const aerolinea = url.searchParams.get('aerolinea');
+		if (aerolinea) params.set('aerolinea', aerolinea);
+		const query = params.toString();
+		redirect(308, `/date/${date}${query ? `?${query}` : ''}`);
 	}
 
-	return {
-		vuelos: vuelos.filter((vuelo) => vuelo.stda >= start.toDate() && vuelo.stda <= end.toDate()),
-		date: date.toDate(),
-		hasYesterdayData: start.subtract(1, 'day').isAfter('2024-12-21', 'day'),
-		hasTomorrowData: vuelos.some(
-			(vuelo) => vuelo.stda >= tomorrowStart.toDate() && vuelo.stda <= tomorrowEnd.toDate()
+	const endDate = dayjs().tz(tsz).startOf('week').subtract(1, 'millisecond');
+
+	const weeklyRows = await sql<WeeklyRow[]>`
+		WITH flight_data AS (
+			SELECT
+				DATE(stda_parsed AT TIME ZONE 'America/Argentina/Buenos_Aires') AS flight_date,
+				date_trunc('week', stda_parsed AT TIME ZONE 'America/Argentina/Buenos_Aires')::date AS week_start,
+				NULLIF(json->>'matricula', '') AS matricula,
+				json->>'estes' AS status
+			FROM aerolineas_latest_flight_status
+			WHERE json->>'mov' = 'D'
+				AND json->>'idaerolinea' = 'FO'
+				AND stda_parsed <= ${endDate.toDate()}
 		),
-		hasCustomDate: url.searchParams.has('date'),
-		aerolineaEnUrl: url.searchParams.get('aerolinea'),
-		availableDates
+		daily_aircraft AS (
+			SELECT
+				week_start,
+				flight_date,
+				COUNT(DISTINCT matricula) AS aircraft_count
+			FROM flight_data
+			WHERE matricula IS NOT NULL
+			GROUP BY week_start, flight_date
+		),
+		weekly_flights AS (
+			SELECT
+				week_start,
+				COUNT(*) AS total_flights,
+				COUNT(*) FILTER (WHERE status = 'Cancelado') AS cancelled_flights
+			FROM flight_data
+			GROUP BY week_start
+		),
+		weekly_aircraft AS (
+			SELECT
+				week_start,
+				ROUND(AVG(aircraft_count)::numeric, 1) AS avg_aircraft_per_day,
+				MAX(aircraft_count) AS max_aircraft_per_day,
+				COUNT(*) AS flying_days
+			FROM daily_aircraft
+			GROUP BY week_start
+		)
+		SELECT
+			w.week_start::text,
+			w.total_flights,
+			w.cancelled_flights,
+			COALESCE(a.avg_aircraft_per_day, 0) AS avg_aircraft_per_day,
+			COALESCE(a.max_aircraft_per_day, 0) AS max_aircraft_per_day,
+			COALESCE(a.flying_days, 0) AS flying_days
+		FROM weekly_flights w
+		LEFT JOIN weekly_aircraft a ON a.week_start = w.week_start
+		ORDER BY w.week_start ASC;
+	`;
+
+	setHeaders({
+		'cache-control': 'public, max-age=300'
+	});
+
+	return {
+		weeks: weeklyRows.map((row) => ({
+			weekStart: row.week_start,
+			totalFlights: Number(row.total_flights),
+			cancelledFlights: Number(row.cancelled_flights),
+			avgAircraftPerDay: Number(row.avg_aircraft_per_day),
+			maxAircraftPerDay: Number(row.max_aircraft_per_day),
+			flyingDays: Number(row.flying_days)
+		})),
+		period: {
+			start: weeklyRows[0]?.week_start ?? endDate.format('YYYY-MM-DD'),
+			end: endDate.format('YYYY-MM-DD')
+		},
+		todayFlightsUrl: `/date/${dayjs().tz(tsz).format('YYYY-MM-DD')}`
 	};
-};
+}) satisfies PageServerLoad;
