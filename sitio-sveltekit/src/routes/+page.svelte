@@ -113,7 +113,7 @@
 	<title>Flybondi se achica - failbondi.fail</title>
 	<meta
 		name="description"
-		content="Vuelos, cancelaciones y aviones usados por Flybondi semana a semana desde el inicio de los datos."
+		content="Vuelos, cancelaciones y aviones activos usados por Flybondi semana a semana desde el inicio de los datos."
 	/>
 	<link rel="canonical" href="https://failbondi.fail" />
 
@@ -121,7 +121,7 @@
 	<meta property="og:title" content="Flybondi se achica - failbondi.fail" />
 	<meta
 		property="og:description"
-		content="Vuelos, cancelaciones y aviones usados por Flybondi semana a semana desde el inicio de los datos."
+		content="Vuelos, cancelaciones y aviones activos usados por Flybondi semana a semana desde el inicio de los datos."
 	/>
 	<meta property="og:url" content="https://failbondi.fail" />
 	<meta property="og:image" content={'https://failbondi.fail' + cardPath} />
@@ -131,7 +131,7 @@
 	<meta name="twitter:title" content="Flybondi se achica - failbondi.fail" />
 	<meta
 		name="twitter:description"
-		content="Vuelos, cancelaciones y aviones usados por Flybondi semana a semana desde el inicio de los datos."
+		content="Vuelos, cancelaciones y aviones activos usados por Flybondi semana a semana desde el inicio de los datos."
 	/>
 	<meta name="twitter:url" content="https://failbondi.fail" />
 	<meta name="twitter:image" content={'https://failbondi.fail' + cardPath} />
@@ -214,7 +214,7 @@
 				</span>
 				<span class="flex items-center gap-2 text-neutral-700 dark:text-neutral-300">
 					<span class="h-0.5 w-6 bg-amber-500"></span>
-					aviones/día
+					aviones activos
 				</span>
 			</div>
 		</div>
@@ -224,7 +224,7 @@
 				viewBox={`0 0 ${chartWidth} ${chartHeight}`}
 				class="min-w-[760px] text-neutral-500 dark:text-neutral-400"
 				role="img"
-				aria-label="Vuelos, vuelos cancelados y aviones usados por Flybondi desde el inicio de los datos"
+				aria-label="Vuelos, vuelos cancelados y aviones activos usados por Flybondi desde el inicio de los datos"
 			>
 				{#each [0, 0.25, 0.5, 0.75, 1] as tick}
 					<line
@@ -270,7 +270,7 @@
 						on:focus={() => (hoveredWeekIndex = index)}
 						on:mouseleave={() => (hoveredWeekIndex = null)}
 						on:blur={() => (hoveredWeekIndex = null)}
-						aria-label={`Semana del ${weekLabel(week)}: ${week.totalFlights} vuelos, ${week.cancelledFlights} cancelados, ${decimalFormatter.format(week.avgAircraftPerDay)} aviones por día`}
+						aria-label={`Semana del ${weekLabel(week)}: ${week.totalFlights} vuelos, ${week.cancelledFlights} cancelados, ${decimalFormatter.format(week.avgAircraftPerDay)} aviones activos por día`}
 					>
 						<rect
 							x={xFor(index) - Math.max(8, xStep / 2)}
@@ -332,7 +332,7 @@
 							)})
 						</text>
 						<text x="10" y="72" class="fill-neutral-700 text-[12px] dark:fill-neutral-300">
-							Aviones/día: {decimalFormatter.format(hoveredWeek.avgAircraftPerDay)}
+							Aviones activos: {decimalFormatter.format(hoveredWeek.avgAircraftPerDay)}
 						</text>
 					</g>
 				{/if}
@@ -358,17 +358,18 @@
 		</div>
 		<div>
 			<p class="mt-1 text-sm text-neutral-600 dark:text-neutral-400">
-				{data.period.start} a {data.period.end}, solo semanas completas. Contamos aviones por la
-				cantidad de matriculas únicas.
+				{data.period.start} a {data.period.end}, solo semanas completas. Contamos aviones activos
+				por la cantidad de matriculas únicas.
 			</p>
 			{#if firstWeek && lastWeek}
 				<p class="mt-3 text-sm leading-6 text-neutral-800 dark:text-neutral-200">
 					En la primera semana completa del registro, Flybondi usaba
-					<strong>{decimalFormatter.format(firstWeek.avgAircraftPerDay)}</strong> aviones por día en
-					promedio y tenía <strong>{numberFormatter.format(firstWeek.totalFlights)}</strong>
+					<strong>{decimalFormatter.format(firstWeek.avgAircraftPerDay)}</strong> aviones activos
+					por día en promedio y tenía
+					<strong>{numberFormatter.format(firstWeek.totalFlights)}</strong>
 					vuelos semanales. En la última semana completa usó
-					<strong>{decimalFormatter.format(lastWeek.avgAircraftPerDay)}</strong> aviones por día y
-					tuvo <strong>{numberFormatter.format(lastWeek.totalFlights)}</strong> vuelos.
+					<strong>{decimalFormatter.format(lastWeek.avgAircraftPerDay)}</strong> aviones activos por
+					día y tuvo <strong>{numberFormatter.format(lastWeek.totalFlights)}</strong> vuelos.
 				</p>
 			{/if}
 		</div>
