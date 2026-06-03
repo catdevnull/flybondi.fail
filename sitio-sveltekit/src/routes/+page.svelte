@@ -214,7 +214,7 @@
 				</span>
 				<span class="flex items-center gap-2 text-neutral-700 dark:text-neutral-300">
 					<span class="h-0.5 w-6 bg-amber-500"></span>
-					aviones activos
+					aviones activos por día
 				</span>
 			</div>
 		</div>
