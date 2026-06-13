@@ -116,7 +116,11 @@
 	<meta name="twitter:image" content={'https://failbondi.fail' + cardPath} />
 </svelte:head>
 
-<PageHeader subtitle="Estadísticas del {dayjs(dateRange.start).format('DD/MM/YYYY')} al {dayjs(dateRange.end).format('DD/MM/YYYY')}" />
+<PageHeader
+	subtitle="Estadísticas del {dayjs(dateRange.start).format('DD/MM/YYYY')} al {dayjs(
+		dateRange.end
+	).format('DD/MM/YYYY')}"
+/>
 
 <main class="mx-auto max-w-[1200px] p-4">
 	<!-- Desktop Table View -->
@@ -257,7 +261,7 @@
 	</div>
 </main>
 
-<div class="prose prose-neutral dark:prose-invert mx-auto max-w-[1200px] p-4">
+<div class="prose prose-neutral mx-auto max-w-[1200px] p-4 dark:prose-invert">
 	<h2>Metodología</h2>
 	<p>
 		Para cada aeropuerto se muestran las estadísticas incluyendo y excluyendo los vuelos de Flybondi

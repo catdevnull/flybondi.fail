@@ -248,14 +248,26 @@ export const GET: RequestHandler = async () => {
 											{
 												type: 'span',
 												props: {
-													style: { fontSize: '72px', fontWeight: 900, color: '#a78bfa', position: 'relative', zIndex: 1 },
+													style: {
+														fontSize: '72px',
+														fontWeight: 900,
+														color: '#a78bfa',
+														position: 'relative',
+														zIndex: 1
+													},
 													children: String(totalDelayDays)
 												}
 											},
 											{
 												type: 'span',
 												props: {
-													style: { fontSize: '22px', color: '#fff', marginTop: '8px', position: 'relative', zIndex: 1 },
+													style: {
+														fontSize: '22px',
+														color: '#fff',
+														marginTop: '8px',
+														position: 'relative',
+														zIndex: 1
+													},
 													children: 'días de demoras'
 												}
 											}
@@ -297,14 +309,26 @@ export const GET: RequestHandler = async () => {
 											{
 												type: 'span',
 												props: {
-													style: { fontSize: '72px', fontWeight: 900, color: '#FDBE11', position: 'relative', zIndex: 1 },
+													style: {
+														fontSize: '72px',
+														fontWeight: 900,
+														color: '#FDBE11',
+														position: 'relative',
+														zIndex: 1
+													},
 													children: cancelledFlights
 												}
 											},
 											{
 												type: 'span',
 												props: {
-													style: { fontSize: '22px', color: '#fff', marginTop: '8px', position: 'relative', zIndex: 1 },
+													style: {
+														fontSize: '22px',
+														color: '#fff',
+														marginTop: '8px',
+														position: 'relative',
+														zIndex: 1
+													},
 													children: 'vuelos cancelados'
 												}
 											}
@@ -346,14 +370,26 @@ export const GET: RequestHandler = async () => {
 											{
 												type: 'span',
 												props: {
-													style: { fontSize: '72px', fontWeight: 900, color: '#fbbf24', position: 'relative', zIndex: 1 },
+													style: {
+														fontSize: '72px',
+														fontWeight: 900,
+														color: '#fbbf24',
+														position: 'relative',
+														zIndex: 1
+													},
 													children: String(avgDelayMinutes)
 												}
 											},
 											{
 												type: 'span',
 												props: {
-													style: { fontSize: '22px', color: '#fff', marginTop: '8px', position: 'relative', zIndex: 1 },
+													style: {
+														fontSize: '22px',
+														color: '#fff',
+														marginTop: '8px',
+														position: 'relative',
+														zIndex: 1
+													},
 													children: 'min demora prom.'
 												}
 											}

@@ -492,36 +492,36 @@
 	</div>
 
 	<div class="mb-8 grid grid-cols-1 gap-4 sm:grid-cols-4">
-		<div class="bg-card dark:border-border rounded-lg p-4 shadow dark:border">
-			<h3 class="text-muted-foreground text-sm font-semibold">Vuelos cancelados</h3>
+		<div class="rounded-lg bg-card p-4 shadow dark:border dark:border-border">
+			<h3 class="text-sm font-semibold text-muted-foreground">Vuelos cancelados</h3>
 			<p class="text-2xl font-bold text-rose-500 dark:text-rose-400">{flybondiTotals.cancelled}</p>
-			<span class="text-muted-foreground text-xs"
+			<span class="text-xs text-muted-foreground"
 				>{flybondiTotals.cancelledPercent.toFixed(1)}% del total</span
 			>
 		</div>
 
-		<div class="bg-card dark:border-border rounded-lg p-4 shadow dark:border">
-			<h3 class="text-muted-foreground text-sm font-semibold">Retrasos >15min</h3>
+		<div class="rounded-lg bg-card p-4 shadow dark:border dark:border-border">
+			<h3 class="text-sm font-semibold text-muted-foreground">Retrasos >15min</h3>
 			<p class="text-2xl font-bold text-amber-500 dark:text-amber-400">
 				{flybondiTotals.delayed15}
 			</p>
-			<span class="text-muted-foreground text-xs"
+			<span class="text-xs text-muted-foreground"
 				>{flybondiTotals.delayed15Percent.toFixed(1)}% del total</span
 			>
 		</div>
 
-		<div class="bg-card dark:border-border rounded-lg p-4 shadow dark:border">
-			<h3 class="text-muted-foreground text-sm font-semibold">Retrasos >30min</h3>
+		<div class="rounded-lg bg-card p-4 shadow dark:border dark:border-border">
+			<h3 class="text-sm font-semibold text-muted-foreground">Retrasos >30min</h3>
 			<p class="text-2xl font-bold text-orange-500 dark:text-orange-400">
 				{flybondiTotals.delayed30}
 			</p>
-			<span class="text-muted-foreground text-xs"
+			<span class="text-xs text-muted-foreground"
 				>{flybondiTotals.delayed30Percent.toFixed(1)}% del total</span
 			>
 		</div>
 
-		<div class="bg-card dark:border-border rounded-lg p-4 shadow dark:border">
-			<h3 class="text-muted-foreground text-sm font-semibold">Retraso promedio</h3>
+		<div class="rounded-lg bg-card p-4 shadow dark:border dark:border-border">
+			<h3 class="text-sm font-semibold text-muted-foreground">Retraso promedio</h3>
 			<p class="text-2xl font-bold text-blue-500 dark:text-blue-400">
 				{isNaN(flybondiTotals.avgDelay) ? '0.0' : flybondiTotals.avgDelay.toFixed(1)} min
 			</p>
@@ -539,7 +539,7 @@
 	</div>
 </main>
 
-<div class="prose prose-neutral dark:prose-invert mx-auto mt-8 max-w-[600px] p-4 sm:mt-12">
+<div class="prose prose-neutral mx-auto mt-8 max-w-[600px] p-4 dark:prose-invert sm:mt-12">
 	<h2>Metodología</h2>
 
 	<p>Los datos mostrados en esta página son procesados de la siguiente manera:</p>

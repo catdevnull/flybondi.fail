@@ -217,7 +217,11 @@
 	<meta name="twitter:image" content={'https://failbondi.fail' + cardPath} />
 </svelte:head>
 
-<PageHeader subtitle="Ranking de aerolíneas del {dayjs(data.period.start).tz(tz).format('DD/MM/YYYY')} al {dayjs(data.period.end).tz(tz).format('DD/MM/YYYY')}">
+<PageHeader
+	subtitle="Ranking de aerolíneas del {dayjs(data.period.start)
+		.tz(tz)
+		.format('DD/MM/YYYY')} al {dayjs(data.period.end).tz(tz).format('DD/MM/YYYY')}"
+>
 	<div class="mt-3 flex flex-wrap items-center justify-center gap-3">
 		<Popover.Root bind:open={calendarOpen}>
 			<Popover.Trigger asChild let:builder>
@@ -404,7 +408,8 @@
 		<p
 			class="mt-6 rounded-md border border-amber-200 bg-amber-50 p-3 text-xs text-amber-900 dark:border-amber-400/40 dark:bg-amber-900/20 dark:text-amber-200"
 		>
-			Para períodos menores a 14 días mostramos todas las aerolíneas con vuelos en el rango seleccionado.
+			Para períodos menores a 14 días mostramos todas las aerolíneas con vuelos en el rango
+			seleccionado.
 		</p>
 	{/if}
 </main>

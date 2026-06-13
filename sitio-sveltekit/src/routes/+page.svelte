@@ -1,6 +1,8 @@
 <script lang="ts">
 	import Footer from '@/components/footer.svelte';
 	import cardPath from '$lib/assets/twitter-card.png';
+	import AverageVis from './average-vis.svelte';
+	import FlightSummaryChart from '$lib/components/flight-summary-chart.svelte';
 
 	export let data;
 
@@ -28,10 +30,22 @@
 		year: 'numeric',
 		timeZone: 'America/Argentina/Buenos_Aires'
 	});
+	const weekdayDateFormatter = Intl.DateTimeFormat('es-AR', {
+		weekday: 'short',
+		day: '2-digit',
+		month: '2-digit',
+		timeZone: 'America/Argentina/Buenos_Aires'
+	});
 
 	let hoveredWeekIndex: number | null = null;
 
 	$: weeks = data.weeks;
+	$: todayFlybondiFlights = data.todayFlights;
+	$: todayCancelledFlybondiFlights = todayFlybondiFlights.filter(
+		(flight) => flight.json.estes === 'Cancelado'
+	);
+	$: todayDelayedFlybondiFlights = todayFlybondiFlights.filter((flight) => flight.delta >= 60 * 30);
+	$: todayAirlineData = data.todayAirlineData;
 	$: firstWeek = weeks[0];
 	$: lastWeek = weeks[weeks.length - 1];
 	$: hoveredWeek = hoveredWeekIndex === null ? null : weeks[hoveredWeekIndex];
@@ -85,6 +99,13 @@
 
 	function percent(value: number) {
 		return `${decimalFormatter.format(value)}%`;
+	}
+
+	function dateLabel(date: string) {
+		return weekdayDateFormatter
+			.format(new Date(`${date}T00:00:00-03:00`))
+			.replace('.', '')
+			.replace(',', '');
 	}
 
 	function weekLabel(week: Week) {
@@ -373,13 +394,68 @@
 				</p>
 			{/if}
 		</div>
-		<div class="mt-4 flex justify-center">
-			<a
-				href={data.todayFlightsUrl}
-				class="inline-flex h-10 items-center justify-center rounded-md border border-red-700 bg-red-600 px-4 text-sm font-semibold text-white shadow-sm hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-red-600 focus:ring-offset-2 dark:border-red-500 dark:bg-red-600 dark:hover:bg-red-500 dark:focus:ring-offset-neutral-900"
-			>
-				Ver vuelos de hoy
-			</a>
+
+		<div class="mt-6 border-t border-neutral-200 pt-5 dark:border-neutral-800">
+			<div class="mb-3 flex flex-col justify-between gap-3 sm:flex-row sm:items-end">
+				<div>
+					<h2 class="text-xl font-semibold text-neutral-950 dark:text-neutral-50">Vuelos de hoy</h2>
+					<p class="mt-1 text-sm text-neutral-600 dark:text-neutral-400">
+						{longDateFormatter.format(new Date(`${data.todayDate}T00:00:00-03:00`))}
+					</p>
+				</div>
+				<a
+					href={data.todayFlightsUrl}
+					class="inline-flex h-9 items-center justify-center rounded-md border border-red-700 bg-red-600 px-3 text-sm font-semibold text-white hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-red-600 focus:ring-offset-2 dark:border-red-500 dark:bg-red-600 dark:hover:bg-red-500 dark:focus:ring-offset-neutral-900"
+				>
+					Ver detalle completo
+				</a>
+			</div>
+
+			{#if todayFlybondiFlights.length > 0}
+				<div class="grid gap-4 md:grid-cols-[minmax(0,1fr)_minmax(320px,0.95fr)]">
+					<FlightSummaryChart
+						flights={todayFlybondiFlights}
+						delayedFlights={todayDelayedFlybondiFlights}
+						cancelledFlights={todayCancelledFlybondiFlights}
+					/>
+
+					<div
+						class="rounded-lg border bg-neutral-50 p-4 dark:border-neutral-700 dark:bg-neutral-800"
+					>
+						<h3 class="mb-2 text-base font-semibold text-neutral-950 dark:text-neutral-50">
+							Promedio de retraso en el despegue
+						</h3>
+						{#if todayAirlineData.length > 0}
+							<AverageVis airlineData={todayAirlineData} height={150} />
+						{:else}
+							<p class="text-sm text-neutral-600 dark:text-neutral-400">
+								Todavía no hay vuelos aterrizados para calcular el promedio.
+							</p>
+						{/if}
+					</div>
+				</div>
+			{:else}
+				<p
+					class="rounded-lg border bg-neutral-50 p-4 text-sm text-neutral-700 dark:border-neutral-700 dark:bg-neutral-800 dark:text-neutral-300"
+				>
+					Todavía no hay datos de Flybondi para hoy.
+				</p>
+			{/if}
+
+			<nav class="mt-3 flex flex-wrap gap-1.5" aria-label="Fechas disponibles">
+				{#each data.recentAvailableDates as availableDate}
+					<a
+						href="/date/{availableDate}"
+						class="inline-flex h-6 items-center rounded-full border px-2.5 text-xs font-medium {availableDate ===
+						data.todayDate
+							? 'border-red-700 bg-red-50 text-red-700 dark:border-red-500 dark:bg-red-950/40 dark:text-red-300'
+							: 'border-neutral-300 text-neutral-700 hover:bg-neutral-100 dark:border-neutral-700 dark:text-neutral-300 dark:hover:bg-neutral-800'}"
+						aria-current={availableDate === data.todayDate ? 'date' : undefined}
+					>
+						{availableDate === data.todayDate ? 'Hoy' : dateLabel(availableDate)}
+					</a>
+				{/each}
+			</nav>
 		</div>
 	</section>
 </main>

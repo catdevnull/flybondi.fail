@@ -22,11 +22,15 @@
 	function updateChart() {
 		const svg = d3.select(svgEl);
 		const margin = { top: 10, right: 0, bottom: showTicks ? 5 : 0, left: 0 }; // Increased top margin for labels
+		const labelPadding = 5;
+		const labelWidth = 50;
 
 		const x = d3
 			.scaleLinear()
 			.domain([0, maxMinutes]) // Use maxMinutes instead of hardcoded 180
 			.range([margin.left, width - margin.right]);
+
+		const clampedDelay = (minutes: number) => Math.min(Math.max(minutes, 0), maxMinutes);
 
 		const y = d3
 			.scaleBand()
@@ -57,7 +61,7 @@
 			.attr('class', 'bar')
 			.attr('x', x(0))
 			.attr('y', (d) => y(d.name)!)
-			.attr('width', (d) => x(d.avgDelay) - x(0))
+			.attr('width', (d) => x(clampedDelay(d.avgDelay)) - x(0))
 			.attr('height', y.bandwidth())
 			.attr('fill', (d) => COLORS[getDelaySimplified(d.avgDelay * 60)]);
 
@@ -88,9 +92,9 @@
 					.attr('font-size', '14px')
 					.attr('font-weight', 'normal')
 
-		.text(
-			`${d.otherAerolineas ? ` (${d.otherAerolineas.map((a) => (IATA_NAMES as any)[a] ?? a).join(', ')})` : ''}`
-		);
+					.text(
+						`${d.otherAerolineas ? ` (${d.otherAerolineas.map((a) => (IATA_NAMES as any)[a] ?? a).join(', ')})` : ''}`
+					);
 			});
 
 		// Add time labels
@@ -98,15 +102,24 @@
 			.selectAll('.label')
 			.data(airlineData)
 			.enter()
-		.append('text')
-		.attr('class', 'label')
-		.attr('x', (datum) => Math.min((x(datum.avgDelay) ?? 0) + 5, (x(180) ?? 0) - 50))
-		.attr('y', (datum) => (y(datum.name) ?? 0) + y.bandwidth() / 2)
+			.append('text')
+			.attr('class', 'label')
+			.attr('x', (datum) =>
+				Math.max(
+					x(0) + labelPadding,
+					Math.min(x(maxMinutes) - labelWidth, x(clampedDelay(datum.avgDelay)) + labelPadding)
+				)
+			)
+			.attr('y', (datum) => (y(datum.name) ?? 0) + y.bandwidth() / 2)
 			.attr('dy', '0.35em')
 			.text((d) => {
-				const hours = Math.floor(d.avgDelay / 60);
-				const minutes = Math.floor(d.avgDelay % 60);
-				return hours > 0 ? `${hours}:${minutes.toString().padStart(2, '0')}hs` : `${minutes}min`;
+				const sign = d.avgDelay < 0 ? '-' : '';
+				const absoluteDelay = Math.abs(d.avgDelay);
+				const hours = Math.floor(absoluteDelay / 60);
+				const minutes = Math.floor(absoluteDelay % 60);
+				return hours > 0
+					? `${sign}${hours}:${minutes.toString().padStart(2, '0')}hs`
+					: `${sign}${minutes}min`;
 			})
 			.attr('fill', '#333')
 			.attr('font-family', FONT_STACK)
