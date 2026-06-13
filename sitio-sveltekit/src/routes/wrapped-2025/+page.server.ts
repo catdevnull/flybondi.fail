@@ -188,17 +188,19 @@ export const load = (async ({ setHeaders }) => {
   `
 	]);
 
-	const worstMonth = monthlyStats.length > 0 
-		? monthlyStats.reduce((worst, current) => 
-			(current.avg_delay_minutes || 0) > (worst.avg_delay_minutes || 0) ? current : worst
-		)
-		: null;
+	const worstMonth =
+		monthlyStats.length > 0
+			? monthlyStats.reduce((worst, current) =>
+					(current.avg_delay_minutes || 0) > (worst.avg_delay_minutes || 0) ? current : worst
+				)
+			: null;
 
-	const mostCancelledMonth = monthlyStats.length > 0
-		? monthlyStats.reduce((worst, current) => 
-			(current.cancelled_flights || 0) > (worst.cancelled_flights || 0) ? current : worst
-		)
-		: null;
+	const mostCancelledMonth =
+		monthlyStats.length > 0
+			? monthlyStats.reduce((worst, current) =>
+					(current.cancelled_flights || 0) > (worst.cancelled_flights || 0) ? current : worst
+				)
+			: null;
 
 	setHeaders({
 		'cache-control': 'public, max-age=3600'

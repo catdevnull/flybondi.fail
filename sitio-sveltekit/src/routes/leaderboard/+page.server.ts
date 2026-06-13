@@ -21,11 +21,12 @@ export const load = (async ({ url, setHeaders }) => {
 	const startDateParam = url.searchParams.get('start');
 
 	const defaultEnd = dayjs().tz(TIMEZONE).subtract(1, 'day').endOf('day');
-	const endDate = endDateParam
-		? parseDayParam(endDateParam, TIMEZONE).endOf('day')
-		: defaultEnd;
+	const endDate = endDateParam ? parseDayParam(endDateParam, TIMEZONE).endOf('day') : defaultEnd;
 
-	const defaultStart = defaultEnd.clone().subtract(DEFAULT_WINDOW_DAYS - 1, 'day').startOf('day');
+	const defaultStart = defaultEnd
+		.clone()
+		.subtract(DEFAULT_WINDOW_DAYS - 1, 'day')
+		.startOf('day');
 	const startDate = startDateParam
 		? parseDayParam(startDateParam, TIMEZONE).startOf('day')
 		: defaultStart;

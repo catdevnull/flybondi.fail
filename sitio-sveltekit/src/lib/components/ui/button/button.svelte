@@ -1,6 +1,6 @@
 <script lang="ts">
-	import { Button as ButtonPrimitive } from "bits-ui";
-	import { type Events, type Props, buttonVariants } from "./index.js";
+	import { Button as ButtonPrimitive } from 'bits-ui';
+	import { type Events, type Props, buttonVariants } from './index.js';
 
 	type $$Props = Props;
 	type $$Events = Events;
@@ -12,9 +12,7 @@
 	export { className as class };
 
 	let resolvedClassName = '';
-	$: resolvedClassName = [buttonVariants({ variant, size }), className]
-		.filter(Boolean)
-		.join(' ');
+	$: resolvedClassName = [buttonVariants({ variant, size }), className].filter(Boolean).join(' ');
 </script>
 
 <ButtonPrimitive.Root

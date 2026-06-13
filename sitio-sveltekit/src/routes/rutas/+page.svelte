@@ -59,7 +59,10 @@
 	let searchQuery = '';
 
 	function normalize(str: string) {
-		return str.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '');
+		return str
+			.toLowerCase()
+			.normalize('NFD')
+			.replace(/[\u0300-\u036f]/g, '');
 	}
 
 	$: filteredRoutes = (routes as unknown as Route[]).filter((route) => {
@@ -77,7 +80,7 @@
 		);
 	});
 
-	$: sortedRoutes = ([...filteredRoutes]).sort((a, b) => {
+	$: sortedRoutes = [...filteredRoutes].sort((a, b) => {
 		let aValue: number;
 		let bValue: number;
 
@@ -85,7 +88,9 @@
 			case 'route':
 				const aRoute = `${a.origin}-${a.destination}`;
 				const bRoute = `${b.origin}-${b.destination}`;
-				return sortDirection === 'asc' ? aRoute.localeCompare(bRoute) : bRoute.localeCompare(aRoute);
+				return sortDirection === 'asc'
+					? aRoute.localeCompare(bRoute)
+					: bRoute.localeCompare(aRoute);
 			case 'total_flights':
 				aValue = a.total_flights;
 				bValue = b.total_flights;
@@ -136,7 +141,11 @@
 	<meta name="twitter:image" content={'https://failbondi.fail' + cardPath} />
 </svelte:head>
 
-<PageHeader subtitle="Estadísticas por ruta del {dayjs(dateRange.start).format('DD/MM/YYYY')} al {dayjs(dateRange.end).format('DD/MM/YYYY')}">
+<PageHeader
+	subtitle="Estadísticas por ruta del {dayjs(dateRange.start).format('DD/MM/YYYY')} al {dayjs(
+		dateRange.end
+	).format('DD/MM/YYYY')}"
+>
 	<div class="mt-2 flex justify-center">
 		<div class="relative w-full max-w-xs">
 			<Search class="absolute left-2 top-1/2 h-4 w-4 -translate-y-1/2 text-neutral-400" />
@@ -169,13 +178,21 @@
 						</Button>
 					</Table.Head>
 					<Table.Head>
-						<Button variant="ghost" class="h-8 px-2" on:click={() => toggleSort('flybondi_avg_delay')}>
+						<Button
+							variant="ghost"
+							class="h-8 px-2"
+							on:click={() => toggleSort('flybondi_avg_delay')}
+						>
 							<span>Flybondi</span>
 							<ArrowUpDown class="ml-2 h-4 w-4" />
 						</Button>
 					</Table.Head>
 					<Table.Head>
-						<Button variant="ghost" class="h-8 px-2" on:click={() => toggleSort('others_avg_delay')}>
+						<Button
+							variant="ghost"
+							class="h-8 px-2"
+							on:click={() => toggleSort('others_avg_delay')}
+						>
 							<span>Otras aerolíneas</span>
 							<ArrowUpDown class="ml-2 h-4 w-4" />
 						</Button>
@@ -291,11 +308,11 @@
 	</div>
 </main>
 
-<div class="prose prose-neutral dark:prose-invert mx-auto max-w-[1200px] p-4">
+<div class="prose prose-neutral mx-auto max-w-[1200px] p-4 dark:prose-invert">
 	<h2>Metodología</h2>
 	<p>
-		Para cada ruta se compara el promedio de demora de Flybondi contra el promedio de todas las demás 
-		aerolíneas combinadas. Solo se muestran rutas donde opera Flybondi.
+		Para cada ruta se compara el promedio de demora de Flybondi contra el promedio de todas las
+		demás aerolíneas combinadas. Solo se muestran rutas donde opera Flybondi.
 	</p>
 </div>
 

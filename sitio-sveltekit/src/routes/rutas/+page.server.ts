@@ -9,9 +9,7 @@ import AIRPORTS_ALIAS from '$lib/aerolineas-airports-subset-alias.json';
 dayjs.extend(utc);
 dayjs.extend(timezone);
 
-const VALID_AIRPORTS = AEROPUERTOS_FLYBONDI.filter(
-	(code) => code in AIRPORTS_ALIAS
-);
+const VALID_AIRPORTS = AEROPUERTOS_FLYBONDI.filter((code) => code in AIRPORTS_ALIAS);
 
 export const load: PageServerLoad = async ({ setHeaders }) => {
 	const tsz = 'America/Argentina/Buenos_Aires';
