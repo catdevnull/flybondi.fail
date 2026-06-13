@@ -12,7 +12,7 @@
 	import { ArrowDownIcon, ArrowLeftIcon, ArrowRightIcon, CalendarIcon } from 'lucide-svelte';
 	import Icon from '$lib/components/icon.svelte';
 	import AverageVis from '../../average-vis.svelte';
-	import { getDelayColor, COLOR_CLASSES } from '$lib/colors';
+	import { getDelayColor } from '$lib/colors';
 	import { AEROPUERTOS_FLYBONDI } from '@/aeropuertos-flybondi';
 	import TimeBar from '../../time-bar.svelte';
 	import DateTime from '../../date-time.svelte';
@@ -26,6 +26,7 @@
 	import { IATA_NAMES } from '@/aerolineas';
 	import { CalendarDate, type DateValue } from '@internationalized/date';
 	import { goto } from '$app/navigation';
+	import FlightSummaryChart from '$lib/components/flight-summary-chart.svelte';
 
 	export let data;
 	$: ({ vuelos: todosLosVuelos, date, hasTomorrowData, hasYesterdayData, availableDates } = data);
@@ -274,9 +275,12 @@
 	{/if}
 	<title>{metaTitle} - failbondi.fail</title>
 	<meta name="description" content={metaDescription} />
-	<link rel="canonical" href="https://failbondi.fail/date/{dayjs(date)
-		.tz('America/Argentina/Buenos_Aires')
-		.format('YYYY-MM-DD')}" />
+	<link
+		rel="canonical"
+		href="https://failbondi.fail/date/{dayjs(date)
+			.tz('America/Argentina/Buenos_Aires')
+			.format('YYYY-MM-DD')}"
+	/>
 
 	<meta property="og:type" content="website" />
 	<meta property="og:title" content={metaTitle} />
@@ -395,63 +399,12 @@
 	</a>
 	{#if vuelos.length > 0}
 		<div class="mb-4 grid grid-rows-4 gap-4 text-balance md:grid-cols-2">
-			<div
-				class="row-span-4 flex flex-col items-center justify-center gap-4 rounded-lg border bg-neutral-50 p-4 text-xl dark:border-neutral-700 dark:bg-neutral-800"
-			>
-				<div class="grid grid-cols-9 gap-2">
-					{#each vuelos as vuelo}
-						{#if vuelo.atda}
-							<Icon
-								class="h-8 w-8 {getDelayColor(vuelo.delta)}"
-								icon="fa6-solid-plane"
-								aria-label="Vuelo {vuelo.json.nro} con {vuelo.delta / 60} minutos de retraso"
-							/>
-						{:else if vuelo.json.estes === 'Cancelado'}
-							<Icon
-								class="h-8 w-8 text-neutral-700 dark:text-neutral-300"
-								icon="fa6-solid-plane-slash"
-								aria-label="Vuelo {vuelo.json.nro} cancelado"
-							/>
-						{/if}
-					{/each}
-				</div>
-				<p class="text-center">
-					<span class="font-bold"
-						>De {vuelos.length} vuelos, {vuelosAtrasados.length} tardaron mas de 30 minutos en despegar{#if vuelosCancelados.length > 0}
-							{' '}y
-							{vuelosCancelados.length} vuelo{vuelosCancelados.length > 1
-								? 's fueron cancelados'
-								: ' fue cancelado'}.
-						{:else}.
-						{/if}
-					</span>
-				</p>
-				<div class="flex flex-wrap items-center justify-center gap-x-4 gap-y-2 text-xs">
-					<div class="flex items-center gap-1">
-						<Icon
-							class="size-4 text-neutral-700 dark:text-neutral-300"
-							icon="fa6-solid-plane-slash"
-						/>
-						<span>Cancelado</span>
-					</div>
-					<div class="flex items-center gap-1">
-						<Icon class="size-4 text-[#b10000]" icon="fa6-solid-plane" />
-						<span>mas de 45min</span>
-					</div>
-					<div class="flex items-center gap-1">
-						<Icon class="size-4 {COLOR_CLASSES[45 * 60]}" icon="fa6-solid-plane" />
-						<span>45-30min</span>
-					</div>
-					<div class="flex items-center gap-1">
-						<Icon class="size-4 {COLOR_CLASSES[30 * 60]}" icon="fa6-solid-plane" />
-						<span>30-15min</span>
-					</div>
-					<div class="flex items-center gap-1">
-						<Icon class="size-4 {COLOR_CLASSES[15 * 60]}" icon="fa6-solid-plane" />
-						<span>15-0min</span>
-					</div>
-				</div>
-			</div>
+			<FlightSummaryChart
+				flights={vuelos}
+				delayedFlights={vuelosAtrasados}
+				cancelledFlights={vuelosCancelados}
+				containerClass="row-span-4 flex flex-col items-center justify-center gap-4 rounded-lg border bg-neutral-50 p-4 text-xl dark:border-neutral-700 dark:bg-neutral-800"
+			/>
 			<div
 				class="row-span-2 flex flex-col items-center justify-center gap-2 rounded-lg border bg-neutral-50 text-xl dark:border-neutral-700 dark:bg-neutral-800"
 			>

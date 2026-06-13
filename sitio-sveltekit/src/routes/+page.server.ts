@@ -4,6 +4,7 @@ import utc from 'dayjs/plugin/utc';
 import timezone from 'dayjs/plugin/timezone';
 import { redirect } from '@sveltejs/kit';
 import { sql } from '$lib';
+import { getAvailableFlightDates, getDepartureFlightsBetween } from '$lib/server/flight-data';
 
 dayjs.extend(utc);
 dayjs.extend(timezone);
@@ -35,8 +36,12 @@ export const load = (async ({ url, setHeaders }) => {
 	}
 
 	const endDate = dayjs().tz(tsz).startOf('week').subtract(1, 'millisecond');
+	const today = dayjs().tz(tsz);
+	const todayStart = today.startOf('day');
+	const todayEnd = today.endOf('day');
 
-	const weeklyRows = await sql<WeeklyRow[]>`
+	const [weeklyRows, todayFlights, recentAvailableDates] = await Promise.all([
+		sql<WeeklyRow[]>`
 		WITH flight_data AS (
 			SELECT
 				DATE(stda_parsed AT TIME ZONE 'America/Argentina/Buenos_Aires') AS flight_date,
@@ -84,7 +89,10 @@ export const load = (async ({ url, setHeaders }) => {
 		FROM weekly_flights w
 		LEFT JOIN weekly_aircraft a ON a.week_start = w.week_start
 		ORDER BY w.week_start ASC;
-	`;
+	`,
+		getDepartureFlightsBetween(todayStart.toDate(), todayEnd.toDate()),
+		getAvailableFlightDates()
+	]);
 
 	setHeaders({
 		'cache-control': 'public, max-age=300'
@@ -103,6 +111,18 @@ export const load = (async ({ url, setHeaders }) => {
 			start: weeklyRows[0]?.week_start ?? endDate.format('YYYY-MM-DD'),
 			end: endDate.format('YYYY-MM-DD')
 		},
-		todayFlightsUrl: `/date/${dayjs().tz(tsz).format('YYYY-MM-DD')}`
+		todayFlights: todayFlights.map((flight) => ({
+			...flight,
+			delta: Number(flight.delta ?? 0)
+		})),
+		recentAvailableDates: recentAvailableDates
+			.slice(0, 10)
+			.map((date) =>
+				date instanceof Date
+					? dayjs(date).tz(tsz).format('YYYY-MM-DD')
+					: dayjs(date).tz(tsz, true).format('YYYY-MM-DD')
+			),
+		todayDate: today.format('YYYY-MM-DD'),
+		todayFlightsUrl: `/date/${today.format('YYYY-MM-DD')}`
 	};
 }) satisfies PageServerLoad;
