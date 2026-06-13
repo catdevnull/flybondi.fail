@@ -1,9 +1,10 @@
 // place files you want to import through the `$lib` alias in this folder.
 
 import { env } from '$env/dynamic/private';
+import { dev } from '$app/environment';
 import postgres from 'postgres';
 
-export const sql = postgres(env.DATABASE_URL!, { idle_timeout: 5 });
+export const sql = postgres(env.DATABASE_URL!, { idle_timeout: dev ? 60 : 5 });
 
 export interface Flight {
 	aerolineas_flight_id: string;
