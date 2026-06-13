@@ -4,6 +4,7 @@ import utc from 'dayjs/plugin/utc';
 import timezone from 'dayjs/plugin/timezone';
 import { sql } from '$lib';
 import { getAvailableFlightDates, getDepartureFlightsBetween } from '$lib/server/flight-data';
+import { timed } from '$lib/server/timing';
 
 dayjs.extend(utc);
 dayjs.extend(timezone);
@@ -19,9 +20,11 @@ export const load: PageServerLoad = async ({ url, params, platform, setHeaders }
 	const tomorrowEnd = end.add(3, 'day');
 
 	const [availableDates, vuelos, tomorrowData] = await Promise.all([
-		getAvailableFlightDates(),
-		getDepartureFlightsBetween(start.toDate(), end.toDate()),
-		sql<{ exists: boolean }[]>`
+		timed('date.availableDates', getAvailableFlightDates()),
+		timed('date.flights', getDepartureFlightsBetween(start.toDate(), end.toDate())),
+		timed(
+			'date.tomorrowExists',
+			sql<{ exists: boolean }[]>`
 			SELECT EXISTS (
 				SELECT 1
 				FROM aerolineas_latest_flight_status
@@ -30,6 +33,7 @@ export const load: PageServerLoad = async ({ url, params, platform, setHeaders }
 					AND stda_parsed <= ${tomorrowEnd.toDate()}
 			);
 		`
+		)
 	]);
 
 	setHeaders({

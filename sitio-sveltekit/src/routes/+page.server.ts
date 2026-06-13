@@ -4,7 +4,8 @@ import utc from 'dayjs/plugin/utc';
 import timezone from 'dayjs/plugin/timezone';
 import { redirect } from '@sveltejs/kit';
 import { sql } from '$lib';
-import { getAvailableFlightDates, getDepartureFlightsBetween } from '$lib/server/flight-data';
+import { getDepartureFlightsBetween, getRecentAvailableFlightDates } from '$lib/server/flight-data';
+import { createTimings } from '$lib/server/timing';
 
 dayjs.extend(utc);
 dayjs.extend(timezone);
@@ -39,9 +40,12 @@ export const load = (async ({ url, setHeaders }) => {
 	const today = dayjs().tz(tsz);
 	const todayStart = today.startOf('day');
 	const todayEnd = today.endOf('day');
+	const timings = createTimings();
 
 	const [weeklyRows, todayFlights, recentAvailableDates] = await Promise.all([
-		sql<WeeklyRow[]>`
+		timings.timed(
+			'home.weekly',
+			sql<WeeklyRow[]>`
 		WITH flight_data AS (
 			SELECT
 				DATE(stda_parsed AT TIME ZONE 'America/Argentina/Buenos_Aires') AS flight_date,
@@ -89,13 +93,18 @@ export const load = (async ({ url, setHeaders }) => {
 		FROM weekly_flights w
 		LEFT JOIN weekly_aircraft a ON a.week_start = w.week_start
 		ORDER BY w.week_start ASC;
-	`,
-		getDepartureFlightsBetween(todayStart.toDate(), todayEnd.toDate()),
-		getAvailableFlightDates()
+	`
+		),
+		timings.timed(
+			'home.todayFlights',
+			getDepartureFlightsBetween(todayStart.toDate(), todayEnd.toDate())
+		),
+		timings.timed('home.recentAvailableDates', getRecentAvailableFlightDates(10))
 	]);
 
 	setHeaders({
-		'cache-control': 'public, max-age=300'
+		'cache-control': 'public, max-age=300',
+		'server-timing': timings.header()
 	});
 
 	return {
@@ -115,13 +124,11 @@ export const load = (async ({ url, setHeaders }) => {
 			...flight,
 			delta: Number(flight.delta ?? 0)
 		})),
-		recentAvailableDates: recentAvailableDates
-			.slice(0, 10)
-			.map((date) =>
-				date instanceof Date
-					? dayjs(date).tz(tsz).format('YYYY-MM-DD')
-					: dayjs(date).tz(tsz, true).format('YYYY-MM-DD')
-			),
+		recentAvailableDates: recentAvailableDates.map((date) =>
+			date instanceof Date
+				? dayjs(date).tz(tsz).format('YYYY-MM-DD')
+				: dayjs(date).tz(tsz, true).format('YYYY-MM-DD')
+		),
 		todayDate: today.format('YYYY-MM-DD'),
 		todayFlightsUrl: `/date/${today.format('YYYY-MM-DD')}`
 	};
