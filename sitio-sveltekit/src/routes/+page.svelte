@@ -2,9 +2,6 @@
 	import Footer from '@/components/footer.svelte';
 	import cardPath from '$lib/assets/twitter-card.png';
 	import AverageVis from './average-vis.svelte';
-	import { AEROPUERTOS_FLYBONDI } from '@/aeropuertos-flybondi';
-	import { IATA_NAMES } from '@/aerolineas';
-	import type { Vuelo } from '$lib';
 	import FlightSummaryChart from '$lib/components/flight-summary-chart.svelte';
 
 	export let data;
@@ -43,50 +40,12 @@
 	let hoveredWeekIndex: number | null = null;
 
 	$: weeks = data.weeks;
-	$: todayFlights = data.todayFlights as Vuelo[];
-	$: todayFlybondiFlights = todayFlights
-		.filter((flight) => flight.json.idaerolinea === 'FO')
-		.filter(
-			(flight): flight is Vuelo & ({ atda: Date } | { json: { estes: 'Cancelado' } }) =>
-				!!flight.atda || flight.json.estes === 'Cancelado'
-		);
-	$: todayLandedFlybondiFlights = todayFlybondiFlights.filter(
-		(flight): flight is Vuelo & { atda: Date } => !!flight.atda
-	);
+	$: todayFlybondiFlights = data.todayFlights;
 	$: todayCancelledFlybondiFlights = todayFlybondiFlights.filter(
 		(flight) => flight.json.estes === 'Cancelado'
 	);
 	$: todayDelayedFlybondiFlights = todayFlybondiFlights.filter((flight) => flight.delta >= 60 * 30);
-	$: todayAerolineasFlights = comparableLandedFlights('AR');
-	$: todayOtherFlights = todayFlights.filter(
-		(flight): flight is Vuelo & { atda: Date } =>
-			!!flight.atda &&
-			flight.json.idaerolinea !== 'AR' &&
-			flight.json.idaerolinea !== 'FO' &&
-			AEROPUERTOS_FLYBONDI.includes(flight.json.IATAdestorig) &&
-			AEROPUERTOS_FLYBONDI.includes(flight.json.arpt)
-	);
-	$: todayAverageDelay = averageDelay(todayLandedFlybondiFlights);
-	$: todayAerolineasAverageDelay = averageDelay(todayAerolineasFlights);
-	$: todayOtherAverageDelay = averageDelay(todayOtherFlights);
-	$: todayAirlineData = [
-		{
-			name: IATA_NAMES.FO,
-			avgDelay: todayAverageDelay / 60,
-			nVuelos: todayLandedFlybondiFlights.length
-		},
-		{
-			name: IATA_NAMES.AR,
-			avgDelay: todayAerolineasAverageDelay / 60,
-			nVuelos: todayAerolineasFlights.length
-		},
-		{
-			name: 'Otros',
-			avgDelay: todayOtherAverageDelay / 60,
-			nVuelos: todayOtherFlights.length,
-			otherAerolineas: [...new Set(todayOtherFlights.map((flight) => flight.json.idaerolinea))]
-		}
-	].filter((airline) => airline.nVuelos > 0);
+	$: todayAirlineData = data.todayAirlineData;
 	$: firstWeek = weeks[0];
 	$: lastWeek = weeks[weeks.length - 1];
 	$: hoveredWeek = hoveredWeekIndex === null ? null : weeks[hoveredWeekIndex];
@@ -140,21 +99,6 @@
 
 	function percent(value: number) {
 		return `${decimalFormatter.format(value)}%`;
-	}
-
-	function averageDelay(flights: (Vuelo & { atda: Date })[]) {
-		if (flights.length === 0) return 0;
-		return flights.reduce((sum, flight) => sum + flight.delta, 0) / flights.length;
-	}
-
-	function comparableLandedFlights(airline: keyof typeof IATA_NAMES) {
-		return todayFlights.filter(
-			(flight): flight is Vuelo & { atda: Date } =>
-				flight.json.idaerolinea === airline &&
-				!!flight.atda &&
-				AEROPUERTOS_FLYBONDI.includes(flight.json.IATAdestorig) &&
-				AEROPUERTOS_FLYBONDI.includes(flight.json.arpt)
-		);
 	}
 
 	function dateLabel(date: string) {

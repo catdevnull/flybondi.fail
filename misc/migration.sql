@@ -22,8 +22,8 @@ CREATE INDEX IF NOT EXISTS idx_aerolineas_stda_parsed ON aerolineas_latest_fligh
 CREATE INDEX IF NOT EXISTS aerolineas_latest_flight_status_json_movstda_parsed ON aerolineas_latest_flight_status ((json->>'mov'), stda_parsed);
 CREATE INDEX IF NOT EXISTS idx_flight_mov_stda ON aerolineas_latest_flight_status ((json->>'mov'), stda_parsed);
 CREATE INDEX IF NOT EXISTS idx_flight_mov_stda_date ON aerolineas_latest_flight_status ((json->>'mov'), date(stda_parsed));
-CREATE INDEX IF NOT EXISTS idx_aerolineas_fo_departures_stda
-  ON aerolineas_latest_flight_status (stda_parsed)
+CREATE INDEX IF NOT EXISTS idx_aerolineas_home_weekly_fo_departures
+  ON aerolineas_latest_flight_status (stda_parsed, matricula, (json->>'estes'))
   WHERE json->>'mov' = 'D' AND json->>'idaerolinea' = 'FO';
 CREATE INDEX IF NOT EXISTS idx_aerolineas_fo_departures_stda_json
   ON aerolineas_latest_flight_status (stda_parsed)

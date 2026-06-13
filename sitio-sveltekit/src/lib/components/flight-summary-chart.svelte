@@ -1,9 +1,15 @@
 <script lang="ts">
-	import type { Vuelo } from '$lib';
 	import { COLOR_CLASSES, getDelayColor } from '$lib/colors';
 	import Icon from '$lib/components/icon.svelte';
 
-	type DisplayFlight = Vuelo & ({ atda: Date } | { json: { estes: 'Cancelado' } });
+	type DisplayFlight = {
+		delta: number;
+		atda?: Date | string | null;
+		json: {
+			nro: string;
+			estes?: string;
+		};
+	};
 
 	export let flights: DisplayFlight[];
 	export let delayedFlights: DisplayFlight[];
