@@ -2,7 +2,8 @@ create table aerolineas_latest_flight_status(
   aerolineas_flight_id TEXT not null primary key,
   last_updated TIMESTAMP not null,
   json JSONB not null,
-  stda_parsed TIMESTAMP
+  stda_parsed TIMESTAMP,
+  matricula TEXT GENERATED ALWAYS AS (json->>'matricula') STORED
 );
 
 -- JSON field indexes
@@ -13,6 +14,9 @@ CREATE INDEX IF NOT EXISTS idx_flight_xdate ON aerolineas_latest_flight_status (
 CREATE INDEX IF NOT EXISTS aerolineas_latest_flight_status_json_matricula ON aerolineas_latest_flight_status ((json->>'matricula'));
 CREATE INDEX IF NOT EXISTS aerolineas_latest_flight_status_json_mov ON aerolineas_latest_flight_status ((json->>'mov'));
 CREATE INDEX IF NOT EXISTS aerolineas_latest_flight_status_json_nro ON aerolineas_latest_flight_status ((json->>'nro'));
+CREATE INDEX IF NOT EXISTS idx_aerolineas_latest_flight_status_matricula
+  ON aerolineas_latest_flight_status (matricula)
+  WHERE matricula IS NOT NULL;
 
 -- stda_parsed indexes
 CREATE INDEX IF NOT EXISTS aerolineas_latest_flight_status_stda_parsed ON aerolineas_latest_flight_status (stda_parsed);
@@ -41,3 +45,6 @@ create table airfleets_matriculas(
   edad_del_avion real not null,
   config_de_asientos text not null
 );
+
+CREATE INDEX IF NOT EXISTS idx_airfleets_matriculas_matricula
+  ON airfleets_matriculas (matricula);

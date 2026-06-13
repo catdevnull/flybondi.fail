@@ -14,9 +14,9 @@ export const scrapMatriculasTask = schemaTask({
   machine: "micro",
   run: async (payload, { ctx }) => {
     const matriculas = await sql<{ matricula: string }[]>`
-    select distinct json->>'matricula' as matricula
+    select distinct matricula
     from aerolineas_latest_flight_status 
-    where json->>'matricula' not in (select matricula from airfleets_matriculas);
+    where matricula not in (select matricula from airfleets_matriculas);
     `;
 
     const fetched_at = new Date();
@@ -40,9 +40,9 @@ export const scrapMatriculasCronTask = schedules.task({
   machine: "micro",
   run: async () => {
     const [row] = await sql<{ missing_count: string }[]>`
-      SELECT COUNT(DISTINCT json->>'matricula') as missing_count
+      SELECT COUNT(DISTINCT matricula) as missing_count
       FROM aerolineas_latest_flight_status
-      WHERE json->>'matricula' NOT IN (
+      WHERE matricula NOT IN (
         SELECT matricula FROM airfleets_matriculas
       )
     `;
