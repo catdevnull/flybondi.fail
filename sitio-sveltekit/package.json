@@ -12,7 +12,6 @@
 		"lint": "prettier --check ."
 	},
 	"devDependencies": {
-		"@flydotio/dockerfile": "^0.5.9",
 		"@internationalized/date": "^3.6.0",
 		"@sveltejs/adapter-auto": "^3.0.0",
 		"@sveltejs/adapter-node": "^5.2.11",
