@@ -15,7 +15,7 @@ export const GET: RequestHandler = async ({ url }) => {
             END AS atda
           FROM aerolineas_latest_flight_status
           left join airfleets_matriculas
-          on matricula = json->>'matricula'
+          on airfleets_matriculas.matricula = aerolineas_latest_flight_status.matricula
         )
         SELECT
           *, CAST(EXTRACT(EPOCH FROM (atda - stda)) AS real) as delta
