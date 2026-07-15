@@ -21,6 +21,13 @@ type WeeklyRow = {
 	flying_days: number | string;
 };
 
+type CrisisRow = {
+	total_flights: number | string;
+	flown_flights: number | string;
+	cancelled_flights: number | string;
+	last_flown_date: string | null;
+};
+
 type HomeTodayFlight = {
 	json: {
 		nro: string;
@@ -123,9 +130,10 @@ export const load = (async ({ url, setHeaders }) => {
 	const today = dayjs().tz(tsz);
 	const todayStart = today.startOf('day');
 	const todayEnd = today.endOf('day');
+	const crisisStart = dayjs.tz('2026-07-01', tsz).startOf('day');
 	const timings = createTimings();
 
-	const [weeklyRows, todayChartsRows, recentAvailableDates] = await Promise.all([
+	const [weeklyRows, crisisRows, todayChartsRows, recentAvailableDates] = await Promise.all([
 		timings.timed(
 			'home.weekly',
 			sql<WeeklyRow[]>`
@@ -176,11 +184,35 @@ export const load = (async ({ url, setHeaders }) => {
 		FROM weekly_flights w
 		LEFT JOIN weekly_aircraft a ON a.week_start = w.week_start
 		ORDER BY w.week_start ASC;
+		`
+		),
+		timings.timed(
+			'home.crisis',
+			sql<CrisisRow[]>`
+		SELECT
+			COUNT(*) AS total_flights,
+			COUNT(*) FILTER (WHERE NULLIF(json->>'atda', '') IS NOT NULL) AS flown_flights,
+			COUNT(*) FILTER (WHERE json->>'estes' = 'Cancelado') AS cancelled_flights,
+			(
+				MAX(DATE(stda_parsed AT TIME ZONE 'America/Argentina/Buenos_Aires'))
+				FILTER (WHERE NULLIF(json->>'atda', '') IS NOT NULL)
+			)::text AS last_flown_date
+		FROM aerolineas_latest_flight_status
+		WHERE json->>'mov' = 'D'
+			AND json->>'idaerolinea' = 'FO'
+			AND stda_parsed >= ${crisisStart.toDate()}
+			AND stda_parsed <= ${today.toDate()};
 	`
 		),
 		timings.timed('home.todayCharts', getHomeTodayCharts(todayStart.toDate(), todayEnd.toDate())),
 		timings.timed('home.recentAvailableDates', getRecentAvailableFlightDates(10))
 	]);
+	const crisisRow = crisisRows[0] ?? {
+		total_flights: 0,
+		flown_flights: 0,
+		cancelled_flights: 0,
+		last_flown_date: null
+	};
 	const todayCharts = todayChartsRows[0] ?? { flights: [], airline_data: [] };
 	const todayFlights = todayCharts.flights.map((flight) => ({
 		...flight,
@@ -230,6 +262,14 @@ export const load = (async ({ url, setHeaders }) => {
 		period: {
 			start: weeklyRows[0]?.week_start ?? endDate.format('YYYY-MM-DD'),
 			end: endDate.format('YYYY-MM-DD')
+		},
+		crisis: {
+			start: crisisStart.format('YYYY-MM-DD'),
+			through: today.format('YYYY-MM-DD'),
+			totalFlights: Number(crisisRow.total_flights),
+			flownFlights: Number(crisisRow.flown_flights),
+			cancelledFlights: Number(crisisRow.cancelled_flights),
+			lastFlownDate: crisisRow.last_flown_date
 		},
 		todayFlights,
 		todayAirlineData,

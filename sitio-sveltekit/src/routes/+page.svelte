@@ -1,6 +1,7 @@
 <script lang="ts">
+	import '@fontsource/press-start-2p/latin-400.css';
 	import Footer from '@/components/footer.svelte';
-	import cardPath from '$lib/assets/twitter-card.png';
+	import gameOverArt from '$lib/assets/game-over-flybondi.webp';
 	import AverageVis from './average-vis.svelte';
 	import FlightSummaryChart from '$lib/components/flight-summary-chart.svelte';
 
@@ -46,6 +47,12 @@
 	);
 	$: todayDelayedFlybondiFlights = todayFlybondiFlights.filter((flight) => flight.delta >= 60 * 30);
 	$: todayAirlineData = data.todayAirlineData;
+	$: crisisCompletionRate =
+		(data.crisis.flownFlights / Math.max(1, data.crisis.totalFlights)) * 100;
+	$: crisisResolvedFlights = data.crisis.flownFlights + data.crisis.cancelledFlights;
+	$: crisisFlownShare = (data.crisis.flownFlights / Math.max(1, crisisResolvedFlights)) * 100;
+	$: crisisCancelledShare =
+		(data.crisis.cancelledFlights / Math.max(1, crisisResolvedFlights)) * 100;
 	$: firstWeek = weeks[0];
 	$: lastWeek = weeks[weeks.length - 1];
 	$: hoveredWeek = hoveredWeekIndex === null ? null : weeks[hoveredWeekIndex];
@@ -131,96 +138,123 @@
 </script>
 
 <svelte:head>
-	<title>Flybondi se achica - failbondi.fail</title>
+	<title>¿Game over, Flybondi? - failbondi.fail</title>
 	<meta
 		name="description"
-		content="Vuelos, cancelaciones y aviones activos usados por Flybondi semana a semana desde el inicio de los datos."
+		content={`Desde el 1 de julio, Flybondi voló ${percent(crisisCompletionRate)} de sus vuelos programados. Datos actualizados de vuelos, cancelaciones y aviones activos.`}
 	/>
 	<link rel="canonical" href="https://failbondi.fail" />
 
 	<meta property="og:type" content="website" />
-	<meta property="og:title" content="Flybondi se achica - failbondi.fail" />
+	<meta property="og:title" content="¿Game over, Flybondi? - failbondi.fail" />
 	<meta
 		property="og:description"
-		content="Vuelos, cancelaciones y aviones activos usados por Flybondi semana a semana desde el inicio de los datos."
+		content={`Desde el 1 de julio, Flybondi voló ${percent(crisisCompletionRate)} de sus vuelos programados.`}
 	/>
 	<meta property="og:url" content="https://failbondi.fail" />
-	<meta property="og:image" content={'https://failbondi.fail' + cardPath} />
+	<meta property="og:image" content={'https://failbondi.fail' + gameOverArt} />
 
 	<meta name="twitter:card" content="summary_large_image" />
 	<meta name="twitter:site" content="@esoesnulo" />
-	<meta name="twitter:title" content="Flybondi se achica - failbondi.fail" />
+	<meta name="twitter:title" content="¿Game over, Flybondi? - failbondi.fail" />
 	<meta
 		name="twitter:description"
-		content="Vuelos, cancelaciones y aviones activos usados por Flybondi semana a semana desde el inicio de los datos."
+		content={`Desde el 1 de julio, Flybondi voló ${percent(crisisCompletionRate)} de sus vuelos programados.`}
 	/>
 	<meta name="twitter:url" content="https://failbondi.fail" />
-	<meta name="twitter:image" content={'https://failbondi.fail' + cardPath} />
+	<meta name="twitter:image" content={'https://failbondi.fail' + gameOverArt} />
 </svelte:head>
 
-<main class="mx-auto max-w-[1120px] px-4 py-6 sm:px-6">
-	<header class="mb-5 flex flex-col gap-3 border-b border-neutral-200 pb-4 dark:border-neutral-800">
-		<div class="flex flex-col justify-between gap-3 sm:flex-row sm:items-end">
-			<div>
-				<a href={data.todayFlightsUrl} class="text-3xl font-medium leading-none text-red-600">
-					failbondi.fail
-				</a>
-				<h1
-					class="mt-3 max-w-3xl text-2xl font-extrabold text-neutral-950 sm:text-3xl dark:text-neutral-50"
-				>
-					Flybondi está faileando
-				</h1>
+<main
+	class="mx-auto max-w-[1280px] px-4 pb-8 text-neutral-950 sm:px-6 lg:px-8 dark:text-neutral-50"
+>
+	<section
+		class="grid gap-8 border-b-2 border-neutral-950 py-8 lg:grid-cols-[minmax(0,0.78fr)_minmax(520px,1.22fr)] lg:items-center lg:py-12 dark:border-neutral-100"
+	>
+		<div>
+			<h1
+				class="pixel-title text-[clamp(2.6rem,5.8vw,5.8rem)] uppercase leading-[1.06] tracking-[-0.08em]"
+			>
+				¿Game<br />over?
+			</h1>
+			<p
+				class="mt-10 font-mono text-[clamp(5rem,10vw,9rem)] font-black leading-[0.8] tracking-[-0.11em] text-red-600"
+			>
+				{percent(crisisCompletionRate)}
+			</p>
+			<p class="mt-5 max-w-lg text-lg font-semibold leading-6">
+				de los vuelos programados desde el 1 de julio realmente voló
+			</p>
+		</div>
+
+		<figure class="relative border-[3px] border-neutral-950 bg-neutral-950 dark:border-neutral-100">
+			<img
+				src={gameOverArt}
+				alt="Avión amarillo varado en una pista, ilustrado en pixel art"
+				class="aspect-[16/10] w-full object-cover object-center [image-rendering:pixelated]"
+			/>
+		</figure>
+	</section>
+
+	<section
+		class="grid border-b-2 border-neutral-950 sm:grid-cols-[minmax(220px,0.65fr)_minmax(0,1.35fr)] dark:border-neutral-100"
+		aria-label="Resumen de la crisis"
+	>
+		<div class="border-b border-neutral-400 p-5 sm:border-b-0 sm:border-r">
+			<p class="max-w-xs text-lg font-bold leading-6">
+				Los vuelos de julio, desde el día 1 hasta hoy.
+			</p>
+		</div>
+		<div class="p-5">
+			<div class="flex flex-wrap justify-between gap-x-6 gap-y-2 text-sm">
+				<span class="flex items-center gap-2 font-semibold">
+					<span class="h-3 w-3 bg-neutral-100 ring-1 ring-neutral-950 dark:ring-neutral-100"></span>
+					Volaron: {numberFormatter.format(data.crisis.flownFlights)} ({percent(crisisFlownShare)})
+				</span>
+				<span class="flex items-center gap-2 font-semibold">
+					<span class="h-3 w-3 bg-red-600"></span>
+					Cancelados: {numberFormatter.format(data.crisis.cancelledFlights)} ({percent(
+						crisisCancelledShare
+					)})
+				</span>
+			</div>
+			<div
+				class="mt-4 flex h-10 overflow-hidden border-2 border-neutral-950 dark:border-neutral-100"
+				role="img"
+				aria-label={`${numberFormatter.format(data.crisis.flownFlights)} vuelos realizados y ${numberFormatter.format(data.crisis.cancelledFlights)} vuelos cancelados desde el 1 de julio`}
+			>
+				<div class="bg-neutral-100" style={`width: ${crisisFlownShare}%`}></div>
+				<div class="bg-red-600" style={`width: ${crisisCancelledShare}%`}></div>
 			</div>
 		</div>
-		<p
-			class="max-w-none text-base leading-7 text-neutral-700 sm:text-lg sm:leading-8 dark:text-neutral-300"
-		>
-			Hace 5 meses arrancaron el verano cancelando más de 150 vuelos y complicando a unos 25.000
-			pasajeros.<sup
-				><a
-					class="text-red-600 hover:underline dark:text-red-400"
-					href="https://www.latrochadigital.com.ar/2026/01/13/flybondi-cancelo-mas-de-150-vuelos-y-afecto-a-unos-25-mil-pasajeros/"
-					>1</a
-				></sup
-			>
-			Hace 3 meses tuvieron ocho aviones parados por problemas contractuales con proveedores ACMI.<sup
-				><a
-					class="text-red-600 hover:underline dark:text-red-400"
-					href="https://www.lanacion.com.ar/economia/flybondi-cancelo-vuelos-por-problemas-con-los-aviones-que-tiene-en-alquiler-nid13032026/"
-					>2</a
-				></sup
-			>
-			Hace 4 meses Mauricio Sana fue corrido del día a día y Paz Lovisolo quedó como CEO, mientras Leonardo
-			Scatturice y COC Global Enterprise tomaban el volante del grupo.<sup
-				><a
-					class="text-red-600 hover:underline dark:text-red-400"
-					href="https://www.aviacionnews.com/2026/02/cambios-en-la-cupula-de-flybondi/">3</a
-				></sup
-			>
-			Ahora Lovisolo también habría dejado el cargo después de apenas cuatro meses, y LA NACION reportó
-			que Flybondi ya no tendría CEO sino una operación en cabeza de Leonel Dopazo.<sup
-				><a
-					class="text-red-600 hover:underline dark:text-red-400"
-					href="https://www.lanacion.com.ar/economia/flybondi-llego-a-operar-con-un-solo-avion-y-acumula-mas-de-2500-vuelos-cancelados-en-el-ultimo-ano-nid02062026/"
-					>4</a
-				></sup
-			>
-			Hoy la foto es todavía más ridícula: medios reportan a Flybondi intentando sostener una aerolínea
-			con uno o dos aviones operativos, vendiendo y programando vuelos que después no tiene flota suficiente
-			para cumplir.<sup
-				><a
-					class="text-red-600 hover:underline dark:text-red-400"
-					href="https://www.cronista.com/negocios/flybondi-en-crisis-solo-funcionan-dos-aviones-acumula-mas-de-2500-vuelos-cancelados-y-habria-renunciado-su-ceo/"
-					>5</a
-				></sup
-			>
-		</p>
-	</header>
+	</section>
 
-	<section class="pb-5">
+	<aside
+		class="border-b border-neutral-400 py-4 text-sm leading-6 text-neutral-700 dark:text-neutral-300"
+	>
+		En junio cumplió <strong>803 de 2.626 vuelos programados (30,6%)</strong>. En los primeros 12
+		días de julio había volado solo <strong>23 de 427 (5,4%)</strong>. La empresa siguió vendiendo
+		pasajes y suspendió a sus tripulaciones hasta el 30 de septiembre.<sup
+			><a
+				class="ml-0.5 text-red-600 hover:underline"
+				href="https://www.lanacion.com.ar/economia/flybondi-como-dejo-de-volar-la-disruptiva-low-cost-que-fue-un-icono-y-que-afronta-una-crisis-nid13072026/"
+				>1</a
+			></sup
+		><sup
+			><a
+				class="ml-1 text-red-600 hover:underline"
+				href="https://www.tiempoar.com.ar/ta_article/se-profundiza-la-crisis-en-flybondi-sin-vuelos-y-con-trabajadores-suspendidos-pero-sigue-vendiendo-pasajes/"
+				>2</a
+			></sup
+		>
+	</aside>
+
+	<section class="py-7">
 		<div class="mb-4 flex flex-col justify-between gap-3 sm:flex-row sm:items-end">
 			<div>
-				<h2 class="text-xl font-semibold text-neutral-950 dark:text-neutral-50">
+				<h2
+					class="text-2xl font-black uppercase tracking-tight text-neutral-950 dark:text-neutral-50"
+				>
 					Semana por semana
 				</h2>
 			</div>
@@ -461,3 +495,11 @@
 </main>
 
 <Footer />
+
+<style>
+	.pixel-title {
+		font-family: 'Press Start 2P', monospace;
+		font-weight: 400;
+		text-shadow: 0.065em 0.065em 0 rgba(220, 38, 38, 0.2);
+	}
+</style>
