@@ -244,6 +244,12 @@ export const load = (async ({ url, setHeaders }) => {
 			};
 		})
 		.filter((row): row is HomeAirlineData => row !== null && row.nVuelos > 0);
+	const daysWithoutFlights = crisisRow.last_flown_date
+		? Math.max(
+				0,
+				today.startOf('day').diff(dayjs.tz(crisisRow.last_flown_date, tsz).startOf('day'), 'day')
+			)
+		: null;
 
 	setHeaders({
 		'cache-control': 'public, max-age=300',
@@ -269,7 +275,8 @@ export const load = (async ({ url, setHeaders }) => {
 			totalFlights: Number(crisisRow.total_flights),
 			flownFlights: Number(crisisRow.flown_flights),
 			cancelledFlights: Number(crisisRow.cancelled_flights),
-			lastFlownDate: crisisRow.last_flown_date
+			lastFlownDate: crisisRow.last_flown_date,
+			daysWithoutFlights
 		},
 		todayFlights,
 		todayAirlineData,

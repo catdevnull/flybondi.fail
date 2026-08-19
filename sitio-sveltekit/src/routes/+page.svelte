@@ -1,5 +1,6 @@
 <script lang="ts">
 	import '@fontsource/press-start-2p/latin-400.css';
+	import { onMount } from 'svelte';
 	import Footer from '@/components/footer.svelte';
 	import gameOverArt from '$lib/assets/game-over-flybondi.webp';
 	import AverageVis from './average-vis.svelte';
@@ -39,6 +40,22 @@
 	});
 
 	let hoveredWeekIndex: number | null = null;
+	let chartScroller: HTMLDivElement;
+
+	onMount(() => {
+		const mobile = window.matchMedia('(max-width: 639px)');
+		const scrollToLatestWeek = () => {
+			if (!mobile.matches) return;
+			requestAnimationFrame(() => {
+				chartScroller.scrollLeft = chartScroller.scrollWidth;
+			});
+		};
+
+		scrollToLatestWeek();
+		mobile.addEventListener('change', scrollToLatestWeek);
+
+		return () => mobile.removeEventListener('change', scrollToLatestWeek);
+	});
 
 	$: weeks = data.weeks;
 	$: todayFlybondiFlights = data.todayFlights;
@@ -53,6 +70,10 @@
 	$: crisisFlownShare = (data.crisis.flownFlights / Math.max(1, crisisResolvedFlights)) * 100;
 	$: crisisCancelledShare =
 		(data.crisis.cancelledFlights / Math.max(1, crisisResolvedFlights)) * 100;
+	$: daysWithoutFlights = data.crisis.daysWithoutFlights;
+	$: lastFlownDate = data.crisis.lastFlownDate
+		? longDateFormatter.format(new Date(`${data.crisis.lastFlownDate}T00:00:00-03:00`))
+		: null;
 	$: firstWeek = weeks[0];
 	$: lastWeek = weeks[weeks.length - 1];
 	$: hoveredWeek = hoveredWeekIndex === null ? null : weeks[hoveredWeekIndex];
@@ -138,28 +159,34 @@
 </script>
 
 <svelte:head>
-	<title>¿Game over, Flybondi? - failbondi.fail</title>
+	<title>{daysWithoutFlights ?? 'Sin'} días sin vuelos de Flybondi - failbondi.fail</title>
 	<meta
 		name="description"
-		content={`Desde el 1 de julio, Flybondi voló ${percent(crisisCompletionRate)} de sus vuelos programados. Datos actualizados de vuelos, cancelaciones y aviones activos.`}
+		content={`Flybondi lleva ${daysWithoutFlights ?? 'varios'} días sin vuelos. Datos actualizados de vuelos, cancelaciones y aviones activos.`}
 	/>
 	<link rel="canonical" href="https://failbondi.fail" />
 
 	<meta property="og:type" content="website" />
-	<meta property="og:title" content="¿Game over, Flybondi? - failbondi.fail" />
+	<meta
+		property="og:title"
+		content={`${daysWithoutFlights ?? 'Sin'} días sin vuelos de Flybondi`}
+	/>
 	<meta
 		property="og:description"
-		content={`Desde el 1 de julio, Flybondi voló ${percent(crisisCompletionRate)} de sus vuelos programados.`}
+		content={`El último vuelo registrado fue${lastFlownDate ? ` el ${lastFlownDate}` : ' hace varios días'}.`}
 	/>
 	<meta property="og:url" content="https://failbondi.fail" />
 	<meta property="og:image" content={'https://failbondi.fail' + gameOverArt} />
 
 	<meta name="twitter:card" content="summary_large_image" />
 	<meta name="twitter:site" content="@esoesnulo" />
-	<meta name="twitter:title" content="¿Game over, Flybondi? - failbondi.fail" />
+	<meta
+		name="twitter:title"
+		content={`${daysWithoutFlights ?? 'Sin'} días sin vuelos de Flybondi`}
+	/>
 	<meta
 		name="twitter:description"
-		content={`Desde el 1 de julio, Flybondi voló ${percent(crisisCompletionRate)} de sus vuelos programados.`}
+		content={`El último vuelo registrado fue${lastFlownDate ? ` el ${lastFlownDate}` : ' hace varios días'}.`}
 	/>
 	<meta name="twitter:url" content="https://failbondi.fail" />
 	<meta name="twitter:image" content={'https://failbondi.fail' + gameOverArt} />
@@ -171,19 +198,17 @@
 	<section
 		class="grid gap-8 border-b-2 border-neutral-950 py-8 lg:grid-cols-[minmax(0,0.78fr)_minmax(520px,1.22fr)] lg:items-center lg:py-12 dark:border-neutral-100"
 	>
-		<div>
+		<div class="pixel-title py-2">
 			<h1
-				class="pixel-title text-[clamp(2.6rem,5.8vw,5.8rem)] uppercase leading-[1.06] tracking-[-0.08em]"
+				class="pixel-title text-[clamp(1.55rem,3.1vw,3rem)] uppercase leading-[1.16] tracking-[-0.06em]"
 			>
-				¿Game<br />over?
+				Flybondi lleva
 			</h1>
-			<p
-				class="mt-10 font-mono text-[clamp(5rem,10vw,9rem)] font-black leading-[0.8] tracking-[-0.11em] text-red-600"
-			>
-				{percent(crisisCompletionRate)}
+			<p class="mt-7 text-[clamp(6rem,12vw,11rem)] leading-[0.75] tracking-[-0.12em] text-red-600">
+				{daysWithoutFlights ?? '—'}
 			</p>
-			<p class="mt-5 max-w-lg text-lg font-semibold leading-6">
-				de los vuelos programados desde el 1 de julio realmente voló
+			<p class="mt-7 max-w-lg text-[clamp(1.25rem,2.3vw,2rem)] uppercase leading-[1.35]">
+				días sin vuelos
 			</p>
 		</div>
 
@@ -202,7 +227,7 @@
 	>
 		<div class="border-b border-neutral-400 p-5 sm:border-b-0 sm:border-r">
 			<p class="max-w-xs text-lg font-bold leading-6">
-				Los vuelos de julio, desde el día 1 hasta hoy.
+				Desde el 1 de julio voló {percent(crisisCompletionRate)} de sus vuelos programados.
 			</p>
 		</div>
 		<div class="p-5">
@@ -233,18 +258,19 @@
 		class="border-b border-neutral-400 py-4 text-sm leading-6 text-neutral-700 dark:text-neutral-300"
 	>
 		En junio cumplió <strong>803 de 2.626 vuelos programados (30,6%)</strong>. En los primeros 12
-		días de julio había volado solo <strong>23 de 427 (5,4%)</strong>. La empresa siguió vendiendo
-		pasajes y suspendió a sus tripulaciones hasta el 30 de septiembre.<sup
+		días de julio había volado solo <strong>23 de 427 (5,4%)</strong>. Mientras estuvo parada, su
+		web siguió ofreciendo vuelos aunque las agencias ya habían dejado de venderlos. Hoy el sitio
+		oficial no está disponible. En Brasil, el regulador restringió la venta de pasajes después de
+		que cancelara el 79% de sus vuelos de julio.<sup
 			><a
 				class="ml-0.5 text-red-600 hover:underline"
-				href="https://www.lanacion.com.ar/economia/flybondi-como-dejo-de-volar-la-disruptiva-low-cost-que-fue-un-icono-y-que-afronta-una-crisis-nid13072026/"
+				href="https://www.eldiarioar.com/economia/flybondi-lleva-parada-semanas-sigue-vendiendo-pasajes-gobierno-no-reacciona_1_13377489.html"
 				>1</a
 			></sup
 		><sup
 			><a
 				class="ml-1 text-red-600 hover:underline"
-				href="https://www.tiempoar.com.ar/ta_article/se-profundiza-la-crisis-en-flybondi-sin-vuelos-y-con-trabajadores-suspendidos-pero-sigue-vendiendo-pasajes/"
-				>2</a
+				href="https://efe.com/economia/2026-07-29/brasil-limita-venta-de-pasajes-flybondi/">2</a
 			></sup
 		>
 	</aside>
@@ -274,7 +300,7 @@
 			</div>
 		</div>
 
-		<div class="overflow-x-auto">
+		<div bind:this={chartScroller} class="overflow-x-auto">
 			<svg
 				viewBox={`0 0 ${chartWidth} ${chartHeight}`}
 				class="min-w-[760px] text-neutral-500 dark:text-neutral-400"
