@@ -6,17 +6,18 @@ import * as cheerio from "cheerio";
 
 const fetch = fetchBuilder(globalThis.fetch);
 const sql = sqlBuilder();
-const MATRICULAS_HEALTHCHECK_LIMIT = 90;
+const MATRICULAS_HEALTHCHECK_LIMIT = 0;
 
 export const scrapMatriculasTask = schemaTask({
   id: "scrap-matriculas",
-  maxDuration: 600,
+  maxDuration: 1800,
   machine: "micro",
   run: async (payload, { ctx }) => {
     const matriculas = await sql<{ matricula: string }[]>`
     select distinct matricula
     from aerolineas_latest_flight_status 
-    where matricula not in (select matricula from airfleets_matriculas);
+    where matricula <> ''
+      and matricula not in (select matricula from airfleets_matriculas);
     `;
 
     const fetched_at = new Date();
@@ -42,7 +43,8 @@ export const scrapMatriculasCronTask = schedules.task({
     const [row] = await sql<{ missing_count: string }[]>`
       SELECT COUNT(DISTINCT matricula) as missing_count
       FROM aerolineas_latest_flight_status
-      WHERE matricula NOT IN (
+      WHERE matricula <> ''
+        AND matricula NOT IN (
         SELECT matricula FROM airfleets_matriculas
       )
     `;
@@ -73,6 +75,7 @@ async function scrapMatricula(matricula: string, fetched_at: Date) {
   const searchHtml = await fetchAirfleets(searchUrl);
   if (searchHtml === 404) {
     logger.warn(`404 encontrado para ${matricula}, skipping`);
+    await markMatriculaAsMissing(matricula, fetched_at, searchUrl);
     return;
   }
   await saveRawIntoB2({ body: searchHtml, fetched_at, url: searchUrl });
@@ -93,6 +96,7 @@ async function scrapMatricula(matricula: string, fetched_at: Date) {
   const detailHtml = await fetchAirfleets(detail_url);
   if (detailHtml === 404) {
     logger.warn(`404 encontrado para ${matricula}, skipping`);
+    await markMatriculaAsMissing(matricula, fetched_at, detail_url);
     return;
   }
   await saveRawIntoB2({ body: detailHtml, fetched_at, url: detail_url });
@@ -125,6 +129,7 @@ async function scrapMatricula(matricula: string, fetched_at: Date) {
       compania_aerea,
       situacion,
     });
+    await markMatriculaAsMissing(matricula, fetched_at, detail_url);
     return;
   }
 
@@ -144,6 +149,18 @@ async function scrapMatricula(matricula: string, fetched_at: Date) {
     edad_del_avion,
     config_de_asientos,
   });
+}
+
+async function markMatriculaAsMissing(
+  matricula: string,
+  fetched_at: Date,
+  detail_url: string
+) {
+  await sql`
+    insert into airfleets_matriculas
+    (fetched_at, matricula, aeronave, msn, compania_aerea, situacion, detail_url, edad_del_avion, config_de_asientos)
+    values (${fetched_at}, ${matricula}, ${""}, ${""}, ${""}, ${"not-found"}, ${detail_url}, ${0}, ${""})
+  `;
 }
 
 async function fetchAirfleets(url: string | URL): Promise<string | 404> {

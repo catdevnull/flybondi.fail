@@ -5,7 +5,8 @@ export const GET: RequestHandler = async () => {
 	const [row] = await sql<{ missing_count: string }[]>`
     SELECT COUNT(DISTINCT matricula) as missing_count
     FROM aerolineas_latest_flight_status
-    WHERE matricula NOT IN (
+    WHERE matricula <> ''
+      AND matricula NOT IN (
       SELECT matricula FROM airfleets_matriculas
     )
   `;
