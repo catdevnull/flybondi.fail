@@ -29,8 +29,8 @@ export const load: PageServerLoad = async ({ url, params, platform, setHeaders }
 				SELECT 1
 				FROM aerolineas_latest_flight_status
 				WHERE json->>'mov' = 'D'
-					AND stda_parsed >= ${tomorrowStart.toDate()}
-					AND stda_parsed <= ${tomorrowEnd.toDate()}
+					AND stda_parsed >= (${tomorrowStart.toDate()} AT TIME ZONE 'America/Argentina/Buenos_Aires')
+					AND stda_parsed <= (${tomorrowEnd.toDate()} AT TIME ZONE 'America/Argentina/Buenos_Aires')
 			);
 		`
 		)

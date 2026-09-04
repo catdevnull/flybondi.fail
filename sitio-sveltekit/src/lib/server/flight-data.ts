@@ -108,7 +108,7 @@ export function getDepartureFlightsBetween(start: Date, end: Date) {
 		FROM aerolineas_latest_flight_status
 		LEFT JOIN airfleets_matriculas ON airfleets_matriculas.matricula = json->>'matricula'
 		WHERE json->>'mov' = 'D'
-			AND stda_parsed >= ${start}
-			AND stda_parsed <= ${end};
+			AND stda_parsed >= (${start} AT TIME ZONE 'America/Argentina/Buenos_Aires')
+			AND stda_parsed <= (${end} AT TIME ZONE 'America/Argentina/Buenos_Aires');
 	`;
 }

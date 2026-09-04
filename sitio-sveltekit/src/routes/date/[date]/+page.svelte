@@ -101,8 +101,7 @@
 			(v) =>
 				v.json.idaerolinea === a &&
 				AEROPUERTOS_FLYBONDI.includes(v.json.arpt) &&
-				AEROPUERTOS_FLYBONDI.includes(v.json.IATAdestorig) &&
-				(!!v.atda || v.json.estes === 'Cancelado')
+				AEROPUERTOS_FLYBONDI.includes(v.json.IATAdestorig)
 		)
 	);
 
