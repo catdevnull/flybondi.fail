@@ -1,0 +1,5 @@
+# Same schedules the Trigger.dev tasks had (UTC). supercronic skips a run if
+# the previous one is still going.
+59 1,2,5,10,15,20,22,23 * * * node --import tsx jobs/run.ts scrap-aerolineas
+17 * * * * node --import tsx jobs/run.ts scrap-matriculas
+2 */3 * * * node --import tsx jobs/run.ts process-latest-flight-data

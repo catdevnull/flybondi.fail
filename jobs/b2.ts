@@ -1,5 +1,5 @@
-import { logger } from "@trigger.dev/sdk/v3";
-import { b2, B2_BUCKET, B2_PATH } from "./consts";
+import { logger } from "./log";
+import { b2, B2_BUCKET, B2_PATH } from "../consts";
 import { PutObjectCommand } from "@aws-sdk/client-s3";
 
 export async function saveRawIntoB2({

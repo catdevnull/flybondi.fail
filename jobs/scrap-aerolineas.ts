@@ -1,4 +1,4 @@
-import { logger, schedules, schemaTask } from "@trigger.dev/sdk";
+import { logger } from "./log";
 import {
   AerolineasSnapshot,
   FlightstatsSnapshot,
@@ -13,7 +13,7 @@ import { z } from "zod";
 import { AerolineasFlightData } from "../misc/aerolineas";
 import fetchBuilder from "fetch-retry";
 import PQueue from "p-queue";
-import { saveRawIntoB2 } from "../trigger-utils";
+import { saveRawIntoB2 } from "./b2";
 
 const AEROLINEAS_AIRPORTS = AEROLINEAS_AIRPORTS_JSON.data.map((a) => a.iata);
 
@@ -34,13 +34,9 @@ function truncateRetryBody(body: string) {
   return `${body.slice(0, MAX_RETRY_BODY_LOG_LENGTH)}...`;
 }
 
-export const scrapAerolineasTask = schemaTask({
-  id: "scrap-aerolineas",
-  maxDuration: 600,
-  schema: z.object({
-    date: z.coerce.date(),
-  }),
-  run: async (payload, { ctx }) => {
+// Was the "scrap-aerolineas" Trigger.dev task.
+export async function scrapAerolineas(payload: { date: Date }) {
+  {
     const queue = new PQueue({ concurrency: 20 });
     const fetched_at = new Date();
 
@@ -141,22 +137,18 @@ export const scrapAerolineasTask = schemaTask({
       });
     }
     await queue.onIdle();
-  },
-});
+  }
+}
 
-export const scrapAerolineasCronTask = schedules.task({
-  id: "scrap-aerolineas-cron",
-  cron: "59 1,2,5,10,15,20,22,23 * * *",
-  maxDuration: 300,
-  run: async (payload, { ctx }) => {
-    await scrapAerolineasTask.trigger({
-      date: new Date(),
-    });
-    await scrapAerolineasTask.trigger({
-      date: sub(new Date(), { days: 1 }),
-    });
-  },
-});
+// Was the "scrap-aerolineas-cron" Trigger.dev schedule
+// (59 1,2,5,10,15,20,22,23 * * *), which fanned out today + yesterday as two
+// runs on separate machines. From one IP, running both at once (40 concurrent
+// requests) makes the API error and retry a lot, so do them one after another.
+export async function scrapAerolineasTodayAndYesterday() {
+  const now = new Date();
+  await scrapAerolineas({ date: now });
+  await scrapAerolineas({ date: sub(now, { days: 1 }) });
+}
 
 // export const scrapFlightstatsTask = schedules.task({
 //   id: "scrap-flightstats",

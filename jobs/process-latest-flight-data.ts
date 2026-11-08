@@ -1,4 +1,4 @@
-import { logger, schedules, usage } from "@trigger.dev/sdk/v3";
+import { logger, measure } from "./log";
 import { b2, B2_BUCKET, B2_PATH, B2_REGION, sqlBuilder } from "../consts";
 import { GetObjectCommand, ListObjectsV2Command } from "@aws-sdk/client-s3";
 import PQueue from "p-queue";
@@ -7,19 +7,13 @@ import pMap from "p-map";
 const COLLECTION_CONCURRENCY = 4;
 const OBJECT_FETCH_CONCURRENCY = 12;
 
-export const processLatestFlightDataTask = schedules.task({
-  id: "process-latest-flight-data",
-  cron: "2 */3 * * *",
-  maxDuration: 1800,
-  machine: "small-1x",
-  queue: {
-    concurrencyLimit: 1,
-  },
-  run: async () => {
+// Was the "process-latest-flight-data" Trigger.dev schedule (2 */3 * * *).
+export async function processLatestFlightData() {
+  {
     const sql = sqlBuilder();
     const lastProcessedAt = await getLatestProcessedAt(sql);
     const startAfter = buildStartAfterKey(lastProcessedAt);
-    const { result: list, compute: listCompute } = await usage.measure(() =>
+    const { result: list, compute: listCompute } = await measure(() =>
       getAllObjectsFromS3Bucket(B2_BUCKET, `${B2_PATH}/`, startAfter)
     );
     const collections = Array.from(
@@ -50,9 +44,8 @@ export const processLatestFlightDataTask = schedules.task({
     });
 
     if (collections.length === 0) {
-      logger.info("No new raw Aerolineas snapshots to process", {
-        totalUsage: usage.getCurrent(),
-      });
+      logger.info("No new raw Aerolineas snapshots to process");
+      await sql.end();
       return;
     }
 
@@ -68,7 +61,7 @@ export const processLatestFlightDataTask = schedules.task({
           urls: keys.map(getPublicB2Url),
         });
 
-        const { result: allEntries, compute: fetchCompute } = await usage.measure(
+        const { result: allEntries, compute: fetchCompute } = await measure(
           async () => {
             const values = await pMap(
               keys,
@@ -97,7 +90,7 @@ export const processLatestFlightDataTask = schedules.task({
           }
         );
 
-        const { compute: upsertCompute } = await usage.measure(async () => {
+        const { compute: upsertCompute } = await measure(async () => {
           await sql`
           INSERT INTO aerolineas_latest_flight_status (aerolineas_flight_id, last_updated, json)
           SELECT DISTINCT ON(aerolineas_flight_id) value->>'id' as aerolineas_flight_id, ${key.fetchedAt} as last_updated, value as json
@@ -120,10 +113,10 @@ export const processLatestFlightDataTask = schedules.task({
 
     logger.info("Finished processing latest flight data", {
       collectionCount: collections.length,
-      totalUsage: usage.getCurrent(),
     });
-  },
-});
+    await sql.end();
+  }
+}
 
 function parsePath(path: string) {
   const [env, timestamp, type, url] = path.split("/");

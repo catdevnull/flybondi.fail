@@ -1,0 +1,44 @@
+# Uncloud deployment for failbondi.fail.
+#
+#   DEPLOY_SSH=user@host pnpm run deploy   # build both images on the server, then uc deploy
+#
+# Env files live in .uncloud/ (gitignored): flybondi.env (DATABASE_URL,
+# SENTRY_AUTH_TOKEN), flybondi-db.env (POSTGRES_PASSWORD) and flybondi-jobs.env
+# (DATABASE_URL, B2_KEY_ID, B2_APP_KEY, BRIGHTDATA_API_KEY). The database is
+# backed up by the pg-backup service in milei-twitter's uncloud.yaml.
+
+services:
+  flybondi:
+    build:
+      context: sitio-sveltekit
+      platforms: [linux/amd64]
+    image: flybondi/site:latest   # built on the server by `pnpm run deploy`
+    pull_policy: never
+    env_file: .uncloud/flybondi.env
+    depends_on:
+      - flybondi-db
+
+  # Scheduled scrapers/processors that used to run on Trigger.dev. See
+  # jobs/crontab for the schedule; logs: `uc logs flybondi-jobs`.
+  flybondi-jobs:
+    build:
+      context: .
+      dockerfile: jobs/Dockerfile
+      platforms: [linux/amd64]
+    image: flybondi/jobs:latest
+    pull_policy: never
+    env_file: .uncloud/flybondi-jobs.env   # B2_*, BRIGHTDATA_API_KEY, DATABASE_URL
+    depends_on:
+      - flybondi-db
+
+  flybondi-db:
+    image: postgres:17.5
+    env_file: .uncloud/flybondi-db.env
+    environment:
+      POSTGRES_DB: flybondi
+    volumes:
+      - flybondi-db-data:/var/lib/postgresql/data
+    shm_size: 256m
+
+volumes:
+  flybondi-db-data:

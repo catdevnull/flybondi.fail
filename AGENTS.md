@@ -19,8 +19,8 @@ This prevents "Airport {IATA} not found" warnings when flights reference the air
 
 ## Touching the database
 
-The database is not directly accessible from outside. To query it, SSH into `absolute-slop` and use dokku:
+The database is not directly accessible from outside. It runs as the `flybondi-db` service on the Uncloud cluster; query it through `uc`:
 
 ```bash
-ssh -T absolute-slop "dokku postgres:connect flybondi <<< \"YOUR SQL HERE;\""
+uc exec -T flybondi-db psql -U postgres -d flybondi -c "YOUR SQL HERE;"
 ```

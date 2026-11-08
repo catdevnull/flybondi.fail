@@ -1,72 +1,63 @@
-import { logger, schedules, schemaTask } from "@trigger.dev/sdk";
+import { logger } from "./log";
 import { sqlBuilder } from "../consts";
 import fetchBuilder from "fetch-retry";
-import { saveRawIntoB2 } from "../trigger-utils";
+import { saveRawIntoB2 } from "./b2";
 import * as cheerio from "cheerio";
 
 const fetch = fetchBuilder(globalThis.fetch);
-const sql = sqlBuilder();
+export const sql = sqlBuilder();
 const MATRICULAS_HEALTHCHECK_LIMIT = 0;
 
-export const scrapMatriculasTask = schemaTask({
-  id: "scrap-matriculas",
-  maxDuration: 1800,
-  machine: "micro",
-  run: async (payload, { ctx }) => {
-    const matriculas = await sql<{ matricula: string }[]>`
-    select distinct matricula
-    from aerolineas_latest_flight_status 
-    where matricula <> ''
-      and matricula not in (select matricula from airfleets_matriculas);
-    `;
+// Was the "scrap-matriculas" Trigger.dev task.
+export async function scrapMatriculas() {
+  const matriculas = await sql<{ matricula: string }[]>`
+  select distinct matricula
+  from aerolineas_latest_flight_status 
+  where matricula <> ''
+    and matricula not in (select matricula from airfleets_matriculas);
+  `;
 
-    const fetched_at = new Date();
+  const fetched_at = new Date();
 
-    logger.info(`Trying to fetch ${matriculas.length} matriculas`);
+  logger.info(`Trying to fetch ${matriculas.length} matriculas`);
 
-    for (const { matricula } of matriculas) {
-      try {
-        await scrapMatricula(matricula, fetched_at);
-      } catch (e) {
-        logger.error("Error scraping matricula", { matricula, error: e });
-      }
+  for (const { matricula } of matriculas) {
+    try {
+      await scrapMatricula(matricula, fetched_at);
+    } catch (e) {
+      logger.error("Error scraping matricula", { matricula, error: e });
     }
-  },
-});
+  }
+}
 
-export const scrapMatriculasCronTask = schedules.task({
-  id: "scrap-matriculas-cron",
-  cron: "17 * * * *",
-  maxDuration: 300,
-  machine: "micro",
-  run: async () => {
-    const [row] = await sql<{ missing_count: string }[]>`
-      SELECT COUNT(DISTINCT matricula) as missing_count
-      FROM aerolineas_latest_flight_status
-      WHERE matricula <> ''
-        AND matricula NOT IN (
-        SELECT matricula FROM airfleets_matriculas
-      )
-    `;
+// Was the "scrap-matriculas-cron" Trigger.dev schedule (17 * * * *).
+export async function scrapMatriculasIfMissing() {
+  const [row] = await sql<{ missing_count: string }[]>`
+    SELECT COUNT(DISTINCT matricula) as missing_count
+    FROM aerolineas_latest_flight_status
+    WHERE matricula <> ''
+      AND matricula NOT IN (
+      SELECT matricula FROM airfleets_matriculas
+    )
+  `;
 
-    const missingCount = parseInt(row?.missing_count ?? "0", 10);
+  const missingCount = parseInt(row?.missing_count ?? "0", 10);
 
-    if (missingCount <= MATRICULAS_HEALTHCHECK_LIMIT) {
-      logger.info("Skipping matriculas scrape: healthcheck limit not exceeded", {
-        missingCount,
-        limit: MATRICULAS_HEALTHCHECK_LIMIT,
-      });
-      return;
-    }
-
-    logger.warn("Healthcheck limit exceeded, triggering matriculas scrape", {
+  if (missingCount <= MATRICULAS_HEALTHCHECK_LIMIT) {
+    logger.info("Skipping matriculas scrape: healthcheck limit not exceeded", {
       missingCount,
       limit: MATRICULAS_HEALTHCHECK_LIMIT,
     });
+    return;
+  }
 
-    await scrapMatriculasTask.trigger({});
-  },
-});
+  logger.warn("Healthcheck limit exceeded, scraping matriculas", {
+    missingCount,
+    limit: MATRICULAS_HEALTHCHECK_LIMIT,
+  });
+
+  await scrapMatriculas();
+}
 //console.log(await scrapMatricula("CCBFB", new Date()));
 async function scrapMatricula(matricula: string, fetched_at: Date) {
   logger.info(`Searching for ${matricula}`);
